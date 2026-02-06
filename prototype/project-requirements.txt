@@ -1,0 +1,68 @@
+
+Final Project Proposal & Proposal Presentation
+
+    Due Feb 23 by 11:55pm Points 100 Submitting a file upload
+
+Project Description
+
+In this project, you will demonstrate the value of visualization through effective visual data storytelling, as a way to promote innovative and effective use of visualization for communicating and explaining ideas. The story must feature at least one programmatically-generated visual representation of data. You may also include visual representations generated through manual illustration (e.g., on paper, or using illustration software) to support and embellish your story, but these must be used to complement the programmatically generated visualizations of data. All programmatically-generated visual representation(s) should be your own work, using techniques or tools created by you. Third-party techniques or applications may be used in conjunction with your own work as long as proper credit is given to their respective creators and it is made clear which aspects of the implementation represent your own work. You are highly encouraged to use your own dataset.
+Storytelling Examples
+
+    Storytelling Contest  Links to an external site.
+    Information is Beautiful Links to an external site.
+    The Pudding Links to an external site.
+
+
+Storytelling Structures
+
+Martini Glass:  This structure begins with an author-driven approach, initially using questions, observations, or written articles to introduce the visualization. Occasionally no text is used at all, as the visualization instead relies on an interesting default view or annotations. Once the author’s intended narrative is complete, the visualization opens up to a user-driven stage where the user is free to interactively explore the data.
+
+Interactive Slideshow: This structure follows a typical slideshow format, but incorporates interaction mid-narrative within the confines of each slide. This structure allows the user to further explore the particular points of the presentation before moving ahead to the next stage of the story.
+
+Drill-Down: This structure presents a general theme and then allows the user to choose among particular instances of that theme to reveal additional details and backstories.
+
+For more details refer to:
+
+Segel, Edward, and Jeffrey Heer. "Narrative visualization: Telling stories with data." IEEE transactions on visualization and computer graphics 16.6 (2010): 1139-1148. [pdf Links to an external site.]
+Proposal Requirements
+
+Provide a written proposal describing what you will communicate using storytelling and a plan of how you will achieve this. It should include a description of the advanced visualization design that you will use to share this story.  The proposal should also mention the choice of storytelling structures that will be used to draft this story, as well as an explanation of why you chose it and how you plan to use it.
+
+Introduction
+
+Your proposal should begin with an introduction explaining the dataset(s) you plan to use and the story you intend to communicate. Are you explaining a concept, sharing new findings, or exploring a relationship between data points? If multiple datasets are needed, list them and describe how they support your narrative. Think about who would be the target audience of your story, if not novices. Your storytelling design should address making unfamiliar concepts easy to understand and provides some supports for scaffolding the audience into more complex ideas and topics. For example, if you have a novel visualization or a visual metaphor, you need to introduce it to the audience, similar to a character introduction. There are many ways to achieve this, just try to not jump the audience into a state where they are tunneled in on decoding what your visualization is and how it works rather than following the narrative point.  Similarly, if you are explaining a relationship between climate change and biodiversity, you should explain what biodiversity is briefly.
+
+Advanced visualization description
+
+Provide a detailed description of the advanced visualization that will serve as the main focus of your story—the “main character.” Include either a sketch or an image using illustration software to present your preliminary visualization design. Explain how this design should be interpreted. Discuss how your visualization will behave (e.g., animations, interactions).
+
+It is encouraged that you try to design and create a visual metaphor. However, you may adjust and adapt existing visualizations to serve your storytelling needs. You must have one advanced visualization as the main feature of your story.  The key expectations for this visualization are that (1) it is visually engaging and adheres to the visualization design principles you have learned (2) some component of the visualization should be "new" (e.g. an encoding, interaction design, or animated transition), and (3) the design is effective at communicating the narrative points from your selected dataset. Outside of that visualization, you are free to use anything else (e.g. photoshop, illustrator, Maya, etc) to enhance and embellish your story. Make sure you provide citations for all external tools used.
+
+Storytelling structure
+
+Choose one of the storytelling structures (Martini Glass, Interactive Slideshow, or Drill-Down) as the foundation for your story. Explain why you selected that structure and how it will help you guide the audience through your visualization. Discuss how you’ll transition between narrative points, how you’ll use text, annotations, or animations, and how you’ll engage and direct the audience’s attention throughout the story.
+
+Proposal Outline
+
+    In your proposal describe what you seek to convey.
+        Explore and analyze your dataset to find some interesting aspects or findings worth sharing (motives/objectives).
+        You may list some driving applications if there are any (background & related work).
+    The story must feature at least one programmatically-generated visual representation of data
+        This visual representation must be the main visual focus of the story (i.e. the main character). This representation can be a visual metaphor, a glyph, or some advanced visualization.
+        Describe your visualization idea through a sketch and explain how it will behave.
+        It can be accompanied and supported by auxiliary visualizations or alternative assets to help support the story and advance to the next part.
+     How will you convey this story?
+        What storytelling structure will you use as a starting point (Interactive Slideshow, Martini-Glass, Drill-Down)?
+            Explain why you picked that structure.
+        Provide a storyboard or written outline of how you will present this information.
+            What type of visual encoding(s) you will use, how will you help direct the audience's attention from story point to story point.
+            What is the best sequence you can order these findings to effectively communicate them?
+            Do you need to provide context or explain certain aspects so that the audience will be able to follow along?
+            How will you transition between points?
+
+Proposal Presentation
+
+After drafting your proposal, you will present it to the class in the week of November 4th to receive feedback on your narrative approach and visualization design from your peers and instructor. Following the presentation, you’ll have one week to revise your proposal based on the feedback you receive before submitting the final version.
+Proposal Submission
+
+Your final proposal should integrate any revisions based on the class feedback. Make sure your narrative is clear, your visualization design is refined, and the chosen storytelling structure effectively communicates your findings or insights.

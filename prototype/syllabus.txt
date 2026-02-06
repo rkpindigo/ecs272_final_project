@@ -1,0 +1,234 @@
+
+ECS272 - Visualization
+
+ECS272 Information Visualization
+
+In this class, you will learn about information visualization  (InfoVis) techniques and their applications in a variety of fields. Through lectures and doing homework assignments and projects, you will learn and practice how to derive a visualization solution by integrating data analysis methods, visualization techniques, findings in human visual perception studies, concepts and principles in art, and ideas found in several other areas. While this is an introductory course, students are also expected to read research papers. You can take this class if you have received undergraduate training in computer science. However, if you have taken ECS163, ECS164, ECS171, ECS175, or ECS177 (or equivalent), you will likely be able to pursue advanced InfoVis topics for your final project.
+
+Lecture Time: 09:00 - 10:20am Tuesday and Thursday
+
+Location: Hoagland Hall 113
+
+Instructor: Kwan-Liu Ma, 2121 Kemper
+
+Instructor Office Hours: by appointment (ma@cs.ucdavis.edu) [Zoom Link Links to an external site.]
+
+Teaching Assistant: Yun-Hsin Kuo (yskuo@ucdavis.edu), 1105 Kemper
+
+TA Office Hours: 10:00-12:00pm Wednesdays [Zoom Link Links to an external site.] (starting 1/14)
+
+GitHub Repository for Programming Assignments https://github.com/VIDITeaching/ECS272-Winter2026 Links to an external site.
+
+Discussion Campuswire Links to an external site. (code: 8323)
+
+We encourage active participation by posting and answering questions on our Campuswire. If you're exceptionally helpful to other students, we'll consider you for extra credit.
+
+
+
+Textbook:
+
+There is no textbook, but you may find these sources helpful for this class:
+
+1. Visualization Analysis and Design, Tamara Munzner, A K Peters/CRC Press, December 2014 (UC e-Resources)
+
+2. D3.js v7 tutorials and guides [link Links to an external site.]
+
+Additional Tutorials:
+
+This page Links to an external site. has a list of resources and tutorials on Javascript and D3
+
+
+
+Grading Breakdown:
+
+    HW Assignment 1.            5%
+
+    HW Assignment 2          15%
+
+    HW Assignment 3          20%
+
+    Reading Reports.             14%
+
+    Final Project                    35%
+
+    Workshops                        6%
+
+    Attendance                        5%
+
+
+
+Schedule
+
+Week 1: January 5
+
+1/06: Lecture: Course Overview
+
+1/06: Lecture: Introduction to Visualization
+
+1/06: Reading 1 assigned
+
+          Chapter 1 What's Vis, and Why Do it? (page 1-20), Visualization Analysis & Design,
+
+                Tamara Munzner, CRC Press, 2014 [UC e-resources]
+
+Views on Visualization. J.J. van Wijk. IEEE TVCG 12(4), p. 421-432, 2006 [pdf Links to an external site.]
+
+
+
+1/08: Lecture: Visualization programming, environments, and homework walkthroughs. (Yun-Hsin)
+
+1/08: HW1 assigned (1 week)
+
+1/09: Reading Report 1 due 11:55pm
+
+
+
+Week 2: January 12
+
+
+
+1/13: Lecture: Data Types, Marks and Channels
+
+1/13: Reading 2 assigned
+
+The Science of Visual Data Communication: What Works, S. Franconeri et al., Psychological Science in the public interest 2021 [pdf ] (pages 1 -- 15 , stop at the section titled "How to design a perceptually efficient vis")
+
+
+
+1/15: Lecture: Visual Encoding
+
+1/15: HW1 due 11:55pm
+
+1/15: HW2 assigned (two weeks)
+
+1/16  Reading Report 2 due 11:55pm
+
+
+
+Week 3: January 19
+
+
+
+1/20: Lecture: Visual Encoding Design Workshop  (Yun-Hsin)
+
+1/20: Reading 3 assigned
+
+The Science of Visual Data Communication: What Works, S. Franconeri et al., Psychological Science in the public interest 2021  [pdf ] (pages 15-End)
+
+(or)
+
+          Evaluating Interactive Graphical Encodings for Data Visualization. Bahador Saket et al. IEEE Transactions on Visualization and Graphics 24(3):1316-1330  (2018) [pdf Links to an external site.]
+
+
+
+1/22: Lecture: Generative AI and Visualization  I
+
+1/23: Reading Report 3 due 11:55pm
+
+
+
+Week 4: January 26
+
+
+
+1/27: Lecture: Generative AI and Visualization  II
+
+1/27: Reading 4 assigned
+
+          Doom or deliciousness: Challenges and opportunities for visualization in the age of generative models. Schetinger, V., Di Bartolomeo, S., El‐Assady, M., McNutt, A., Miller, M., Passos, J. P. A., & Adams, J. L. Computer Graphics Forum. Vol. 42. No. 3. 2023. [pdf Links to an external site.]
+
+
+
+1/29: Lecture:  Space I
+
+1/29: HW2 due 11:55pm
+
+1/30: HW3 assigned (2 weeks)
+
+1/30: Reading Report 4 due 11:55pm
+
+
+
+Week 5: February 2
+
+
+
+2/03: Lecture: Space II
+
+2/03: Reading 5 assigned
+
+             Mapping Color to Meaning in Colormap Data Visualizations. Karen B. Schloss et al., In Proceedings of InfoVis 2018 [pdf Links to an external site.]
+
+2/04: Final Project Team due 11:55pm
+
+           Enter your team here Links to an external site.
+
+2/05: Lecture: Color
+
+2/06: Reading Report 5 due 11:55pm
+
+
+
+Week 6: February 9
+
+2/10: Lecture: Visual Storytelling (Yun-Hsin)
+
+2/10:  Reading 6 assigned
+
+Subjectivity in personal storytelling with visualization. Information Design Journal. S. Carpendale, A. Thudt, C. Perin, and W. Willett.  IEEE Transactions on Visualization and Computer Graphics 23(1):48-64 (2017). [pdf ]
+
+(or)
+
+More Than Telling a Story: Transforming Data into Visually Shared Stories. B. Lee, N. H. Riche, P. Isenberg and S. Carpendale. IEEE Computer Graphics and Applications 35(5):84-90 (2015) [pdf]
+
+
+
+2/12: Leture: Storytelling Workshop  (Yun-Hsin)
+
+2/12: HW3 due 11:55pm
+
+2/13: Reading Reports 6 due 11:55pm
+
+
+
+Week 7: February 16
+
+2/17: Final project proposal presentations
+
+2/19: Final project proposal presentations
+
+
+
+Week 8: February 23
+
+2/23: Final Project Proposal due 11:55pm
+
+2/24: Lecture: Interaction Techniques
+
+2/24: Reading 7 assigned
+
+             A Nested Model for Visualization Design and Validation. Tamara Munzner. In Proceedings of InfoVis 2009. [pdf Links to an external site.]
+
+2/26: Lecture:  Evaluation
+
+2/27: Reading Reports 7 due 11:55pm
+
+
+
+Week 9: March 2
+
+3/03:  Lecture: Select HW3 Presentations
+
+3/05:  Lecture: Graph and Network Visualization
+
+
+
+Week 10: March 9
+
+3/10: Lecture:  Text Visualization
+
+3/12  Final project presentations in 1105 Kemper Hall, 9am-12pm
+
+           Sign up for your presentation here Links to an external site. or submit a video presentation.
+
+3/12: Final Project including video presentation, source code and  report due 11:55pm

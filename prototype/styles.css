@@ -1,0 +1,165 @@
+:root {
+  --bg: #f5f2ea;
+  --ink: #1b1b1b;
+  --muted: #5b5b5b;
+  --accent: #b21f2d;
+  --accent-2: #1f6fb2;
+  --panel: #ffffff;
+  --grid: #ded8c9;
+  --border: #c9c2b4;
+  --shadow: rgba(0, 0, 0, 0.08);
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --sans: "Work Sans", "Avenir", "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--sans);
+  color: var(--ink);
+  background: radial-gradient(circle at 15% 15%, #fff7e8 0%, #f5f2ea 45%, #f0ede4 100%);
+}
+
+.page-header {
+  padding: 32px 24px 8px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.page-header h1 {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  letter-spacing: 0.3px;
+}
+
+.subtitle {
+  margin: 0 0 12px 0;
+  color: var(--muted);
+}
+
+main {
+  padding: 16px 20px 48px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.chapter {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 4px 18px var(--shadow);
+}
+
+.chapter h2 {
+  margin: 0 0 12px 0;
+  font-size: 20px;
+}
+
+.chapter-meta {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  background: #f7f4ee;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+
+.chart {
+  width: 100%;
+  min-height: 320px;
+  position: relative;
+}
+
+.chart .chart-title {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 6px 0;
+}
+
+svg {
+  width: 100%;
+  height: 100%;
+}
+
+.axis path,
+.axis line {
+  stroke: var(--grid);
+}
+
+.grid line {
+  stroke: var(--grid);
+  stroke-opacity: 0.6;
+}
+
+.label {
+  font-size: 12px;
+  fill: var(--muted);
+}
+
+.legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.legend .item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toggle-btn {
+  border: 1px solid var(--border);
+  background: #f9f6ef;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.toggle-btn.active {
+  background: #1b1b1b;
+  color: #ffffff;
+  border-color: #1b1b1b;
+}
+
+.chart .toggle-btn {
+  font-family: var(--sans);
+}
+
+.tooltip {
+  position: fixed;
+  pointer-events: none;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  color: var(--ink);
+  box-shadow: 0 2px 8px var(--shadow);
+  z-index: 10;
+}
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.page-footer {
+  padding: 16px 24px 32px 24px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 800px) {
+  .chapter-meta { font-size: 13px; }
+  .page-header h1 { font-size: 22px; }
+}
