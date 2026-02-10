@@ -1,0 +1,727 @@
+# ECS272 | Project Meeting 2
+
+## Action Items
+
+- Use the TA‑provided React/TypeScript template for the project
+- Push the initial React app to the shared GitHub repo (copy over existing code)
+- Build a stacked‑area (or stream) chart showing Oscar nominee/recipient trends over time
+- Investigate a dataset that includes Oscar nominees’ ages (query the Oscars website if possible)
+- Prepare a bar‑to‑line chart interaction: click a bar to reveal a detailed time‑series line chart
+- Schedule the next check‑in for Monday at 6 PM (after class)
+
+## Project Planning & Repo Setup
+
+- Everyone to share GitHub usernames in the chat
+- Invitations will be sent to all contributors
+- Work on individual visualizations in separate files, then combine later
+- React app already created with TypeScript; need to sync with repo
+
+## Data Exploration
+
+- Looking for a comprehensive Oscar dataset (nominees, winners, ages)
+- Oscar website has a query tool, but extracting full nominee list with ages is unclear
+- Current data includes best actor/actress winners with ages up to 2005
+- Need to decide whether to pull all nominees or just winners for analysis
+
+## Visualization Ideas
+
+- **Bar → Line Interaction**: bar chart for overview, click to show detailed line chart (time series)
+- **Spider/Radar Chart**: visual appeal for race‑category breakdown, but may be hard to read
+- **Stacked Area / Stream Graph**: preferred for showing trends over time, more functional than spider chart
+- **Pie Chart**: considered for aesthetic purposes, but less informative for time‑based data
+- **Legend Hover Highlight**: hover over race or gender in legend to emphasize corresponding polygon in radar chart
+- **Gradient Table**: use color gradients to represent percentages of winners by race/gender instead of bars
+
+## Interaction & UI Details
+
+- Slider for year range (e.g., 1990–1992) to filter data dynamically
+- Hover tooltips to display exact counts/percentages for each race or gender segment
+- Possible Sankey‑style flow diagram to trace nominees → recipients by category and race
+- Option to show side‑by‑side comparisons pre‑ and post‑2015 for gender/race metrics
+
+## Presentation & Timeline
+
+- Central “bubble plot” will be the main chart updated throughout the project
+- Animations and transitions to be added later; focus now on static visualizations
+- Proposal due around mid‑October (week 17/19 of the semester)
+- Final check‑in scheduled for Monday at 6 PM to review progress and merge work
+
+## Miscellaneous
+
+- Brief chat about a game jam project and related YouTube playthroughs (no action needed)
+- Meeting wrapped up with thanks and good night wishes.
+
+Pablo [0:00]: okay and then given a template like planning to use that i think for one of the homeworks
+Pablo [0:04]: what did you say sorry
+Pablo [0:07]: so the t has given template
+Pablo [0:17]: i think for one of the homeworks for one of the homeworks we had used the given template right so i'll be planning to use that itself
+Pablo [0:24]: which homework are you talking which template
+Pablo [0:33]: so i think she has given some templates like react template then other tools
+Pablo [0:40]: for that repurpose those templates yeah maybe we can use that
+Pablo [0:43]: yeah sure we can do that
+Pablo [0:50]: yeah and then we can yeah yeah you can do code
+Pablo [0:55]: what are your guys'github usernames
+Pablo [0:58]: yeah should i put it in the chat box
+Pablo [1:19]: okay
+Pablo [1:21]: you should be invited
+Pablo [1:24]: thank you
+Pablo [1:31]: okay i didn't get to see what you guys added but bubble plot
+Pablo [1:36]: music other
+Pablo [1:52]: cool what's prr
+Pablo [1:54]: that's just minus is that your name
+Pablo [1:55]: okay
+Pablo [1:59]: what's your middle name
+Pablo [2:03]: are robert rodrigue okay
+Pablo [2:06]: pablo rodrigo rodriguez
+Pablo [2:17]: figured out how to best group a word categories
+Pablo [2:23]: since there's so many and many variations of the same
+Pablo [2:24]: two
+Pablo [2:41]: converts up to two thousand five
+Pablo [2:43]: does it
+Pablo [2:49]: unlike
+Pablo [2:49]: the other
+Pablo [2:50]: data
+Pablo [3:16]: base
+Pablo [3:31]: x
+Pablo [3:31]: y
+Pablo [3:35]: it was that one okay
+Pablo [3:48]: yeah i see now
+Pablo [3:55]: wait is this the
+Pablo [3:57]: best actors and actresses
+Pablo [3:57]: one
+Pablo [4:16]: and that's the only one that has ages
+Pablo [4:21]: okay
+Pablo [4:29]: yeah it goes up to two thousand five okay
+Pablo [4:51]: the
+Pablo [4:51]: really big one
+Pablo [4:52]: that's an x
+Pablo [4:53]: lp
+Pablo [4:59]: thousand years
+Pablo [5:03]: category gender nature
+Pablo [6:13]: i'm trying to find a data set that would have this
+Pablo [6:30]: yeah but even then
+Pablo [6:40]: even then it's like it's only for the best actor actress winners right
+Pablo [7:05]: right i know you can query there's a query system
+Pablo [7:07]: on the oscars website
+Pablo [7:11]: to get like the ages of academy
+Pablo [7:12]: nominees
+Pablo [7:16]: academy award nominees
+Pablo [7:20]: i
+Pablo [7:22]: don't see
+Pablo [7:24]: where you can do that
+Pablo [7:26]: in the data set
+Pablo [7:36]: like i don't see how you can like pull the data set from that because i don't want to do that for like
+Pablo [7:39]: every single nominee or whatever
+Pablo [7:49]: okay wait
+Pablo [7:53]: hold on
+Pablo [8:04]: display results by yeah maybe
+Pablo [8:51]: my wi fi is kind of laggy but i was i was looking at this link
+Pablo [8:53]: and trying to see if i could
+Pablo [9:00]: excuse me trying to see if i can pull
+Pablo [9:07]: a list of all the oscar nominees from it along with their ages because i i think you can do that
+Pablo [9:08]: from the query tool
+Pablo [9:09]: that they have
+Pablo [9:16]: but like tabling that to the side for now let me see what else you guys wrote
+Pablo [9:24]: open up bar chart i kind of like this lord lin chart thing but we can also do a bar chart
+Pablo [9:37]: i do also like the line chart thing but i'm afraid that it's like
+Pablo [9:40]: going to be a bit too basic
+Pablo [9:48]: although i guess the bar chart is also yeah let's we can see what
+Pablo [9:49]: okay
+Pablo [10:07]: oh sorry because oh i thought i thought that the line chart thing would be too basic
+Pablo [10:13]: because you're displaying it alongside a connected scatter plot already
+Pablo [10:20]: yeah but i think even a bar chart like so
+Pablo [10:31]: i think i think the better idea would be do a bar chart and then if if someone clicks on the bar chart
+Pablo [10:33]: we can like
+Pablo [10:37]: go to a view with the line chart
+Pablo [10:41]: because line chart obviously contains more information it's a time series thing
+Pablo [10:48]: so if someone's interested in like the gender disparity stuff they can click on that
+Pablo [10:50]: but if
+Pablo [10:53]: they if they aren't then they don't have to see this chart
+Pablo [11:07]: then
+Pablo [11:17]: let's see
+Pablo [11:27]: agent generalist for some reason
+Pablo [11:34]: transition to spider radar chart with polygons being races and edges being oscar categories
+Pablo [11:47]: we do a stacked area over time alternative though yeah even i was thinking that like instead of a spider or raider chart like a stag area where race all the interest
+Pablo [11:52]: sometimes it's difficult to like read or interpret from
+Pablo [11:53]: the spider chart
+Pablo [11:58]: yeah i really like the spider chart though i think it looks really cool
+Pablo [12:02]: it's very visually appealing absolutely
+Pablo [12:09]: for the
+Pablo [12:10]: races
+Pablo [12:22]: yeah i think we first i think you could just like make them bigger right you could just scale them up
+Pablo [12:25]: the scale depends on whatever we say it is
+Pablo [12:27]: so it's not like
+Pablo [12:29]: well
+Pablo [12:30]: because like the black pol
+Pablo [12:31]: ygon is the
+Pablo [12:31]: light
+Pablo [12:32]: or
+Pablo [12:35]: oh it is okay
+Pablo [12:35]: yeah
+Pablo [12:36]: that's what i mean
+Pablo [12:40]: okay
+Pablo [12:43]: overwhelming majority
+Pablo [12:45]: okay
+Pablo [13:08]: i think i think the stacked areas thing is kind of like
+Pablo [13:15]: like i think
+Pablo [13:22]: better than either of these in terms of functionality i think a pie chart would work pretty well
+Pablo [13:30]: but like i think for aesthetic purposes i do prefer the spider radar
+Pablo [13:33]: chart a bit more
+Pablo [13:34]: yeah
+Pablo [13:38]: also i did a stacked area over time chart
+Pablo [13:40]: for my second homework so i'm a bit bored of that
+Pablo [13:42]: i
+Pablo [13:43]: like the idea of
+Pablo [13:44]: somehow being able to click
+Pablo [13:45]: on one
+Pablo [13:47]: and be
+Pablo [14:01]: i think i think maybe you could have like a legend
+Pablo [14:06]: to the side of
+Pablo [14:24]: either like for either of these charts you would want a legend to the side of the chart and then you could like hover over items in the legend to like highlight them like if you wanted to look at like white people then it would highlight the white polygon only if you wanted to look
+Pablo [14:28]: at like asians it would highlight the asian polygon only
+Pablo [14:33]: doesn't really solve the issue though yeah it's a it's a good detail though
+Pablo [14:56]: but yeah
+Pablo [15:00]: i'm leaning towards
+Pablo [15:08]: i guess many are nominees and how many are participants
+Pablo [15:14]: i'm leaning towards i'm still talking about
+Pablo [15:17]: the
+Pablo [15:21]: i i think
+Pablo [15:24]: the stacked area over time thing
+Pablo [15:28]: because that does represent like time stuff okay
+Pablo [15:36]: how how about instead of
+Pablo [15:40]: a okay so either we do a spider radar chart
+Pablo [15:43]: or we do a pie chart
+Pablo [15:46]: and then when you click on
+Pablo [15:49]: when you click on the yeah
+Pablo [15:54]: and the second
+Pablo [15:55]: one the later half i don't know
+Pablo [15:56]: you
+Pablo [15:57]: could tell
+Pablo [15:58]: because
+Pablo [15:59]: it would
+Pablo [16:00]: zoom out
+Pablo [16:03]: so like the left side is up until nineteen eighty nine
+Pablo [16:04]: at the right
+Pablo [16:05]: side it didn't
+Pablo [16:09]: oh that's interesting
+Pablo [16:11]: why did that happen
+Pablo [16:22]: well i mean like that's just one way to show the years go by right because otherwise the spiders don't really have a wind
+Pablo [16:27]: to show the progression back area doesn't
+Pablo [16:32]: yeah yeah yeah but like
+Pablo [16:39]: i was thinking like it's the same concept as with the bar chart to line chart thing
+Pablo [16:44]: like the initial diagram
+Pablo [16:47]: is simplified to not include time as a variable
+Pablo [16:58]: but if you click on it you can get a separate graph that does include time as a variable
+Pablo [17:05]: but that that that might be a bit too much
+Pablo [17:09]: but i'm saying so
+Pablo [17:14]: i'm saying for the stack
+Pablo [17:16]: ed area chart
+Pablo [17:22]: instead of that we could try doing a stream graph
+Pablo [17:26]: it's basically like the same concept
+Pablo [17:27]: it just like looks cooler
+Pablo [17:35]: like have you seen a stream graph
+Pablo [17:42]: yeah same yeah
+Pablo [17:54]: it gives you the same information as a stacked area chart but it just looks more visually appealing yeah it looks nice yeah
+Pablo [18:01]: okay yeah
+Pablo [18:11]: but yeah
+Pablo [18:14]: we we don't have to do
+Pablo [18:20]: the oh click on this thing to include time series as
+Pablo [18:25]: an independent variable thing
+Pablo [18:28]: i i think i interrupted you popular sorry what were you saying before
+Pablo [18:30]: i guess
+Pablo [18:31]: i was thinking
+Pablo [18:36]: i don't know
+Pablo [18:37]: in my
+Pablo [18:37]: head it made sense
+Pablo [18:39]: the opposite direction
+Pablo [18:42]: where you'd have the time one
+Pablo [18:46]: and then you could focus in on a specific year in which
+Pablo [18:50]: all the time wouldn't be a variable with that specific year
+Pablo [18:51]: results
+Pablo [18:53]: right
+Pablo [18:54]: oh i see
+Pablo [18:57]: so you could
+Pablo [19:06]: type in like a specific year or select or like hover your mouse over a specific year and then there would be a spider radar chart
+Pablo [19:08]: for that specific year
+Pablo [19:15]: okay
+Pablo [19:20]: that's interesting i like that
+Pablo [19:30]: it might be a little
+Pablo [19:32]: much
+Pablo [19:35]: but
+Pablo [19:42]: well i mean this is this is like a separate screen in itself because once we do the gendered stuff
+Pablo [19:46]: like we're done with that
+Pablo [19:48]: so this is a new yeah yeah we'll figure it out
+Pablo [19:54]: okay
+Pablo [19:58]: how many are nominees and how many are recipients
+Pablo [20:03]: okay who benefits from the progress
+Pablo [20:10]: have extra spider radar chart i don't know into ideas here
+Pablo [20:31]: i think i think for how many are nominees
+Pablo [20:32]: how many risks
+Pablo [20:32]: then
+Pablo [20:38]: could be a bit more boring about this
+Pablo [20:39]: and just go listen
+Pablo [20:39]: bar charts
+Pablo [20:45]: okay the bar charts have
+Pablo [20:45]: to encode time
+Pablo [20:46]: as well
+Pablo [20:46]: okay
+Pablo [20:51]: let's do something
+Pablo [20:54]: like
+Pablo [20:56]: narrows from the nominees
+Pablo [21:04]: what type of chart would it be
+Pablo [21:07]: like
+Pablo [21:16]: narrows from the normal needs to be the start with the nominees and then we narrow it down
+Pablo [21:17]: to give
+Pablo [21:17]: a notch
+Pablo [21:20]: instead of this
+Pablo [21:21]: because
+Pablo [21:23]: the simplest thing
+Pablo [21:24]: that we think
+Pablo [21:24]: of as the part char
+Pablo [21:25]: t
+Pablo [21:33]: do you have like a picture
+Pablo [22:17]: you know which do you
+Pablo [22:18]: maybe
+Pablo [22:20]: not
+Pablo [22:22]: i
+Pablo [22:24]: get
+Pablo [22:25]: something
+Pablo [22:26]: i can't visualize
+Pablo [22:27]: it
+Pablo [22:32]: maybe
+Pablo [22:38]: i was imagining something like a sankey or luteal diagram
+Pablo [22:50]: something like this
+Pablo [22:52]: but with a more defined shape
+Pablo [22:52]: i don't know
+Pablo [22:59]: y
+Pablo [23:00]: eah yeah
+Pablo [23:01]: it would be
+Pablo [23:07]: avoidance
+Pablo [23:16]: yeah maybe on the left side
+Pablo [23:18]: it would be like the categories
+Pablo [23:20]: and then the middle
+Pablo [23:22]: would
+Pablo [23:28]: like if you're a nominee or recipient
+Pablo [23:32]: and then
+Pablo [23:33]: it would be
+Pablo [23:34]: like
+Pablo [23:38]: on the left side would be the categories and the middle side it would be like
+Pablo [23:40]: trace
+Pablo [23:43]: and then on the right side
+Pablo [23:45]: if you're a nominee or resilient
+Pablo [23:50]: so you would be getting
+Pablo [23:56]: how
+Pablo [23:57]: many
+Pablo [24:00]: of those categories are ticking up
+Pablo [24:03]: by which race
+Pablo [24:06]: and then at the same time on the same chart
+Pablo [24:07]: you would also be showing
+Pablo [24:10]: how many each race
+Pablo [24:12]: is either nominee or restricted
+Pablo [24:25]: also by this like having anomalies and how many are testables like do you want to show percentage
+Pablo [24:29]: or cover over them and tells you the numbers
+Pablo [24:33]: we don't need to
+Pablo [24:36]: part of them it's too much
+Pablo [24:37]: too many
+Pablo [24:38]: numbers
+Pablo [24:41]: if they hover over
+Pablo [24:44]: the wavy lines
+Pablo [24:46]: they'll get
+Pablo [24:48]: exactly how
+Pablo [24:49]: many
+Pablo [24:51]: of
+Pablo [24:52]: those or whatever
+Pablo [25:00]: graph
+Pablo [25:01]: like kind of
+Pablo [25:01]: three of that
+Pablo [25:03]: does that make sense
+Pablo [25:11]: maybe i
+Pablo [25:12]: can
+Pablo [25:14]: i
+Pablo [25:15]: don't know
+Pablo [25:30]: i'm trying to draw
+Pablo [25:31]: some shampoo
+Pablo [25:34]: drive
+Pablo [25:35]: as this thing
+Pablo [25:39]: this is
+Pablo [26:08]: i was saying something like
+Pablo [26:09]: this
+Pablo [26:10]: so i actually
+Pablo [26:16]: give me a second
+Pablo [26:26]: will be nor
+Pablo [26:28]: mally and it will be proportional
+Pablo [26:30]: to the people who got nominated
+Pablo [26:47]: by this
+Pablo [27:01]: yeah exactly like that
+Pablo [27:08]: okay so you're thinking like
+Pablo [27:18]: okay
+Pablo [27:21]: so i'm looking at your idea
+Pablo [27:26]: so what would the black
+Pablo [27:26]: artist be
+Pablo [27:31]: so we talk would be the nominal
+Pablo [27:34]: portion to the people who
+Pablo [27:34]: got complicated
+Pablo [27:36]: and the download would be
+Pablo [27:38]: the length of the bar would be in prop
+Pablo [27:39]: ortional to the number
+Pablo [27:52]: okay
+Pablo [27:59]: is inclusive in the list of nominees
+Pablo [28:01]: yeah
+Pablo [28:01]: i am
+Pablo [28:15]: on the data set are they actually left segregated
+Pablo [28:19]: true or
+Pablo [28:19]: false
+Pablo [28:20]: variable
+Pablo [28:20]: i'm pretty sure
+Pablo [28:25]: okay
+Pablo [28:31]: something like written
+Pablo [28:38]: you can have like a slider for the ears like
+Pablo [28:39]: ninety ninety two
+Pablo [28:40]: and
+Pablo [28:42]: as the user does
+Pablo [28:45]: updates
+Pablo [28:47]: with the number of companies and the number
+Pablo [28:49]: of like a particular
+Pablo [28:53]: range and for that particular
+Pablo [29:08]: i like this idea
+Pablo [29:11]: i
+Pablo [29:12]: think
+Pablo [29:13]: i think it would get a little chaotic
+Pablo [29:16]: section
+Pablo [29:18]: because there are more than two races
+Pablo [29:22]: do you think it would work for the gendered section
+Pablo [29:26]: that's what i was speaking
+Pablo [29:27]: very how we can make
+Pablo [29:29]: it work
+Pablo [29:31]: i think
+Pablo [29:33]: this works better
+Pablo [29:35]: for
+Pablo [29:36]: the gendered section
+Pablo [29:38]: of the
+Pablo [29:53]: yeah
+Pablo [29:57]: this can work
+Pablo [29:59]: for
+Pablo [30:03]: the no
+Pablo [30:04]: minees to end recipient
+Pablo [30:06]: the race
+Pablo [30:18]: okay
+Pablo [30:23]: problem they change all of the supporters
+Pablo [30:24]: to deal differently
+Pablo [30:39]: who benefits progress
+Pablo [30:40]: age
+Pablo [30:42]: nda metrics cognitive share winners
+Pablo [30:44]: supposed to be
+Pablo [30:48]: in network
+Pablo [30:48]: updates
+Pablo [30:51]: what's the race gender matrix
+Pablo [30:54]: so as in like for example
+Pablo [30:56]: the
+Pablo [30:59]: x axis like horizontally
+Pablo [31:00]: on the y axis
+Pablo [31:01]: you have
+Pablo [31:03]: all the races
+Pablo [31:06]: and people who are like for example
+Pablo [31:07]: white men
+Pablo [31:09]: like there you have a percentage for
+Pablo [31:11]: white women like you have a percentage
+Pablo [31:15]: and lighter it is
+Pablo [31:16]: it shows
+Pablo [31:18]: fewer winners like that's how
+Pablo [31:19]: you can adjust the
+Pablo [31:19]: scaling
+Pablo [31:20]: so main idea
+Pablo [31:22]: here is to show the distribution
+Pablo [31:25]: of oscar winners move forward
+Pablo [31:26]: twenty fifteen
+Pablo [31:27]: and after twenty
+Pablo [31:27]: eighteen
+Pablo [31:29]: and how
+Pablo [31:31]: it went how it depends on the days and
+Pablo [31:32]: the gender
+Pablo [31:36]: so when the user pre two thousand and fifteen
+Pablo [31:41]: there will be a different way it's like a percentage for
+Pablo [31:43]: the rates as well as the gender
+Pablo [31:46]: and after the select post two thousand and fifteen
+Pablo [31:47]: it will update you like new number
+Pablo [31:48]: s after twenty
+Pablo [31:49]: fifteen
+Pablo [31:54]: idea
+Pablo [31:59]: so something like this
+Pablo [32:04]: would be
+Pablo [32:09]: forty three percent
+Pablo [32:17]: and
+Pablo [32:20]: instead of actual table like
+Pablo [32:26]: sort of this
+Pablo [32:31]: or you can show gradients also like instead of showing par seventy eight percent
+Pablo [32:32]: will have a darker color
+Pablo [32:35]: whereas zero point one percent will have a lighter shade
+Pablo [32:37]: so it's not like
+Pablo [32:38]: showing
+Pablo [32:39]: a bar
+Pablo [32:40]: over there
+Pablo [32:52]: i
+Pablo [32:53]: like gradient
+Pablo [33:29]: but like it would just be a table
+Pablo [33:30]: like i
+Pablo [33:30]: did
+Pablo [33:33]: i like the gradients
+Pablo [33:35]: thing i think the table thing is that
+Pablo [33:36]: a little too simplistic
+Pablo [33:37]: yeah
+Pablo [33:42]: instead of containable light
+Pablo [33:43]: okay
+Pablo [33:43]: sorry
+Pablo [33:44]: go on
+Pablo [33:58]: something
+Pablo [33:59]: like this
+Pablo [34:03]: and then you'll have
+Pablo [34:05]: the names of
+Pablo [34:06]: the
+Pablo [34:39]: i still do feel action
+Pablo [34:40]: correct
+Pablo [34:54]: yeah
+Pablo [34:54]: okay
+Pablo [35:01]: we can do that i feel like it still needs to be at
+Pablo [35:03]: more interact
+Pablo [35:04]: able
+Pablo [35:04]: yeah
+Pablo [35:11]: maybe we can do something
+Pablo [35:12]: like
+Pablo [35:13]: once you have
+Pablo [35:16]: one particular block
+Pablo [35:25]: and then nominations before and after hashtag
+Pablo [35:26]: show percentage of the
+Pablo [35:29]: nominal mentions side by side until
+Pablo [35:31]: twenty fifteen and after twenty fifteen
+Pablo [35:35]: link both of them somehow acknowledge
+Pablo [35:36]: and
+Pablo [35:37]: the latest gender
+Pablo [35:44]: yeah
+Pablo [35:48]: the pre pre in post twenty fifteen are before and after the hashtag yeah
+Pablo [35:54]: we could have
+Pablo [35:55]: side by side
+Pablo [35:58]: and close to the
+Pablo [35:59]: bubble
+Pablo [36:05]: nomin
+Pablo [36:06]: ation
+Pablo [36:39]: from the previous line chart the dashed lines are the nominations the black line is white the green one i think female and yellow one is just non white
+Pablo [36:41]: over
+Pablo [36:41]: all
+Pablo [36:44]: so
+Pablo [36:45]: like
+Pablo [36:47]: that's technically the data that we have
+Pablo [36:51]: for said question techno
+Pablo [37:04]: way to like make it more interactive because
+Pablo [37:06]: again the combinations
+Pablo [37:07]: like you just have a chart
+Pablo [37:09]: some
+Pablo [37:10]: good
+Pablo [37:11]: current
+Pablo [37:13]: one
+Pablo [37:16]: and
+Pablo [37:19]: you hover over
+Pablo [37:20]: the table and then
+Pablo [37:21]: select the energy
+Pablo [37:22]: of curves
+Pablo [37:24]: it can be
+Pablo [37:25]: a different type of
+Pablo [37:26]: graph just
+Pablo [37:28]: for this technically how the graph
+Pablo [37:35]: after twenty fifteen
+Pablo [37:36]: story
+Pablo [37:40]: after
+Pablo [37:41]: the hashtag
+Pablo [37:42]: yellow
+Pablo [37:44]: dash
+Pablo [37:45]: got higher
+Pablo [38:11]: yes
+Pablo [38:13]: it would be
+Pablo [38:16]: there are a couple of times
+Pablo [38:20]: black then first came and the doctor normally
+Pablo [38:29]: all the individual
+Pablo [38:44]: so there will be like
+Pablo [38:45]: an option
+Pablo [38:45]: to be for example
+Pablo [38:47]: to learn
+Pablo [38:48]: when you get money back
+Pablo [38:49]: like
+Pablo [38:51]: to see a couple of
+Pablo [38:52]: sentences about what the event is
+Pablo [39:15]: cool
+Pablo [39:16]: i
+Pablo [39:17]: like the idea
+Pablo [39:46]: so the timeline is kind of like the summary
+Pablo [40:05]: okay i like
+Pablo [40:05]: that
+Pablo [40:09]: is that
+Pablo [40:10]: okay
+Pablo [40:15]: is that sort of
+Pablo [40:15]: rough
+Pablo [40:16]: script
+Pablo [40:16]: for now
+Pablo [40:22]: i already what is the nearest one average
+Pablo [40:23]: after
+Pablo [40:26]: i have
+Pablo [40:27]: put
+Pablo [40:32]: sol
+Pablo [40:33]: id line the average
+Pablo [40:35]: age with all the dots
+Pablo [40:37]: from
+Pablo [40:38]: the
+Pablo [40:40]: best
+Pablo [40:41]: actors
+Pablo [40:47]: it only goes up fifty thousand
+Pablo [40:48]: five
+Pablo [40:49]: and not up
+Pablo [40:50]: to twenty
+Pablo [40:50]: five
+Pablo [40:54]: this should be in the age section
+Pablo [41:10]: okay now i just go to this is that liquid stock
+Pablo [41:17]: yeah sure we can have an average
+Pablo [41:23]: average stage we really
+Pablo [41:24]: take
+Pablo [41:25]: some information
+Pablo [41:33]: we can put like the
+Pablo [41:34]: next
+Pablo [41:37]: startup plot for the age and averages of the line
+Pablo [41:38]: so both of the information
+Pablo [41:53]: instead of just are you saying only average age or the startup
+Pablo [41:53]: plot
+Pablo [41:55]: with all the ages
+Pablo [42:08]: that sounds good
+Pablo [42:18]: and stevie does what
+Pablo [42:18]: now
+Pablo [42:25]: i want to try
+Pablo [42:29]: doing this fight or radar
+Pablo [42:30]: dent
+Pablo [42:33]: al
+Pablo [42:36]: i'll do the stack area chart
+Pablo [42:36]: with it
+Pablo [42:38]: because i connected
+Pablo [42:40]: properly steam graph the screen draft
+Pablo [42:41]: along with it
+Pablo [42:45]: i'll just highlight this
+Pablo [42:49]: red
+Pablo [42:53]: there
+Pablo [42:53]: we go
+Pablo [43:00]: the time
+Pablo [43:01]: line
+Pablo [43:03]: who
+Pablo [43:04]: benefits from
+Pablo [43:06]: literal docus like before and has
+Pablo [43:06]: htag
+Pablo [43:07]: t because i kind of already
+Pablo [43:09]: looked at
+Pablo [43:11]: it
+Pablo [43:14]: sure
+Pablo [43:20]: what would you want to do
+Pablo [43:24]: thinking something
+Pablo [43:26]: the
+Pablo [43:27]: top
+Pablo [43:28]: to the
+Pablo [43:29]: bubble plot
+Pablo [43:33]: and
+Pablo [43:34]: that line
+Pablo [43:35]: start
+Pablo [43:36]: that i
+Pablo [43:37]: had for
+Pablo [43:40]: the
+Pablo [43:45]: bubble
+Pablo [43:46]: plot because that's
+Pablo [43:47]: the central
+Pablo [43:50]: chart that we keep on coming back to and updating
+Pablo [43:51]: so that's pretty
+Pablo [43:52]: important
+Pablo [44:08]: and you know obviously we'll do
+Pablo [44:09]: all our work on
+Pablo [44:10]: like separate files on the repo
+Pablo [44:21]: so
+Pablo [44:23]: right now we work on these
+Pablo [44:26]: plots separately and then later we'll be combining them
+Pablo [44:26]: right
+Pablo [44:27]: yeah
+Pablo [44:29]: let me
+Pablo [44:29]: see
+Pablo [44:32]: digital
+Pablo [44:33]: ization
+Pablo [44:34]: yeah
+Pablo [44:36]: we'll figure out the animations later
+Pablo [44:42]: our presentation is our art
+Pablo [44:45]: our proposal is on the seventeen
+Pablo [44:45]: th
+Pablo [44:48]: or the nineteenth
+Pablo [44:48]: autumn
+Pablo [44:50]: one of those few days
+Pablo [44:54]: let's
+Pablo [44:55]: see
+Pablo [44:58]: do you want to check in over the weekend
+Pablo [45:02]: i was thinking like either sunday or monday the check in on how
+Pablo [45:03]: our works do
+Pablo [45:04]: it
+Pablo [45:12]: some monday
+Pablo [45:15]: okay if it's monday i would prefer
+Pablo [45:16]: okay
+Pablo [45:24]: fine with me if it's monday i would prefer monday before like three pm
+Pablo [45:26]: okay
+Pablo [45:32]: so we can do monday like two thirty
+Pablo [45:35]: actually
+Pablo [45:40]: i think i have a classic tree and i have an exam at three so two thirty would be difficult
+Pablo [45:41]: for me
+Pablo [45:43]: to examine three
+Pablo [45:44]: then we can we can meet after that
+Pablo [45:46]: then yeah
+Pablo [45:52]: anytime after four thirty works
+Pablo [45:54]: okay
+Pablo [46:01]: then then we can meet at six
+Pablo [46:02]: six p m sure
+Pablo [46:07]: all right
+Pablo [46:07]: cool
+Pablo [46:09]: monday
+Pablo [46:10]: six
+Pablo [46:12]: pm
+Pablo [46:21]: okay
+Pablo [46:26]: so i will be using the template given by
+Pablo [46:27]: the ta right
+Pablo [46:32]: all of our base the react template
+Pablo [46:38]: yeah i already make a react apple typescript that should be in types
+Pablo [46:42]: i already made react
+Pablo [46:47]: could you just copy over
+Pablo [46:49]: the
+Pablo [47:00]: and then just push the changes
+Pablo [47:03]: so that we're all working on the same project
+Pablo [47:22]: oh yeah
+Pablo [47:23]: pablo
+Pablo [47:28]: some other youtuber plot like played our game
+Pablo [47:29]: today
+Pablo [47:32]: yeah yeah
+Pablo [47:35]: yes
+Pablo [47:39]: up
+Pablo [47:46]: it's not hard but like i was making a game jam over the weekend
+Pablo [47:49]: i was out of the game do you know the game jim is
+Pablo [47:51]: yeah
+Pablo [47:59]: i sort of have never done that but i've got it yeah yeah so we me and a couple other people made a game
+Pablo [48:10]: and then some some youtuber ended up playing it in a godlike a decent amount of views oh that's so cool yeah and now another youtuber is playing it
+Pablo [48:15]: oh okay you can send a link
+Pablo [48:19]: hold on
+Pablo [48:24]: copy link
+Pablo [48:27]: this is the most recent one
+Pablo [48:32]: and then
+Pablo [48:48]: this
+Pablo [48:51]: is the first one
+Pablo [48:55]: all right i'll definitely watch that
+Pablo [48:57]: yeah thanks
+Pablo [49:09]: it's a little bit apparently the second link extent
+Pablo [49:19]: yeah he plays a lot of these smaller games
+Pablo [49:22]: and just goes around hunting
+Pablo [49:26]: i get bragging rights
+Pablo [49:30]: okay
+Pablo [49:32]: i think
+Pablo [49:34]: i think that wraps up this meeting
+Pablo [49:40]: sort of
+Pablo [49:41]: like folding
+Pablo [49:43]: yeah yeah yeah
+Pablo [49:44]: thanks
+Pablo [49:46]: just messages when you do
+Pablo [49:49]: yeah
+Pablo [49:51]: good night
+Pablo [49:53]: see you guys on monday good night
