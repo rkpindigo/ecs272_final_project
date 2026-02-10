@@ -25,6 +25,14 @@ export default function RadarChart() {
   const [yearRange, setYearRange] = useState<[number, number]>([1927, 2023]);
   const [dataBounds, setDataBounds] = useState<[number, number]>([1927, 2023]);
 
+  const allRaces = useMemo(
+    () => Array.from(new Set(rawData.map(d => d.Race))).sort(),
+    [rawData]
+  );
+
+  const [selectedRaces, setSelectedRaces] = useState<string[]>([]);
+
+
   // 1. Data Loading with explicit key mapping
   useEffect(() => {
     d3.csv("/data/oscars.csv").then(rows => {
@@ -45,6 +53,20 @@ export default function RadarChart() {
       setYearRange([min, max]);
     });
   }, []);
+
+  useEffect(() => {
+    if (allRaces.length && selectedRaces.length === 0) {
+      setSelectedRaces(allRaces);
+    }
+  }, [allRaces]);
+
+  const toggleRace = (race: string) => {
+    setSelectedRaces(prev =>
+      prev.includes(race)
+        ? prev.filter(r => r !== race)
+        : [...prev, race]
+    );
+  };
 
   // 2. Normalization Logic
   const normalize = (cat: string) => {
@@ -77,7 +99,7 @@ export default function RadarChart() {
 
     // Grouping data by Race then Category
     const countsByRace = d3.rollup(
-      filtered,
+      filtered.filter(d => selectedRaces.includes(d.Race)),
       v => v.length,
       d => d.Race,
       d => normalize(d.Category)
@@ -155,7 +177,7 @@ export default function RadarChart() {
         .text(race);
     });
 
-  }, [rawData, yearRange, allCategories]);
+  }, [rawData, yearRange, allCategories, selectedRaces]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', fontFamily: 'sans-serif', padding: '20px' }}>
@@ -175,6 +197,34 @@ export default function RadarChart() {
           type="range" min={dataBounds[0]} max={dataBounds[1]} value={yearRange[1]} 
           onChange={e => setYearRange([yearRange[0], Math.max(+e.target.value, yearRange[0])])}
         />
+      </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+          gap: "8px",
+          maxWidth: "600px",
+          marginBottom: "20px"
+        }}
+      >
+        {allRaces.map(race => (
+          <label
+            key={race}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              cursor: "pointer"
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={selectedRaces.includes(race)}
+              onChange={() => toggleRace(race)}
+            />
+            {race}
+          </label>
+        ))}
       </div>
       <svg ref={svgRef} width={width} height={height} />
     </div>
