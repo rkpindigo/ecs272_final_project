@@ -26,6 +26,8 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
     const [filter_winner, set_filter_winner] = useState<
         "All" | "Winner" | "Nominee"
     >("All");
+    const [filter_gender, set_filter_gender] = useState<string>("all");
+    const [filter_race, set_filter_race] = useState<string>("all");
     const [selected_category, set_selected_category] = useState<string | null>(
         null,
     );
@@ -48,6 +50,36 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
         return Array.from(set).sort();
     }, [data]);
 
+    const normalize_key = (value?: string) => {
+        const trimmed = value?.trim();
+        return trimmed ? trimmed.toLowerCase() : "unknown";
+    };
+
+    const build_filter_options = (values: Array<string | undefined>) => {
+        // Merge values that differ only by case, keep the first label seen.
+        const map = new Map<string, string>();
+        values.forEach((value) => {
+            const key = normalize_key(value);
+            if (!map.has(key)) {
+                map.set(key, value?.trim() ? value.trim() : "Unknown");
+            }
+        });
+
+        const options = Array.from(map.entries())
+            .map(([key, label]) => ({ key, label }))
+            .sort((a, b) => a.label.localeCompare(b.label));
+
+        return [{ key: "all", label: "All" }, ...options];
+    };
+
+    const genders = useMemo(() => {
+        return build_filter_options(data.map((d) => d.gender));
+    }, [data]);
+
+    const races = useMemo(() => {
+        return build_filter_options(data.map((d) => d.race));
+    }, [data]);
+
     const years = useMemo(() => {
         const ys = data.map((d) => d.year_ceremony).filter(Boolean);
         return { min: Math.min(...ys), max: Math.max(...ys) };
@@ -56,8 +88,18 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
     const stream_data = useMemo(() => {
         // Aggregate counts by year and group for the stream layers.
         const filtered = data.filter((d) => {
-            if (filter_winner === "Winner") return d.winner === 1;
-            if (filter_winner === "Nominee") return d.winner === 0;
+            if (filter_winner === "Winner" && d.winner !== 1) return false;
+            if (filter_winner === "Nominee" && d.winner !== 0) return false;
+            if (
+                filter_gender !== "all" &&
+                normalize_key(d.gender) !== filter_gender
+            )
+                return false;
+            if (
+                filter_race !== "all" &&
+                normalize_key(d.race) !== filter_race
+            )
+                return false;
             return true;
         });
 
@@ -84,7 +126,7 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
         }
 
         return result;
-    }, [data, filter_winner, groups, years]);
+    }, [data, filter_winner, filter_gender, filter_race, groups, years]);
 
     const all_bubble_points = useMemo(() => {
         // Normalize row data into the shared bubble point structure.
@@ -93,8 +135,18 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
 
         return data
             .filter((d) => {
-                if (filter_winner === "Winner") return d.winner === 1;
-                if (filter_winner === "Nominee") return d.winner === 0;
+                if (filter_winner === "Winner" && d.winner !== 1) return false;
+                if (filter_winner === "Nominee" && d.winner !== 0) return false;
+                if (
+                    filter_gender !== "all" &&
+                    normalize_key(d.gender) !== filter_gender
+                )
+                    return false;
+                if (
+                    filter_race !== "all" &&
+                    normalize_key(d.race) !== filter_race
+                )
+                    return false;
                 return true;
             })
             .map((d) => {
@@ -111,7 +163,7 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
                     group_index: group_map.get(group) ?? 0,
                 } as BubblePoint;
             });
-    }, [data, filter_winner, groups]);
+    }, [data, filter_winner, filter_gender, filter_race, groups]);
 
     const sampled_bubbles = useMemo(() => {
         return all_bubble_points.filter((_, i) => i % sampling_rate === 0);
@@ -741,6 +793,26 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
                     <option>All</option>
                     <option>Winner</option>
                     <option>Nominee</option>
+                </select>
+                <select
+                    value={filter_gender}
+                    onChange={(e) => set_filter_gender(e.target.value)}
+                >
+                    {genders.map((g) => (
+                        <option key={g.key} value={g.key}>
+                            {g.label}
+                        </option>
+                    ))}
+                </select>
+                <select
+                    value={filter_race}
+                    onChange={(e) => set_filter_race(e.target.value)}
+                >
+                    {races.map((r) => (
+                        <option key={r.key} value={r.key}>
+                            {r.label}
+                        </option>
+                    ))}
                 </select>
 
                 {view_mode !== "detail" && (
