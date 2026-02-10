@@ -23,6 +23,10 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
     const canvas_ref = useRef<HTMLCanvasElement | null>(null);
     const x_axis_ref = useRef<SVGGElement | null>(null);
     const y_axis_ref = useRef<SVGGElement | null>(null);
+    const prev_bands_positions_ref = useRef<
+        Map<string, { x: number; y: number; p: BubblePoint }>
+    >(new Map());
+    const bands_anim_frame_ref = useRef<number | null>(null);
     const [filter_winner, set_filter_winner] = useState<
         "All" | "Winner" | "Nominee"
     >("All");
@@ -75,6 +79,21 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
     const genders = useMemo(() => {
         return build_filter_options(data.map((d) => d.gender));
     }, [data]);
+
+    const hash_string = (value: string) => {
+        // Lightweight hash for deterministic jitter.
+        let hash = 2166136261;
+        for (let i = 0; i < value.length; i++) {
+            hash ^= value.charCodeAt(i);
+            hash = Math.imul(hash, 16777619);
+        }
+        return hash >>> 0;
+    };
+
+    const seeded_random = (seed: string, salt: string) => {
+        const hash = hash_string(`${seed}:${salt}`);
+        return hash / 4294967296;
+    };
 
     const races = useMemo(() => {
         return build_filter_options(data.map((d) => d.race));
@@ -151,7 +170,9 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
             })
             .map((d) => {
                 const group = category_group(d.category);
+                const id = `${d.year_ceremony}-${d.name || "unknown"}-${d.film || "unknown"}-${d.category}`;
                 return {
+                    id,
                     year: d.year_ceremony,
                     race: d.race || "Unknown",
                     gender: d.gender || "Unknown",
@@ -166,7 +187,10 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
     }, [data, filter_winner, filter_gender, filter_race, groups]);
 
     const sampled_bubbles = useMemo(() => {
-        return all_bubble_points.filter((_, i) => i % sampling_rate === 0);
+        if (sampling_rate <= 1) return all_bubble_points;
+        return all_bubble_points.filter((p) => {
+            return hash_string(p.id) % sampling_rate === 0;
+        });
     }, [all_bubble_points, sampling_rate]);
 
     const bubble_points = useMemo(() => {
@@ -368,7 +392,7 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
 
             const nodes = pts.map((p) => {
                 const local_height = get_local_height(p.year);
-                const rand = Math.random() - 0.5;
+                const rand = seeded_random(p.id, "bands") - 0.5;
                 return {
                     ...p,
                     x: x_scale_local(p.year),
@@ -606,61 +630,174 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
-        const bubbles =
-            view_mode === "stream-bubbles"
-                ? overlay_stream_layout
-                : overlay_bands_layout.nodes;
-        const transform =
-            view_mode === "bands-bubbles" ? bands_transform : d3.zoomIdentity;
+        const draw_bubbles = (
+            bubbles: Array<{
+                p: BubblePoint;
+                x: number;
+                y: number;
+                alpha: number;
+                scale: number;
+            }>,
+            transform: d3.ZoomTransform,
+            base_radius: number,
+            base_alpha: number,
+        ) => {
+            ctx.clearRect(0, 0, width, HEIGHT);
 
-        ctx.clearRect(0, 0, width, HEIGHT);
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(MARGIN.left, MARGIN.top, inner_w, inner_h);
+            ctx.clip();
 
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(MARGIN.left, MARGIN.top, inner_w, inner_h);
-        ctx.clip();
+            bubbles.forEach(({ p, x, y, alpha, scale }) => {
+                const tx = transform.applyX(x);
+                const ty = transform.applyY(y);
+                const safe_scale = Math.max(0.05, scale);
+                const radius = base_radius * transform.k * safe_scale;
+                if (!Number.isFinite(radius) || radius <= 0) return;
 
-        bubbles.forEach((p) => {
-            const x =
-                view_mode === "bands-bubbles" ? transform.applyX(p.x!) : p.x!;
-            const y =
-                view_mode === "bands-bubbles" ? transform.applyY(p.y!) : p.y!;
-            const radius =
-                view_mode === "bands-bubbles"
-                    ? BUBBLE_RADIUS * 0.7 * transform.k
-                    : BUBBLE_RADIUS * 0.85;
+                const color = race_color(p.race);
+                const is_female = p.gender.toLowerCase() === "female";
 
-            const color = race_color(p.race);
-            const is_female = p.gender.toLowerCase() === "female";
+                ctx.globalAlpha = base_alpha * alpha;
 
-            ctx.globalAlpha = 0.7;
+                if (is_female) {
+                    ctx.beginPath();
+                    const h = radius * 1.5;
+                    ctx.moveTo(tx, ty - h);
+                    ctx.lineTo(tx - radius, ty + h * 0.6);
+                    ctx.lineTo(tx + radius, ty + h * 0.6);
+                    ctx.closePath();
+                    ctx.fillStyle = color;
+                    ctx.fill();
 
-            if (is_female) {
-                ctx.beginPath();
-                const h = radius * 1.5;
-                ctx.moveTo(x, y - h);
-                ctx.lineTo(x - radius, y + h * 0.6);
-                ctx.lineTo(x + radius, y + h * 0.6);
-                ctx.closePath();
-                ctx.fillStyle = color;
-                ctx.fill();
+                    ctx.strokeStyle = p.winner ? "#c08f2d" : "#7a6d58";
+                    ctx.lineWidth = p.winner ? 1.8 : 0.8;
+                    ctx.stroke();
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(tx, ty, radius, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.fill();
 
-                ctx.strokeStyle = p.winner ? "#c08f2d" : "#7a6d58";
-                ctx.lineWidth = p.winner ? 1.8 : 0.8;
-                ctx.stroke();
-            } else {
-                ctx.beginPath();
-                ctx.arc(x, y, radius, 0, Math.PI * 2);
-                ctx.fillStyle = color;
-                ctx.fill();
+                    ctx.strokeStyle = p.winner ? "#c08f2d" : "#7a6d58";
+                    ctx.lineWidth = p.winner ? 1.8 : 0.8;
+                    ctx.stroke();
+                }
+            });
 
-                ctx.strokeStyle = p.winner ? "#c08f2d" : "#7a6d58";
-                ctx.lineWidth = p.winner ? 1.8 : 0.8;
-                ctx.stroke();
-            }
+            ctx.restore();
+        };
+
+        if (view_mode === "stream-bubbles") {
+            const bubbles = overlay_stream_layout.map((p) => ({
+                p,
+                x: p.x!,
+                y: p.y!,
+                alpha: 1,
+                scale: 1,
+            }));
+            draw_bubbles(bubbles, d3.zoomIdentity, BUBBLE_RADIUS * 0.85, 0.7);
+            return;
+        }
+
+        const transform = bands_transform;
+        const current_map = new Map(
+            overlay_bands_layout.nodes.map((p) => [p.id, p]),
+        );
+        const prev_map = prev_bands_positions_ref.current;
+        const current_ids = new Set(current_map.keys());
+
+        const anim_items: Array<{
+            p: BubblePoint;
+            from_x: number;
+            from_y: number;
+            to_x: number;
+            to_y: number;
+            from_alpha: number;
+            to_alpha: number;
+            from_scale: number;
+            to_scale: number;
+        }> = [];
+
+        overlay_bands_layout.nodes.forEach((p) => {
+            const prev = prev_map.get(p.id);
+            anim_items.push({
+                p,
+                from_x: prev ? prev.x : p.x!,
+                from_y: prev ? prev.y : p.y!,
+                to_x: p.x!,
+                to_y: p.y!,
+                from_alpha: prev ? 1 : 0,
+                to_alpha: 1,
+                from_scale: prev ? 1 : 0.7,
+                to_scale: 1,
+            });
         });
 
-        ctx.restore();
+        prev_map.forEach((prev, id) => {
+            if (current_map.has(id)) return;
+            anim_items.push({
+                p: prev.p,
+                from_x: prev.x,
+                from_y: prev.y,
+                to_x: prev.x,
+                to_y: prev.y,
+                from_alpha: 1,
+                to_alpha: 0,
+                from_scale: 1,
+                to_scale: 0.7,
+            });
+        });
+
+        const start = performance.now();
+        const duration = 500;
+
+        if (bands_anim_frame_ref.current) {
+            cancelAnimationFrame(bands_anim_frame_ref.current);
+        }
+
+        const tick = (now: number) => {
+            const t = Math.min(1, (now - start) / duration);
+            const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+
+            const bubbles = anim_items.map((item) => ({
+                p: item.p,
+                x: item.from_x + (item.to_x - item.from_x) * eased,
+                y: item.from_y + (item.to_y - item.from_y) * eased,
+                alpha:
+                    item.from_alpha +
+                    (item.to_alpha - item.from_alpha) * eased,
+                scale:
+                    item.from_scale +
+                    (item.to_scale - item.from_scale) * eased,
+            }));
+
+            draw_bubbles(bubbles, transform, BUBBLE_RADIUS * 0.7, 0.7);
+
+            // Track only current-set bubbles to avoid re-showing old exits.
+            const next_positions = new Map<string, { x: number; y: number; p: BubblePoint }>();
+            bubbles.forEach(({ p, x, y }) => {
+                if (!current_ids.has(p.id)) return;
+                next_positions.set(p.id, { x, y, p });
+            });
+            prev_bands_positions_ref.current = next_positions;
+
+            if (t < 1) {
+                bands_anim_frame_ref.current = requestAnimationFrame(tick);
+            } else {
+                bands_anim_frame_ref.current = null;
+            }
+        };
+
+        bands_anim_frame_ref.current = requestAnimationFrame(tick);
+
+        return () => {
+            if (bands_anim_frame_ref.current) {
+                cancelAnimationFrame(bands_anim_frame_ref.current);
+                bands_anim_frame_ref.current = null;
+            }
+        };
     }, [
         view_mode,
         overlay_stream_layout,

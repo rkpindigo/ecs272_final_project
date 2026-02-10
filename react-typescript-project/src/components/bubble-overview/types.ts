@@ -6,6 +6,7 @@ export type StreamData = {
 
 export type BubblePoint = {
     // Shared shape for overlay and detail bubbles.
+    id: string;
     year: number;
     race: string;
     gender: string;
