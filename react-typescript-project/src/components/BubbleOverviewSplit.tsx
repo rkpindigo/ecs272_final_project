@@ -37,13 +37,13 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
     const [selected_category, set_selected_category] = useState<string | null>(
         null,
     );
-    const [view_mode, set_view_mode] = useState<ViewMode>("stream");
+    const [view_mode, set_view_mode] = useState<ViewMode>("bands-bubbles");
     const [tip, set_tip] = useState<{
         x: number;
         y: number;
         text: string;
     } | null>(null);
-    const [sampling_rate, set_sampling_rate] = useState(10);
+    const [sampling_rate, set_sampling_rate] = useState(5);
 
     const [container_size, set_container_size] = useState({
         width: 1000,
