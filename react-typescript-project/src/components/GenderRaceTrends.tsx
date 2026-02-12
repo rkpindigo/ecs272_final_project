@@ -3,7 +3,6 @@ import * as d3 from "d3";
 import { OscarsRow } from "../types";
 
 const MARGIN = { top: 20, right: 20, bottom: 40, left: 50 };
-const HEIGHT = 320;
 
 type Mode = "all" | "gender" | "race";
 
@@ -50,8 +49,36 @@ export function GenderRaceTrends({ data }: { data: OscarsRow[] }) {
         y: number;
         text: string;
     } | null>(null);
+    const container_ref = useRef<HTMLDivElement | null>(null);
+    const plot_ref = useRef<HTMLDivElement | null>(null);
+    const controls_ref = useRef<HTMLDivElement | null>(null);
     const x_axis_ref = useRef<SVGGElement | null>(null);
     const y_axis_ref = useRef<SVGGElement | null>(null);
+    const [container_size, set_container_size] = useState({
+        width: 900,
+        height: 420,
+    });
+
+    useEffect(() => {
+        if (!container_ref.current) return;
+
+        const observer = new ResizeObserver((entries) => {
+            if (!entries.length) return;
+            const { width, height } = entries[0].contentRect;
+            if (!width || !height) return;
+            const controls_h = controls_ref.current
+                ? controls_ref.current.getBoundingClientRect().height
+                : 0;
+            const available_h = Math.max(0, height - controls_h - 8);
+            set_container_size({
+                width: Math.round(width),
+                height: Math.round(available_h),
+            });
+        });
+
+        observer.observe(container_ref.current);
+        return () => observer.disconnect();
+    }, []);
 
     const years = useMemo(() => {
         const ys = data.map((d) => d.year_ceremony).filter(Boolean);
@@ -107,9 +134,10 @@ export function GenderRaceTrends({ data }: { data: OscarsRow[] }) {
         });
     }, [data, mode]);
 
-    const width = 900;
+    const width = container_size.width || 900;
+    const height = container_size.height || 320;
     const inner_w = width - MARGIN.left - MARGIN.right;
-    const inner_h = HEIGHT - MARGIN.top - MARGIN.bottom;
+    const inner_h = height - MARGIN.top - MARGIN.bottom;
 
     const x_year = (year: number) => {
         return (
@@ -135,7 +163,7 @@ export function GenderRaceTrends({ data }: { data: OscarsRow[] }) {
         const y = d3
             .scaleLinear()
             .domain([0, 1])
-            .range([HEIGHT - MARGIN.bottom, MARGIN.top]);
+            .range([height - MARGIN.bottom, MARGIN.top]);
 
         d3.select(x_axis).call(
             d3.axisBottom(x).ticks(8).tickFormat(d3.format("d")),
@@ -143,11 +171,44 @@ export function GenderRaceTrends({ data }: { data: OscarsRow[] }) {
         d3.select(y_axis).call(
             d3.axisLeft(y).ticks(5).tickFormat(d3.format(".0%")),
         );
-    }, [view, years.min, years.max, width]);
+    }, [view, years.min, years.max, width, height]);
+
+    useEffect(() => {
+        if (view !== "bar") return;
+        const x_axis = x_axis_ref.current;
+        const y_axis = y_axis_ref.current;
+        if (!x_axis || !y_axis) return;
+
+        const x = d3
+            .scaleBand()
+            .domain(mode_keys(mode))
+            .range([MARGIN.left, width - MARGIN.right]);
+        const y = d3
+            .scaleLinear()
+            .domain([0, 1])
+            .range([height - MARGIN.bottom, MARGIN.top]);
+
+        d3.select(x_axis).call(d3.axisBottom(x));
+        d3.select(y_axis).call(
+            d3.axisLeft(y).ticks(5).tickFormat(d3.format(".0%")),
+        );
+    }, [view, mode, width, height]);
 
     return (
-        <div style={{ marginTop: 12 }}>
-            <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+        <div
+            ref={container_ref}
+            style={{
+                marginTop: 12,
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+            }}
+        >
+            <div
+                ref={controls_ref}
+                style={{ display: "flex", gap: 8, marginBottom: 8 }}
+            >
                 <button
                     onClick={() => {
                         set_mode("all");
@@ -179,15 +240,27 @@ export function GenderRaceTrends({ data }: { data: OscarsRow[] }) {
                 </button>
             </div>
 
+            <div
+                ref={plot_ref}
+                style={{ position: "relative", flex: 1, minHeight: 0 }}
+            >
             {view === "bar" ? (
                 <svg
                     width={width}
-                    height={HEIGHT}
+                    height={height}
                     style={{
                         border: "1px solid #c9c2b4",
                         background: "#ffffff",
                     }}
                 >
+                    <g
+                        ref={x_axis_ref}
+                        transform={`translate(0,${height - MARGIN.bottom})`}
+                    />
+                    <g
+                        ref={y_axis_ref}
+                        transform={`translate(${MARGIN.left},0)`}
+                    />
                     <g>
                         {bars.map((b, i) => {
                             const band = inner_w / bars.length;
@@ -222,7 +295,7 @@ export function GenderRaceTrends({ data }: { data: OscarsRow[] }) {
                                     />
                                     <text
                                         x={x + w / 2}
-                                        y={HEIGHT - 10}
+                                        y={height - 14}
                                         textAnchor="middle"
                                         fontSize="11"
                                         fill="#5b5b5b"
@@ -237,7 +310,7 @@ export function GenderRaceTrends({ data }: { data: OscarsRow[] }) {
             ) : (
                 <svg
                     width={width}
-                    height={HEIGHT}
+                    height={height}
                     style={{
                         border: "1px solid #c9c2b4",
                         background: "#ffffff",
@@ -245,7 +318,7 @@ export function GenderRaceTrends({ data }: { data: OscarsRow[] }) {
                 >
                     <g
                         ref={x_axis_ref}
-                        transform={`translate(0,${HEIGHT - MARGIN.bottom})`}
+                        transform={`translate(0,${height - MARGIN.bottom})`}
                     />
                     <g
                         ref={y_axis_ref}
@@ -314,6 +387,7 @@ export function GenderRaceTrends({ data }: { data: OscarsRow[] }) {
                     })}
                 </svg>
             )}
+            </div>
             {hover && (
                 <div
                     style={{

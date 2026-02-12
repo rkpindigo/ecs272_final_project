@@ -1,11 +1,17 @@
 .App {
   color: #1b1b1b;
+  min-height: 100vh;
 }
 
 .page {
-  max-width: 1100px;
-  margin: 24px auto;
-  padding: 0 16px 40px;
+  min-height: 100vh;
+  height: 100vh;
+  padding: 24px 64px 32px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
 }
 
 .subtitle {
@@ -18,6 +24,11 @@
   border-radius: 12px;
   padding: 16px;
   background: #ffffff;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .slide-header {
@@ -25,7 +36,17 @@
 }
 
 .slide-content {
-  min-height: 420px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  overflow: hidden;
+}
+
+.slide-content > * {
+  width: 100%;
+  height: 100%;
 }
 
 .intro {
@@ -33,24 +54,36 @@
   color: #5b5b5b;
 }
 
-.nav {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  margin-top: 16px;
+.nav-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  padding: 10px 14px;
+  font-size: 16px;
+}
+
+.nav-left {
+  left: 16px;
+}
+
+.nav-right {
+  right: 16px;
 }
 
 .nav-count {
   color: #5b5b5b;
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
 }
 
 button {
   border: 1px solid #c9c2b4;
   background: #f9f6ef;
-  padding: 6px 10px;
   border-radius: 6px;
-  font-size: 12px;
   cursor: pointer;
 }
 
@@ -61,4 +94,48 @@ button:disabled {
 
 .error {
   color: #b21f2d;
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.progress-seg {
+  width: 70px;
+  height: 6px;
+  border-radius: 999px;
+  background: #e6e0d3;
+}
+
+.progress-complete {
+  background: #c9c2b4;
+}
+
+.progress-active {
+  background: #1b1b1b;
+}
+
+.progress-upcoming {
+  background: #efe9dc;
+}
+
+@media (max-width: 900px) {
+  .page {
+    padding: 16px 24px 32px;
+  }
+
+  .progress-seg {
+    width: 40px;
+  }
+
+  .nav-left {
+    left: 8px;
+  }
+
+  .nav-right {
+    right: 8px;
+  }
 }

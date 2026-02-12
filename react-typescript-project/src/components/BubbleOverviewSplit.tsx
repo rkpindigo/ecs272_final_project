@@ -13,7 +13,6 @@ import { BandsBubblesView } from "./bubble-overview/BandsBubblesView";
 import { DetailBubblesView } from "./bubble-overview/DetailBubblesView";
 
 const MARGIN = { top: 20, right: 120, bottom: 40, left: 160 };
-const HEIGHT = 600;
 const BUBBLE_RADIUS = 4;
 const BUBBLE_PADDING = 1;
 
@@ -23,6 +22,9 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
     const canvas_ref = useRef<HTMLCanvasElement | null>(null);
     const x_axis_ref = useRef<SVGGElement | null>(null);
     const y_axis_ref = useRef<SVGGElement | null>(null);
+    const container_ref = useRef<HTMLDivElement | null>(null);
+    const plot_ref = useRef<HTMLDivElement | null>(null);
+    const controls_ref = useRef<HTMLDivElement | null>(null);
     const prev_bands_positions_ref = useRef<
         Map<string, { x: number; y: number; p: BubblePoint }>
     >(new Map());
@@ -43,9 +45,36 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
     } | null>(null);
     const [sampling_rate, set_sampling_rate] = useState(10);
 
-    const width = 1000;
+    const [container_size, set_container_size] = useState({
+        width: 1000,
+        height: 640,
+    });
+
+    useEffect(() => {
+        if (!container_ref.current) return;
+
+        const observer = new ResizeObserver((entries) => {
+            if (!entries.length) return;
+            const { width, height } = entries[0].contentRect;
+            if (!width || !height) return;
+            const controls_h = controls_ref.current
+                ? controls_ref.current.getBoundingClientRect().height
+                : 0;
+            const available_h = Math.max(0, height - controls_h - 8);
+            set_container_size({
+                width: Math.round(width),
+                height: Math.round(available_h),
+            });
+        });
+
+        observer.observe(container_ref.current);
+        return () => observer.disconnect();
+    }, []);
+
+    const width = container_size.width || 1000;
+    const height = container_size.height || 600;
     const inner_w = width - MARGIN.left - MARGIN.right;
-    const inner_h = HEIGHT - MARGIN.top - MARGIN.bottom;
+    const inner_h = height - MARGIN.top - MARGIN.bottom;
 
     const groups = useMemo(() => {
         // Keep a stable group list for stacking and legends.
@@ -226,8 +255,8 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
         return d3
             .scaleLinear()
             .domain([min_stack, max_stack])
-            .range([HEIGHT - MARGIN.bottom, MARGIN.top]);
-    }, [series]);
+            .range([height - MARGIN.bottom, MARGIN.top]);
+    }, [series, height]);
 
     const bubble_layout = useMemo(() => {
         if (bubble_points.length === 0) return [];
@@ -289,7 +318,7 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
         }
 
         const min_y = MARGIN.top + BUBBLE_RADIUS + 5;
-        const max_y = HEIGHT - MARGIN.bottom - BUBBLE_RADIUS - 5;
+        const max_y = height - MARGIN.bottom - BUBBLE_RADIUS - 5;
         nodes.forEach((n) => {
             n.y = Math.max(min_y, Math.min(max_y, n.y));
         });
@@ -569,7 +598,7 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
-        ctx.clearRect(0, 0, width, HEIGHT);
+        ctx.clearRect(0, 0, width, height);
 
         ctx.save();
         ctx.beginPath();
@@ -581,7 +610,7 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
             const y = bubble_transform.applyY(p.y!);
 
             if (x < MARGIN.left - 20 || x > width - MARGIN.right + 20) return;
-            if (y < MARGIN.top - 20 || y > HEIGHT - MARGIN.bottom + 20) return;
+            if (y < MARGIN.top - 20 || y > height - MARGIN.bottom + 20) return;
 
             const color = race_color(p.race);
             const is_female = p.gender.toLowerCase() === "female";
@@ -642,7 +671,7 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
             base_radius: number,
             base_alpha: number,
         ) => {
-            ctx.clearRect(0, 0, width, HEIGHT);
+            ctx.clearRect(0, 0, width, height);
 
             ctx.save();
             ctx.beginPath();
@@ -913,12 +942,23 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
     const svg_key = `${view_mode}-${sampling_rate}-${bands_transform.k}`;
 
     return (
-        <div style={{ position: "relative", width: "100%" }}>
+        <div
+            ref={container_ref}
+            style={{
+                position: "relative",
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+                minHeight: 0,
+            }}
+        >
             <div
+                ref={controls_ref}
                 style={{
                     display: "flex",
                     gap: 8,
-                    marginBottom: 8,
                     alignItems: "center",
                     flexWrap: "wrap",
                 }}
@@ -1061,11 +1101,14 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
                 )}
             </div>
 
-            <div style={{ position: "relative" }}>
+            <div
+                ref={plot_ref}
+                style={{ position: "relative", flex: 1, minHeight: 0 }}
+            >
                 {view_mode === "detail" ? (
                     <DetailBubblesView
                         width={width}
-                        height={HEIGHT}
+                        height={height}
                         margin={MARGIN}
                         canvas_ref={canvas_ref}
                         x_axis_ref={x_axis_ref}
@@ -1076,7 +1119,7 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
                 ) : view_mode === "stream" ? (
                     <StreamOnlyView
                         width={width}
-                        height={HEIGHT}
+                        height={height}
                         margin={MARGIN}
                         inner_w={inner_w}
                         inner_h={inner_h}
@@ -1098,7 +1141,7 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
                 ) : view_mode === "stream-bubbles" ? (
                     <StreamBubblesView
                         width={width}
-                        height={HEIGHT}
+                        height={height}
                         margin={MARGIN}
                         inner_w={inner_w}
                         inner_h={inner_h}
@@ -1123,7 +1166,7 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
                 ) : (
                     <BandsBubblesView
                         width={width}
-                        height={HEIGHT}
+                        height={height}
                         margin={MARGIN}
                         inner_w={inner_w}
                         inner_h={inner_h}
