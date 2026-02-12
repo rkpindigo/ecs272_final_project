@@ -13,8 +13,36 @@
   margin-top: 4px;
 }
 
-section {
-  margin-top: 28px;
+.slide {
+  border: 1px solid #c9c2b4;
+  border-radius: 12px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+.slide-header {
+  margin-bottom: 12px;
+}
+
+.slide-content {
+  min-height: 420px;
+}
+
+.intro {
+  padding: 16px 0;
+  color: #5b5b5b;
+}
+
+.nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.nav-count {
+  color: #5b5b5b;
 }
 
 button {
@@ -24,6 +52,11 @@ button {
   border-radius: 6px;
   font-size: 12px;
   cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .error {
