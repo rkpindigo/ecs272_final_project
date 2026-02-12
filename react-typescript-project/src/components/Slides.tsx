@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { OscarsRow } from "../types";
 import { BubbleOverviewSplit } from "./BubbleOverviewSplit";
 import { GenderRaceTrends } from "./GenderRaceTrends";
+import RadarChart from "./radarChart";
 
 export function Slides({
     data,
@@ -22,6 +23,11 @@ export function Slides({
                         Use the arrows to move through the visuals.
                     </div>
                 ),
+            },
+            {
+                title: "Category Balance by Race",
+                body: "Use the year range and race filters to compare category representation.",
+                content: <RadarChart />,
             },
             {
                 title: "Overview Bubble Plot",

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import RadarChart from './components/radarChart';
 import { load_oscars } from './data/load_oscars';
 import { OscarsRow } from './types';
 import { Slides } from './components/Slides';
@@ -19,9 +18,6 @@ function App() {
   return (
     <div className="App">
       <Slides data={data} error={error} />
-      <div className="radar-block">
-        <RadarChart />
-      </div>
     </div>
   );
 }
