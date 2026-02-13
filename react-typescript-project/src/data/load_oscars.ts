@@ -44,12 +44,14 @@ function parse_csv(text: string): OscarsRow[] {
 
   return lines.slice(1).map((line) => {
     const parts = split_csv_line(line);
+    const raw_winner = (parts[i_winner] || '').trim().toLowerCase();
+    const winner = raw_winner === 'true' ? 1 : raw_winner === 'false' ? 0 : Number(raw_winner || 0);
     return {
       year_ceremony: Number(parts[i_year] || 0),
       category: parts[i_cat] || '',
       gender: parts[i_gender] || '',
       race: parts[i_race] || '',
-      winner: Number(parts[i_winner] || 0),
+      winner,
       name: parts[i_name] || '',
       film: parts[i_film] || '',
     };
