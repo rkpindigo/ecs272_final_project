@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import logo from './logo.svg';
+import RadarChart from './components/radarChart';
+import SankeyDiagram from './components/sankeyDiagram';
 import './App.css';
 import { load_oscars } from './data/load_oscars';
 import { OscarsRow } from './types';
