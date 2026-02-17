@@ -3,6 +3,7 @@ import { OscarsRow } from "../types";
 import { BubbleOverviewSplit } from "./BubbleOverviewSplit";
 import { GenderRaceTrends } from "./GenderRaceTrends";
 import RadarChart from "./radarChart";
+import SankeyDiagram from "./sankeyDiagram";
 
 export function Slides({
     data,
@@ -28,6 +29,11 @@ export function Slides({
                 title: "Category Balance by Race",
                 body: "Use the year range and race filters to compare category representation.",
                 content: <RadarChart />,
+            },
+            {
+                title: "Flows Across Category, Race, and Outcome",
+                body: "Sankey view to compare category groupings by race and outcome across years.",
+                content: <SankeyDiagram />,
             },
             {
                 title: "Overview Bubble Plot",
