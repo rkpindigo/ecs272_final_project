@@ -183,9 +183,9 @@ export default function RadarChart() {
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', fontFamily: 'sans-serif', padding: '20px' }}>
       <div style={{ background: '#020202', padding: '20px', borderRadius: '8px', marginBottom: '20px', width: '400px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-          <span style={{ fontWeight: 'bold' }}>{yearRange[0]}</span>
+          <span style={{ fontWeight: 'bold', color: '#ffffff' }}>{yearRange[0]}</span>
           <span style={{ color: '#ffffff' }}>Filter by Year Range</span>
-          <span style={{ fontWeight: 'bold' }}>{yearRange[1]}</span>
+          <span style={{ fontWeight: 'bold', color: '#ffffff' }}>{yearRange[1]}</span>
         </div>
         <input 
           style={{ width: '100%', cursor: 'pointer' }}

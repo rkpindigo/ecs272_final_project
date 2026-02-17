@@ -1,0 +1,899 @@
+Scan Report
+===========
+Date: 2026-02-09 23:08:36
+Source Directory: /home/pablo/dev/ecs272-project/my-app
+Output File: /home/pablo/dev/ecs272-project/docs/history/structure_20260209_230836.txt
+
+Ignored Patterns:
+================
+- **/.DS_Store
+- **/.env.development.local
+- **/.env.local
+- **/.env.production.local
+- **/.env.test.local
+- **/.pnp.js
+- **//.pnp
+- **//build
+- **//coverage
+- **//node_modules
+- **/npm-debug.log*
+- **/yarn-debug.log*
+- **/yarn-error.log*
+- .DS_Store
+- .env.development.local
+- .env.local
+- .env.production.local
+- .env.test.local
+- .pnp.js
+- /.pnp
+- /build
+- /coverage
+- /node_modules
+- npm-debug.log*
+- yarn-debug.log*
+- yarn-error.log*
+- node_modules
+
+Directory Structure:
+===================
+
+my-app/
+  public/
+    data/
+  src/
+    App.test.tsx
+    App.tsx
+    index.tsx
+    react-app-env.d.ts
+    reportWebVitals.ts
+    setupTests.ts
+    types.ts
+    data/
+      load_oscars.ts
+    utils/
+      category_group.ts
+    components/
+      BubbleOverview.tsx
+      GenderRaceTrends.tsx
+
+
+File Contents:
+=============
+
+
+--- src/App.test.tsx ---
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import App from './App';
+
+test('renders learn react link', () => {
+  render(<App />);
+  const linkElement = screen.getByText(/learn react/i);
+  expect(linkElement).toBeInTheDocument();
+});
+
+
+--- src/App.tsx ---
+import React, { useEffect, useState } from 'react';
+import './App.css';
+import { load_oscars } from './data/load_oscars';
+import { OscarsRow } from './types';
+import { BubbleOverview } from './components/BubbleOverview';
+import { GenderRaceTrends } from './components/GenderRaceTrends';
+
+function App() {
+  const [data, set_data] = useState<OscarsRow[] | null>(null);
+  const [error, set_error] = useState<string | null>(null);
+  const [slide, set_slide] = useState(0);
+
+  useEffect(() => {
+    // Load data once on mount.
+    load_oscars()
+      .then((rows) => set_data(rows))
+      .catch(() => set_error('Failed to load data'));
+  }, []);
+
+  const slides = [
+    {
+      title: 'Oscars Representation',
+      body: 'This story explores how nominations and wins have shifted over time by gender and race.',
+      content: <div className="intro">Use the arrows to move through the visuals.</div>,
+    },
+    {
+      title: 'Overview Bubble Plot',
+      body: 'Each mark is a nominee or winner, grouped by category type and positioned by year.',
+      content: data ? <BubbleOverview data={data} /> : null,
+    },
+    {
+      title: 'How Many Are Men and Women?',
+      body: 'Start with bars, click to expand into time-series lines. Toggle the grouping at the top.',
+      content: data ? <GenderRaceTrends data={data} /> : null,
+    },
+  ];
+
+  const current = slides[slide];
+
+  return (
+    <div className="App">
+      <div className="page">
+        {error && <p className="error">{error}</p>}
+        {!data && !error && <p>Loading data...</p>}
+
+        <div className="slide">
+          <div className="slide-header">
+            <h1>{current.title}</h1>
+            <p className="subtitle">{current.body}</p>
+          </div>
+          <div className="slide-content">
+            {current.content}
+          </div>
+        </div>
+
+        <div className="nav">
+          <button onClick={() => set_slide(Math.max(0, slide - 1))} disabled={slide === 0}>
+            ←
+          </button>
+          <div className="nav-count">{slide + 1} / {slides.length}</div>
+          <button onClick={() => set_slide(Math.min(slides.length - 1, slide + 1))} disabled={slide === slides.length - 1}>
+            →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+
+
+--- src/index.tsx ---
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import App from './App';
+import reportWebVitals from './reportWebVitals';
+
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement
+);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
+
+
+--- src/react-app-env.d.ts ---
+/// <reference types="react-scripts" />
+
+
+--- src/reportWebVitals.ts ---
+import { ReportHandler } from 'web-vitals';
+
+const reportWebVitals = (onPerfEntry?: ReportHandler) => {
+  if (onPerfEntry && onPerfEntry instanceof Function) {
+    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+      getCLS(onPerfEntry);
+      getFID(onPerfEntry);
+      getFCP(onPerfEntry);
+      getLCP(onPerfEntry);
+      getTTFB(onPerfEntry);
+    });
+  }
+};
+
+export default reportWebVitals;
+
+
+--- src/setupTests.ts ---
+// jest-dom adds custom jest matchers for asserting on DOM nodes.
+// allows you to do things like:
+// expect(element).toHaveTextContent(/react/i)
+// learn more: https://github.com/testing-library/jest-dom
+import '@testing-library/jest-dom';
+
+
+--- src/types.ts ---
+// Core fields needed by the visualizations.
+export type OscarsRow = {
+  year_ceremony: number;
+  category: string;
+  gender: string;
+  race: string;
+  winner: number;
+  name: string;
+  film: string;
+};
+
+
+--- src/data/load_oscars.ts ---
+import { OscarsRow } from '../types';
+
+function split_csv_line(line: string): string[] {
+  // Minimal CSV split with quote handling.
+  const out: string[] = [];
+  let cur = '';
+  let in_quotes = false;
+
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (in_quotes && line[i + 1] === '"') {
+        cur += '"';
+        i += 1;
+      } else {
+        in_quotes = !in_quotes;
+      }
+    } else if (ch === ',' && !in_quotes) {
+      out.push(cur);
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  out.push(cur);
+  return out;
+}
+
+function parse_csv(text: string): OscarsRow[] {
+  // Parse only the fields we need for the visuals.
+  const lines = text.split(/\r?\n/).filter(Boolean);
+  if (lines.length < 2) return [];
+
+  const header = split_csv_line(lines[0]);
+  const idx = (name: string) => header.indexOf(name);
+
+  const i_year = idx('year_ceremony');
+  const i_cat = idx('Category');
+  const i_gender = idx('gender');
+  const i_race = idx('Race');
+  const i_winner = idx('winner');
+  const i_name = idx('name');
+  const i_film = idx('film');
+
+  return lines.slice(1).map((line) => {
+    const parts = split_csv_line(line);
+    return {
+      year_ceremony: Number(parts[i_year] || 0),
+      category: parts[i_cat] || '',
+      gender: parts[i_gender] || '',
+      race: parts[i_race] || '',
+      winner: Number(parts[i_winner] || 0),
+      name: parts[i_name] || '',
+      film: parts[i_film] || '',
+    };
+  });
+}
+
+export async function load_oscars(): Promise<OscarsRow[]> {
+  // Load from public/ so it works in the built app.
+  const res = await fetch('/data/oscars.csv');
+  const text = await res.text();
+  return parse_csv(text);
+}
+
+
+--- src/utils/category_group.ts ---
+export function category_group(category: string): string {
+  // Group categories to reduce visual clutter.
+  const c = (category || '').toUpperCase();
+  if (c.includes('ACTOR') || c.includes('ACTRESS') || c.includes('PERFORMANCE')) return 'Acting';
+  if (c.includes('DIRECTING') || c.includes('DIRECTOR')) return 'Directing';
+  if (c.includes('WRITING') || c.includes('SCREENPLAY') || c.includes('SCRIPT')) return 'Writing';
+  if (c.includes('MUSIC') || c.includes('SONG') || c.includes('SCORE') || c.includes('SOUNDTRACK')) return 'Music';
+  if (c.includes('PICTURE') || c.includes('PRODUCTION')) return 'Picture/Production';
+  if (
+    c.includes('CINEMATOGRAPH') ||
+    c.includes('EDITING') ||
+    c.includes('VISUAL') ||
+    c.includes('SOUND') ||
+    c.includes('DESIGN') ||
+    c.includes('ART DIRECTION') ||
+    c.includes('COSTUME') ||
+    c.includes('MAKEUP') ||
+    c.includes('HAIR') ||
+    c.includes('ANIMAT') ||
+    c.includes('DOCUMENTARY') ||
+    c.includes('SHORT')
+  ) return 'Technical';
+  return 'Other';
+}
+
+
+--- src/components/BubbleOverview.tsx ---
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import * as d3 from 'd3';
+import { OscarsRow } from '../types';
+import { category_group } from '../utils/category_group';
+
+const MARGIN = { top: 20, right: 20, bottom: 40, left: 160 };
+const HEIGHT = 520;
+
+type BubblePoint = {
+  year: number;
+  group: string;
+  group_index: number;
+  race: string;
+  gender: string;
+  winner: boolean;
+  name: string;
+  film: string;
+  category: string;
+  jx: number;
+  jy: number;
+};
+
+type LayoutPoint = BubblePoint & {
+  x: number;
+  y: number;
+  band_start: number;
+  band_end: number;
+};
+
+function hash_seed(str: string): number {
+  // Stable jitter seed so points don't flicker on pan/zoom.
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i += 1) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function useSize(ref: React.RefObject<HTMLDivElement | null>) {
+  const [size, set_size] = useState({ width: 900, height: HEIGHT });
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    // Resize observer keeps the chart responsive to layout changes.
+    const ro = new ResizeObserver(() => {
+      const rect = node.getBoundingClientRect();
+      set_size({ width: Math.max(600, rect.width), height: HEIGHT });
+    });
+    ro.observe(node);
+    return () => ro.disconnect();
+  }, [ref]);
+
+  return size;
+}
+
+export function BubbleOverview({ data }: { data: OscarsRow[] }) {
+  const wrap_ref = useRef<HTMLDivElement>(null);
+  const svg_ref = useRef<SVGSVGElement | null>(null);
+  const x_axis_ref = useRef<SVGGElement | null>(null);
+  const y_axis_ref = useRef<SVGGElement | null>(null);
+  const plot_ref = useRef<SVGGElement | null>(null);
+
+  const { width, height } = useSize(wrap_ref);
+  const [tip, set_tip] = useState<{ x: number; y: number; text: string } | null>(null);
+  const [filter_race, set_filter_race] = useState('All');
+  const [filter_gender, set_filter_gender] = useState('All');
+  const [filter_winner, set_filter_winner] = useState('All');
+  const [layout, set_layout] = useState<LayoutPoint[]>([]);
+  const [transform, set_transform] = useState(d3.zoomIdentity);
+
+  const groups = useMemo(() => {
+    const set = new Set<string>();
+    data.forEach((d) => set.add(category_group(d.category)));
+    return Array.from(set).sort();
+  }, [data]);
+
+  const points = useMemo(() => {
+    const group_map = new Map<string, number>();
+    groups.forEach((g, i) => group_map.set(g, i));
+    return data.map((d) => {
+      const group = category_group(d.category);
+      const group_index = group_map.get(group) ?? 0;
+      // Jitter is per-entry so the layout is stable.
+      const seed = hash_seed(`${d.name}|${d.year_ceremony}|${d.category}|${d.film}`);
+      const r1 = (seed % 1000) / 1000;
+      const r2 = ((seed * 9301 + 49297) % 233280) / 233280;
+      return {
+        year: d.year_ceremony,
+        group,
+        group_index,
+        race: d.race || 'Unknown',
+        gender: d.gender || 'Unknown',
+        winner: d.winner === 1,
+        name: d.name,
+        film: d.film,
+        category: d.category,
+        jx: (r1 - 0.5),
+        jy: (r2 - 0.5),
+      } as BubblePoint;
+    });
+  }, [data, groups]);
+
+  const years = useMemo(() => {
+    const ys = data.map((d) => d.year_ceremony).filter(Boolean);
+    return { min: Math.min(...ys), max: Math.max(...ys) };
+  }, [data]);
+
+  const filtered_points = useMemo(() => {
+    return points.filter((p) => {
+      const race_ok = filter_race === 'All' || p.race === filter_race;
+      const gender_ok = filter_gender === 'All' || p.gender.toLowerCase() === filter_gender.toLowerCase();
+      const winner_ok = filter_winner === 'All' || (filter_winner === 'Winner' ? p.winner : !p.winner);
+      return race_ok && gender_ok && winner_ok;
+    });
+  }, [points, filter_race, filter_gender, filter_winner]);
+
+  const inner_w = width - MARGIN.left - MARGIN.right;
+  const inner_h = height - MARGIN.top - MARGIN.bottom;
+
+  const x_scale = useMemo(() => {
+    // Use full chart coordinates to avoid extra translations.
+    return d3.scaleLinear().domain([years.min, years.max]).range([MARGIN.left, width - MARGIN.right]);
+  }, [years.min, years.max, width]);
+
+  const band_layout = useMemo(() => {
+    // Density-weighted band heights with padding between categories.
+    const counts = new Array(groups.length).fill(0);
+    filtered_points.forEach((p) => { counts[p.group_index] += 1; });
+    const weights = counts.map((c) => Math.sqrt(c + 1));
+    const total = weights.reduce((a, b) => a + b, 0) || 1;
+    const band_padding = 6;
+    const total_padding = band_padding * Math.max(0, groups.length - 1);
+    const usable = Math.max(1, inner_h - total_padding);
+
+    let y = MARGIN.top;
+    const bands = weights.map((w, i) => {
+      const h = (w / total) * usable;
+      const band = { index: i, start: y, end: y + h, center: y + h / 2 };
+      y += h + band_padding;
+      return band;
+    });
+
+    return bands;
+  }, [filtered_points, groups.length, inner_h]);
+
+  const y_scale = useMemo(() => {
+    const indices = band_layout.map((b) => b.index);
+    const centers = band_layout.map((b) => b.center);
+    return d3.scaleLinear().domain(indices).range(centers);
+  }, [band_layout]);
+
+  useEffect(() => {
+    // Compute non-overlapping layout within each band.
+    const radius = 5;
+    const padding = 1.5;
+    const by_group = d3.group(filtered_points, (d) => d.group_index);
+    const out: LayoutPoint[] = [];
+
+    by_group.forEach((rows, group_index) => {
+      const band = band_layout[group_index];
+      if (!band) return;
+
+      const nodes: LayoutPoint[] = rows.map((p) => ({
+        ...p,
+        x: x_scale(p.year),
+        y: band.center,
+        band_start: band.start,
+        band_end: band.end,
+      }));
+
+      const sim = d3.forceSimulation(nodes as d3.SimulationNodeDatum[])
+        .force('x', d3.forceX((d: any) => x_scale(d.year)).strength(0.9))
+        .force('y', d3.forceY(band.center).strength(0.9))
+        .force('collide', d3.forceCollide(radius + padding))
+        .stop();
+
+      for (let i = 0; i < 70; i += 1) sim.tick();
+
+      nodes.forEach((n) => {
+        n.y = Math.max(n.band_start + radius, Math.min(n.band_end - radius, n.y));
+      });
+
+      out.push(...nodes);
+    });
+
+    set_layout(out);
+  }, [filtered_points, band_layout, x_scale]);
+
+  useEffect(() => {
+    const svg = svg_ref.current;
+    if (!svg) return;
+
+    const zoom = d3.zoom<SVGSVGElement, unknown>()
+      .scaleExtent([1, 8])
+      .on('zoom', (evt) => {
+        set_transform(evt.transform);
+      });
+
+    d3.select(svg).call(zoom as any);
+  }, []);
+
+  useEffect(() => {
+    const x_axis = x_axis_ref.current;
+    const y_axis = y_axis_ref.current;
+    if (!x_axis || !y_axis) return;
+
+    d3.select(x_axis).call(d3.axisBottom(x_scale).ticks(8).tickFormat(d3.format('d')));
+    d3.select(y_axis).call(d3.axisLeft(y_scale).tickValues(band_layout.map((b) => b.index)).tickFormat((d) => groups[Number(d)] || ''));
+  }, [x_scale, y_scale, band_layout, groups]);
+
+  useEffect(() => {
+    const plot = plot_ref.current;
+    if (!plot) return;
+    d3.select(plot).attr('transform', transform.toString());
+  }, [transform]);
+
+  function race_color(race: string) {
+    // Simple palette keyed to race values in the dataset.
+    if (race === 'White') return '#2f2f2f';
+    if (race === 'Black') return '#1f6fb2';
+    if (race === 'Asian') return '#b21f2d';
+    if (race === 'Hispanic') return '#2f8f5b';
+    return '#888888';
+  }
+
+  return (
+    <div ref={wrap_ref} style={{ position: 'relative', width: '100%' }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+        <select value={filter_race} onChange={(e) => set_filter_race(e.target.value)}>
+          <option>All</option>
+          <option>White</option>
+          <option>Black</option>
+          <option>Asian</option>
+          <option>Hispanic</option>
+        </select>
+        <select value={filter_gender} onChange={(e) => set_filter_gender(e.target.value)}>
+          <option>All</option>
+          <option>Female</option>
+          <option>Male</option>
+        </select>
+        <select value={filter_winner} onChange={(e) => set_filter_winner(e.target.value)}>
+          <option>All</option>
+          <option>Winner</option>
+          <option>Nominee</option>
+        </select>
+        <button onClick={() => set_transform(d3.zoomIdentity)}>Reset View</button>
+      </div>
+
+      <svg ref={svg_ref} width={width} height={height} style={{ border: '1px solid #c9c2b4', background: '#ffffff' }}>
+        <defs>
+          <clipPath id="bubble-clip">
+            <rect x={MARGIN.left} y={MARGIN.top} width={inner_w} height={inner_h} />
+          </clipPath>
+        </defs>
+
+        <g ref={x_axis_ref} transform={`translate(0,${height - MARGIN.bottom})`} />
+        <g ref={y_axis_ref} transform={`translate(${MARGIN.left},0)`} />
+
+        <g ref={plot_ref} clipPath="url(#bubble-clip)">
+          {layout.map((p, i) => {
+            const x = p.x + p.jx * 6;
+            const y = p.y + p.jy * 4;
+            const size = 5;
+            const color = race_color(p.race);
+            const is_female = p.gender.toLowerCase() === 'female';
+            const tip_text = `${p.name || 'Unknown'}\n${p.year} • ${p.category}\n${p.race} • ${p.gender}\n${p.winner ? 'Winner' : 'Nominee'}\n${p.film || 'Unknown'}`;
+
+            if (is_female) {
+              const h = size * 1.8;
+              const points_str = `${x},${y - h} ${x - size},${y + h * 0.6} ${x + size},${y + h * 0.6}`;
+              return (
+                <polygon
+                  key={`p-${i}`}
+                  points={points_str}
+                  fill={color}
+                  stroke={p.winner ? '#c08f2d' : '#7a6d58'}
+                  strokeWidth={p.winner ? 2 : 1}
+                  opacity={0.7}
+                  onMouseMove={(evt) => set_tip({ x: evt.clientX, y: evt.clientY, text: tip_text })}
+                  onMouseLeave={() => set_tip(null)}
+                />
+              );
+            }
+            return (
+              <circle
+                key={`p-${i}`}
+                cx={x}
+                cy={y}
+                r={size}
+                fill={color}
+                stroke={p.winner ? '#c08f2d' : '#7a6d58'}
+                strokeWidth={p.winner ? 2 : 1}
+                opacity={0.7}
+                onMouseMove={(evt) => set_tip({ x: evt.clientX, y: evt.clientY, text: tip_text })}
+                onMouseLeave={() => set_tip(null)}
+              />
+            );
+          })}
+        </g>
+      </svg>
+
+      {tip && (
+        <div
+          style={{
+            position: 'fixed',
+            left: tip.x + 12,
+            top: tip.y + 12,
+            background: '#ffffff',
+            border: '1px solid #c9c2b4',
+            borderRadius: 6,
+            padding: '6px 8px',
+            fontSize: 12,
+            color: '#1b1b1b',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            whiteSpace: 'pre-line',
+            pointerEvents: 'none',
+            zIndex: 10,
+          }}
+        >
+          {tip.text}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+--- src/components/GenderRaceTrends.tsx ---
+import React, { useMemo, useRef, useState, useEffect } from 'react';
+import * as d3 from 'd3';
+import { OscarsRow } from '../types';
+
+const MARGIN = { top: 20, right: 20, bottom: 40, left: 50 };
+const HEIGHT = 320;
+
+type Mode = 'all' | 'gender' | 'race';
+
+type SeriesPoint = {
+  year: number;
+  key: string;
+  nominee_share: number;
+  winner_share: number;
+};
+
+function group_key(row: OscarsRow, mode: Mode): string {
+  // Bucket rows based on the selected view.
+  const gender = row.gender.toLowerCase();
+  const race = row.race;
+  if (mode === 'gender') return gender === 'female' ? 'Female' : 'Male';
+  if (mode === 'race') return race === 'White' ? 'White' : 'Non-White';
+  if (race === 'White' && gender === 'male') return 'White-Male';
+  if (gender === 'female') return 'Female';
+  return 'Non-White';
+}
+
+function mode_keys(mode: Mode): string[] {
+  // Keep key order stable so colors and labels don't jump.
+  if (mode === 'gender') return ['Female', 'Male'];
+  if (mode === 'race') return ['White', 'Non-White'];
+  return ['Female', 'White-Male', 'Non-White'];
+}
+
+function palette(key: string): string {
+  // Simple palette for consistent reading across modes.
+  if (key === 'Female') return '#b21f2d';
+  if (key === 'White-Male') return '#2f2f2f';
+  if (key === 'Non-White') return '#1f6fb2';
+  if (key === 'White') return '#2f2f2f';
+  return '#1f6fb2';
+}
+
+export function GenderRaceTrends({ data }: { data: OscarsRow[] }) {
+  const [mode, set_mode] = useState<Mode>('all');
+  const [view, set_view] = useState<'bar' | 'line'>('bar');
+  const [selected, set_selected] = useState<string | null>(null);
+  const [hover, set_hover] = useState<{ x: number; y: number; text: string } | null>(null);
+  const x_axis_ref = useRef<SVGGElement | null>(null);
+  const y_axis_ref = useRef<SVGGElement | null>(null);
+
+  const years = useMemo(() => {
+    const ys = data.map((d) => d.year_ceremony).filter(Boolean);
+    return { min: Math.min(...ys), max: Math.max(...ys) };
+  }, [data]);
+
+  const series = useMemo(() => {
+    // Per-year shares for the line view.
+    const by_year = new Map<number, OscarsRow[]>();
+    data.forEach((d) => {
+      if (!by_year.has(d.year_ceremony)) by_year.set(d.year_ceremony, []);
+      by_year.get(d.year_ceremony)?.push(d);
+    });
+
+    const out: SeriesPoint[] = [];
+    by_year.forEach((rows, year) => {
+      const total = rows.length || 1;
+      const winners = rows.filter((r) => r.winner === 1);
+      const win_total = winners.length || 1;
+
+      const keys = mode_keys(mode);
+      keys.forEach((k) => {
+        const nom = rows.filter((r) => group_key(r, mode) === k).length;
+        const win = winners.filter((r) => group_key(r, mode) === k).length;
+        out.push({
+          year,
+          key: k,
+          nominee_share: nom / total,
+          winner_share: win / win_total,
+        });
+      });
+    });
+
+    return out.sort((a, b) => a.year - b.year);
+  }, [data, mode]);
+
+  const bars = useMemo(() => {
+    // Overview bars for the bar → line interaction.
+    const keys = mode_keys(mode);
+    return keys.map((k) => {
+      const rows = data.filter((d) => group_key(d, mode) === k);
+      const total = data.length || 1;
+      const winners = rows.filter((d) => d.winner === 1).length;
+      const nom = rows.length;
+      return {
+        key: k,
+        nominee_share: nom / total,
+        winner_share: winners / (data.filter((d) => d.winner === 1).length || 1),
+      };
+    });
+  }, [data, mode]);
+
+  const width = 900;
+  const inner_w = width - MARGIN.left - MARGIN.right;
+  const inner_h = HEIGHT - MARGIN.top - MARGIN.bottom;
+
+  const x_year = (year: number) => {
+    return ((year - years.min) / (years.max - years.min)) * inner_w + MARGIN.left;
+  };
+
+  const y_share = (v: number) => {
+    return (1 - v) * inner_h + MARGIN.top;
+  };
+
+  useEffect(() => {
+    if (view !== 'line') return;
+    const x_axis = x_axis_ref.current;
+    const y_axis = y_axis_ref.current;
+    if (!x_axis || !y_axis) return;
+
+    const x = d3.scaleLinear().domain([years.min, years.max]).range([MARGIN.left, width - MARGIN.right]);
+    const y = d3.scaleLinear().domain([0, 1]).range([HEIGHT - MARGIN.bottom, MARGIN.top]);
+
+    d3.select(x_axis).call(d3.axisBottom(x).ticks(8).tickFormat(d3.format('d')));
+    d3.select(y_axis).call(d3.axisLeft(y).ticks(5).tickFormat(d3.format('.0%')));
+  }, [view, years.min, years.max, width]);
+
+  return (
+    <div style={{ marginTop: 12 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+        <button onClick={() => { set_mode('all'); set_selected(null); }}>All</button>
+        <button onClick={() => { set_mode('gender'); set_selected(null); }}>Gender</button>
+        <button onClick={() => { set_mode('race'); set_selected(null); }}>Race</button>
+        <button onClick={() => set_view(view === 'bar' ? 'line' : 'bar')}>
+          {view === 'bar' ? 'Show Line' : 'Show Bar'}
+        </button>
+      </div>
+
+      {view === 'bar' ? (
+        <svg width={width} height={HEIGHT} style={{ border: '1px solid #c9c2b4', background: '#ffffff' }}>
+          <g>
+            {bars.map((b, i) => {
+              const band = inner_w / bars.length;
+              const x = MARGIN.left + i * band + 8;
+              const w = band - 16;
+              const h = inner_h * b.nominee_share;
+              const y = MARGIN.top + (inner_h - h);
+              return (
+                <g
+                  key={b.key}
+                  onClick={() => { set_view('line'); set_selected(b.key); }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <rect x={x} y={y} width={w} height={h} fill={palette(b.key)} opacity={0.7} />
+                  <line
+                    x1={x}
+                    x2={x + w}
+                    y1={y_share(b.winner_share)}
+                    y2={y_share(b.winner_share)}
+                    stroke="#1b1b1b"
+                    strokeWidth={2}
+                  />
+                  <text x={x + w / 2} y={HEIGHT - 10} textAnchor="middle" fontSize="11" fill="#5b5b5b">
+                    {b.key}
+                  </text>
+                </g>
+              );
+            })}
+          </g>
+        </svg>
+      ) : (
+        <svg width={width} height={HEIGHT} style={{ border: '1px solid #c9c2b4', background: '#ffffff' }}>
+          <g ref={x_axis_ref} transform={`translate(0,${HEIGHT - MARGIN.bottom})`} />
+          <g ref={y_axis_ref} transform={`translate(${MARGIN.left},0)`} />
+
+          {mode_keys(mode).map((k) => {
+            const points = series.filter((s) => s.key === k);
+            const active = !selected || selected === k;
+            const line_opacity = active ? 1 : 0.2;
+            const line_width = active ? 2.5 : 1;
+
+            return (
+              <g key={k}>
+                {points.map((p, i) => {
+                  if (i === 0) return null;
+                  const prev = points[i - 1];
+                  return (
+                    <line
+                      key={`${k}-${p.year}`}
+                      x1={x_year(prev.year)}
+                      y1={y_share(prev.nominee_share)}
+                      x2={x_year(p.year)}
+                      y2={y_share(p.nominee_share)}
+                      stroke={palette(k)}
+                      strokeWidth={line_width}
+                      opacity={line_opacity}
+                      onMouseMove={(evt) => {
+                        set_hover({
+                          x: evt.clientX,
+                          y: evt.clientY,
+                          text: `${k} nominee share ${Math.round(p.nominee_share * 100)}% (${p.year})`,
+                        });
+                      }}
+                      onMouseLeave={() => set_hover(null)}
+                    />
+                  );
+                })}
+                {points.map((p, i) => {
+                  if (i === 0) return null;
+                  const prev = points[i - 1];
+                  return (
+                    <line
+                      key={`${k}-${p.year}-win`}
+                      x1={x_year(prev.year)}
+                      y1={y_share(prev.winner_share)}
+                      x2={x_year(p.year)}
+                      y2={y_share(p.winner_share)}
+                      stroke={palette(k)}
+                      strokeWidth={line_width}
+                      strokeDasharray="4 3"
+                      opacity={line_opacity}
+                      onMouseMove={(evt) => {
+                        set_hover({
+                          x: evt.clientX,
+                          y: evt.clientY,
+                          text: `${k} winner share ${Math.round(p.winner_share * 100)}% (${p.year})`,
+                        });
+                      }}
+                      onMouseLeave={() => set_hover(null)}
+                    />
+                  );
+                })}
+              </g>
+            );
+          })}
+        </svg>
+      )}
+      {hover && (
+        <div
+          style={{
+            position: 'fixed',
+            left: hover.x + 12,
+            top: hover.y + 12,
+            background: '#ffffff',
+            border: '1px solid #c9c2b4',
+            borderRadius: 6,
+            padding: '6px 8px',
+            fontSize: 12,
+            color: '#1b1b1b',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            pointerEvents: 'none',
+            zIndex: 10,
+          }}
+        >
+          {hover.text}
+        </div>
+      )}
+    </div>
+  );
+}
+
