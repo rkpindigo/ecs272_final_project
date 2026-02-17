@@ -12,13 +12,13 @@ interface RadarSeries {
   values: number[];
 }
 
-const width = 750;
-const height = 650;
-const margin = 100;
-const radius = Math.min(width - 250, height) / 2 - margin;
+const margin = 90;
 
 export default function RadarChart() {
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const controlsOuterRef = useRef<HTMLDivElement | null>(null);
+  const controlsInnerRef = useRef<HTMLDivElement | null>(null);
   
   // State for raw data and selected range
   const [rawData, setRawData] = useState<CsvRow[]>([]);
@@ -31,6 +31,38 @@ export default function RadarChart() {
   );
 
   const [selectedRaces, setSelectedRaces] = useState<string[]>([]);
+  const [plotSize, setPlotSize] = useState({ width: 820, height: 560 });
+  const [controlsScale, setControlsScale] = useState(1);
+  const [controlsHeight, setControlsHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const observer = new ResizeObserver((entries) => {
+      if (!entries.length) return;
+      const { width, height } = entries[0].contentRect;
+      if (!width || !height) return;
+      const natural_controls_h = controlsInnerRef.current
+        ? controlsInnerRef.current.scrollHeight
+        : 0;
+      const target_controls_h = natural_controls_h
+        ? Math.min(natural_controls_h, Math.floor(height * 0.32))
+        : 0;
+      const next_scale = natural_controls_h
+        ? Math.max(0.7, Math.min(1, target_controls_h / natural_controls_h))
+        : 1;
+      const applied_controls_h = natural_controls_h
+        ? Math.floor(natural_controls_h * next_scale)
+        : 0;
+      const available_h = Math.max(220, Math.floor(height - applied_controls_h - 8));
+      setPlotSize({ width: Math.floor(width), height: available_h });
+      setControlsScale(next_scale);
+      setControlsHeight(applied_controls_h || null);
+    });
+
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
 
   // 1. Data Loading with explicit key mapping
@@ -90,6 +122,11 @@ export default function RadarChart() {
 
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
+
+    const width = plotSize.width;
+    const height = plotSize.height;
+    const radius = Math.min(width - 220, height) / 2 - margin;
+    if (!isFinite(radius) || radius <= 0) return;
 
     const g = svg.append("g")
       .attr("transform", `translate(${(width - 200) / 2}, ${height / 2})`);
@@ -177,56 +214,92 @@ export default function RadarChart() {
         .text(race);
     });
 
-  }, [rawData, yearRange, allCategories, selectedRaces]);
+  }, [rawData, yearRange, allCategories, selectedRaces, plotSize]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', fontFamily: 'sans-serif', padding: '20px' }}>
-      <div style={{ background: '#020202', padding: '20px', borderRadius: '8px', marginBottom: '20px', width: '400px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-          <span style={{ fontWeight: 'bold', color: '#ffffff' }}>{yearRange[0]}</span>
-          <span style={{ color: '#ffffff' }}>Filter by Year Range</span>
-          <span style={{ fontWeight: 'bold', color: '#ffffff' }}>{yearRange[1]}</span>
-        </div>
-        <input 
-          style={{ width: '100%', cursor: 'pointer' }}
-          type="range" min={dataBounds[0]} max={dataBounds[1]} value={yearRange[0]} 
-          onChange={e => setYearRange([Math.min(+e.target.value, yearRange[1]), yearRange[1]])}
-        />
-        <input 
-          style={{ width: '100%', cursor: 'pointer' }}
-          type="range" min={dataBounds[0]} max={dataBounds[1]} value={yearRange[1]} 
-          onChange={e => setYearRange([yearRange[0], Math.max(+e.target.value, yearRange[0])])}
-        />
-      </div>
+    <div
+      ref={containerRef}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        fontFamily: 'sans-serif',
+        padding: '20px',
+        height: '100%',
+        minHeight: 0,
+        boxSizing: 'border-box',
+      }}
+    >
       <div
+        ref={controlsOuterRef}
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
-          gap: "8px",
-          maxWidth: "600px",
-          marginBottom: "20px"
+          width: '100%',
+          height: controlsHeight ?? 'auto',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'flex-start',
+          overflow: 'hidden',
         }}
       >
-        {allRaces.map(race => (
-          <label
-            key={race}
+        <div
+          ref={controlsInnerRef}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            width: '100%',
+            transform: controlsScale !== 1 ? `scale(${controlsScale})` : undefined,
+            transformOrigin: 'top center',
+          }}
+        >
+          <div style={{ background: '#020202', padding: '20px', borderRadius: '8px', marginBottom: '20px', width: '400px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <span style={{ fontWeight: 'bold', color: '#ffffff' }}>{yearRange[0]}</span>
+              <span style={{ color: '#ffffff' }}>Filter by Year Range</span>
+              <span style={{ fontWeight: 'bold', color: '#ffffff' }}>{yearRange[1]}</span>
+            </div>
+            <input 
+              style={{ width: '100%', cursor: 'pointer' }}
+              type="range" min={dataBounds[0]} max={dataBounds[1]} value={yearRange[0]} 
+              onChange={e => setYearRange([Math.min(+e.target.value, yearRange[1]), yearRange[1]])}
+            />
+            <input 
+              style={{ width: '100%', cursor: 'pointer' }}
+              type="range" min={dataBounds[0]} max={dataBounds[1]} value={yearRange[1]} 
+              onChange={e => setYearRange([yearRange[0], Math.max(+e.target.value, yearRange[0])])}
+            />
+          </div>
+          <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              cursor: "pointer"
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+              gap: "8px",
+              maxWidth: "600px",
+              marginBottom: "20px"
             }}
           >
-            <input
-              type="checkbox"
-              checked={selectedRaces.includes(race)}
-              onChange={() => toggleRace(race)}
-            />
-            {race}
-          </label>
-        ))}
+            {allRaces.map(race => (
+              <label
+                key={race}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  cursor: "pointer"
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedRaces.includes(race)}
+                  onChange={() => toggleRace(race)}
+                />
+                {race}
+              </label>
+            ))}
+          </div>
+        </div>
       </div>
-      <svg ref={svgRef} width={width} height={height} />
+      <svg ref={svgRef} width={plotSize.width} height={plotSize.height} />
     </div>
   );
 }
