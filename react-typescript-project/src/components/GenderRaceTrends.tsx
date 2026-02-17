@@ -54,15 +54,25 @@ function useSize(ref: React.RefObject<HTMLDivElement | null>) {
   return size;
 }
 
-export function GenderRaceTrends({ data }: { data: OscarsRow[] }) {
-  const [mode, set_mode] = useState<Mode>('all');
-  const [view, set_view] = useState<'bar' | 'line'>('bar');
+export function GenderRaceTrends({
+  data,
+  initial_mode = 'all',
+  initial_view = 'bar',
+  initial_metric = 'percent_winners',
+}: {
+  data: OscarsRow[];
+  initial_mode?: Mode;
+  initial_view?: 'bar' | 'line';
+  initial_metric?: 'percent_winners' | 'percent_total' | 'count';
+}) {
+  const [mode, set_mode] = useState<Mode>(initial_mode);
+  const [view, set_view] = useState<'bar' | 'line'>(initial_view);
   const [selected, set_selected] = useState<string | null>(null);
   const [hover, set_hover] = useState<{ x: number; y: number; text: string } | null>(null);
   const [animate_bars, set_animate_bars] = useState(false);
   const [bar_anim_key, set_bar_anim_key] = useState(0);
   const [line_anim_key, set_line_anim_key] = useState(0);
-  const [metric, set_metric] = useState<'percent_winners' | 'percent_total' | 'count'>('percent_winners');
+  const [metric, set_metric] = useState<'percent_winners' | 'percent_total' | 'count'>(initial_metric);
   const wrap_ref = useRef<HTMLDivElement | null>(null);
   const { width, height } = useSize(wrap_ref);
   const [size_ready, set_size_ready] = useState(false);

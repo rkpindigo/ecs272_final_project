@@ -44,6 +44,8 @@ export function BandsBubblesView({
     onOverlayHover,
     onOverlayLeave,
     svg_key,
+    highlights,
+    show_bands = true,
 }: {
     width: number;
     height: number;
@@ -61,10 +63,26 @@ export function BandsBubblesView({
     onOverlayHover: (evt: React.MouseEvent<HTMLCanvasElement>) => void;
     onOverlayLeave: () => void;
     svg_key: string;
+    highlights: Array<{
+        id: string;
+        x: number;
+        y: number;
+        label: string;
+        note?: string;
+        color?: string;
+        dx?: number;
+        dy?: number;
+    }>;
+    show_bands?: boolean;
 }) {
     // Bands view uses SVG for bands and canvas for bubbles.
     const band_gap = 15;
     const band_heights = compute_band_heights(densities, inner_h, band_gap);
+
+    const estimate_width = (label: string, note?: string) => {
+        const base = Math.max(label.length, note ? note.length : 0);
+        return Math.max(140, base * 7.2 + 24);
+    };
 
     return (
         <>
@@ -98,7 +116,7 @@ export function BandsBubblesView({
                 <g ref={y_axis_ref} transform={`translate(${margin.left},0)`} />
 
                 <g clipPath="url(#plot-clip)">
-                    {densities.length > 0 && (() => {
+                    {show_bands && densities.length > 0 && (() => {
                         let current_y = margin.top;
                         return densities.map((density_info, i) => {
                             const band_height = band_heights[i];
@@ -134,7 +152,7 @@ export function BandsBubblesView({
                     })()}
                 </g>
 
-                {densities.length > 0 && (() => {
+                {show_bands && densities.length > 0 && (() => {
                     let current_y = margin.top;
                     return densities.map((density_info, i) => {
                         const band_height = band_heights[i];
@@ -159,6 +177,7 @@ export function BandsBubblesView({
                         );
                     });
                 })()}
+
             </svg>
 
             <canvas
@@ -176,6 +195,68 @@ export function BandsBubblesView({
                 onMouseMove={onOverlayHover}
                 onMouseLeave={onOverlayLeave}
             />
+
+            {highlights.length > 0 && (
+                <svg
+                    width={width}
+                    height={height}
+                    style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        pointerEvents: "none",
+                        zIndex: 3,
+                    }}
+                >
+                    {highlights.map((h) => {
+                        const dx = h.dx ?? 14;
+                        const dy = h.dy ?? -12;
+                        const box_w = estimate_width(h.label, h.note);
+                        const box_h = h.note ? 32 : 18;
+                        return (
+                            <g key={`highlight-${h.id}`}>
+                                <line
+                                    x1={h.x}
+                                    y1={h.y}
+                                    x2={h.x + dx}
+                                    y2={h.y + dy}
+                                    stroke={h.color || "#1b1b1b"}
+                                    strokeWidth={1}
+                                />
+                                <rect
+                                    x={h.x + dx}
+                                    y={h.y + dy - 14}
+                                    width={box_w}
+                                    height={box_h}
+                                    rx={6}
+                                    fill="#ffffff"
+                                    stroke={h.color || "#1b1b1b"}
+                                    strokeWidth={0.8}
+                                    opacity={0.97}
+                                />
+                                <text
+                                    x={h.x + dx + 8}
+                                    y={h.y + dy}
+                                    fontSize={11}
+                                    fill="#1b1b1b"
+                                >
+                                    {h.label}
+                                </text>
+                                {h.note && (
+                                    <text
+                                        x={h.x + dx + 8}
+                                        y={h.y + dy + 12}
+                                        fontSize={10}
+                                        fill="#5b5b5b"
+                                    >
+                                        {h.note}
+                                    </text>
+                                )}
+                            </g>
+                        );
+                    })}
+                </svg>
+            )}
         </>
     );
 }

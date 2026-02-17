@@ -16,7 +16,71 @@ const MARGIN = { top: 20, right: 120, bottom: 40, left: 160 };
 const BUBBLE_RADIUS = 4;
 const BUBBLE_PADDING = 1;
 
-export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
+const HIGHLIGHTS: Array<{
+    id: string;
+    label: string;
+    note?: string;
+    match: { name: string; year?: number; category?: string };
+    dx?: number;
+    dy?: number;
+}> = [
+    {
+        id: "hattie-mcdaniel",
+        label: "Hattie McDaniel",
+        note: "First Black Oscar winner",
+        match: { name: "Hattie McDaniel", year: 1940 },
+        dx: 18,
+        dy: -24,
+    },
+    {
+        id: "kathryn-bigelow",
+        label: "Kathryn Bigelow",
+        note: "First woman to win Best Director",
+        match: { name: "Kathryn Bigelow", year: 2010 },
+        dx: 18,
+        dy: -12,
+    },
+    {
+        id: "halle-berry",
+        label: "Halle Berry",
+        note: "Best Actress winner",
+        match: { name: "Halle Berry", year: 2002 },
+        dx: 18,
+        dy: 18,
+    },
+    {
+        id: "bong-joon-ho",
+        label: "Bong Joon Ho",
+        note: "Best Director (Parasite)",
+        match: { name: "Bong Joon Ho", year: 2020 },
+        dx: 18,
+        dy: -14,
+    },
+];
+
+export function BubbleOverviewSplit({
+    data,
+    initial_view_mode = "bands-bubbles",
+    initial_show_highlights = true,
+    initial_focus_highlights = false,
+    initial_highlight_ids,
+    initial_filter_gender = "all",
+    initial_filter_race = "all",
+    initial_filter_winner = "All",
+    initial_filter_name = "",
+    initial_filter_film = "",
+}: {
+    data: OscarsRow[];
+    initial_view_mode?: ViewMode;
+    initial_show_highlights?: boolean;
+    initial_focus_highlights?: boolean;
+    initial_highlight_ids?: string[];
+    initial_filter_gender?: string;
+    initial_filter_race?: string;
+    initial_filter_winner?: "All" | "Winner" | "Nominee";
+    initial_filter_name?: string;
+    initial_filter_film?: string;
+}) {
     // Split rendering into small view components to keep the main file readable.
     const svg_ref = useRef<SVGSVGElement | null>(null);
     const canvas_ref = useRef<HTMLCanvasElement | null>(null);
@@ -31,24 +95,62 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
     const bands_anim_frame_ref = useRef<number | null>(null);
     const [filter_winner, set_filter_winner] = useState<
         "All" | "Winner" | "Nominee"
-    >("All");
-    const [filter_gender, set_filter_gender] = useState<string>("all");
-    const [filter_race, set_filter_race] = useState<string>("all");
+    >(initial_filter_winner);
+    const [filter_gender, set_filter_gender] = useState<string>(
+        initial_filter_gender,
+    );
+    const [filter_race, set_filter_race] = useState<string>(
+        initial_filter_race,
+    );
+    const [filter_name, set_filter_name] = useState<string>(
+        initial_filter_name,
+    );
+    const [filter_film, set_filter_film] = useState<string>(
+        initial_filter_film,
+    );
+    const [timeseries_category, set_timeseries_category] = useState<string>(
+        "All",
+    );
     const [selected_category, set_selected_category] = useState<string | null>(
         null,
     );
-    const [view_mode, set_view_mode] = useState<ViewMode>("bands-bubbles");
+    const [view_mode, set_view_mode] = useState<ViewMode>(
+        initial_view_mode,
+    );
     const [tip, set_tip] = useState<{
         x: number;
         y: number;
         text: string;
     } | null>(null);
     const [sampling_rate, set_sampling_rate] = useState(5);
+    const [show_highlights, set_show_highlights] = useState(
+        initial_show_highlights,
+    );
+    const [focus_highlights, set_focus_highlights] = useState(
+        initial_focus_highlights,
+    );
+    const [highlight_ids, set_highlight_ids] = useState<string[]>(
+        initial_highlight_ids || HIGHLIGHTS.map((h) => h.id),
+    );
 
     const [container_size, set_container_size] = useState({
         width: 1000,
         height: 640,
     });
+
+    const toggle_highlight = (id: string) => {
+        set_highlight_ids((prev) =>
+            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+        );
+    };
+
+    const enable_all_highlights = () => {
+        set_highlight_ids(HIGHLIGHTS.map((h) => h.id));
+    };
+
+    const clear_highlights = () => {
+        set_highlight_ids([]);
+    };
 
     useEffect(() => {
         if (!container_ref.current) return;
@@ -83,9 +185,26 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
         return Array.from(set).sort();
     }, [data]);
 
+    useEffect(() => {
+        if (timeseries_category === "All" && groups.length > 0) return;
+        if (!groups.includes(timeseries_category) && groups.length > 0) {
+            set_timeseries_category(groups[0]);
+        }
+    }, [groups, timeseries_category]);
+
     const normalize_key = (value?: string) => {
         const trimmed = value?.trim();
         return trimmed ? trimmed.toLowerCase() : "unknown";
+    };
+
+    const normalize_text = (value?: string) => {
+        return value
+            ? value
+                  .toLowerCase()
+                  .replace(/[^a-z0-9\s]/g, "")
+                  .replace(/\s+/g, " ")
+                  .trim()
+            : "";
     };
 
     const build_filter_options = (values: Array<string | undefined>) => {
@@ -109,6 +228,21 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
         return build_filter_options(data.map((d) => d.gender));
     }, [data]);
 
+    const races = useMemo(() => {
+        const options = build_filter_options(data.map((d) => d.race));
+        const has_non_white = options.some(
+            (o) => o.key !== "all" && o.label !== "White",
+        );
+        if (has_non_white) {
+            return [
+                options[0],
+                { key: "non-white", label: "Non-White" },
+                ...options.slice(1),
+            ];
+        }
+        return options;
+    }, [data]);
+
     const hash_string = (value: string) => {
         // Lightweight hash for deterministic jitter.
         let hash = 2166136261;
@@ -123,10 +257,6 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
         const hash = hash_string(`${seed}:${salt}`);
         return hash / 4294967296;
     };
-
-    const races = useMemo(() => {
-        return build_filter_options(data.map((d) => d.race));
-    }, [data]);
 
     const years = useMemo(() => {
         const ys = data.map((d) => d.year_ceremony).filter(Boolean);
@@ -143,11 +273,13 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
                 normalize_key(d.gender) !== filter_gender
             )
                 return false;
-            if (
-                filter_race !== "all" &&
-                normalize_key(d.race) !== filter_race
-            )
-                return false;
+            if (filter_race !== "all") {
+                if (filter_race === "non-white") {
+                    if (normalize_key(d.race) === "white") return false;
+                } else if (normalize_key(d.race) !== filter_race) {
+                    return false;
+                }
+            }
             return true;
         });
 
@@ -190,9 +322,25 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
                     normalize_key(d.gender) !== filter_gender
                 )
                     return false;
+            if (filter_race !== "all") {
+                if (filter_race === "non-white") {
+                    if (normalize_key(d.race) === "white") return false;
+                } else if (normalize_key(d.race) !== filter_race) {
+                    return false;
+                }
+            }
                 if (
-                    filter_race !== "all" &&
-                    normalize_key(d.race) !== filter_race
+                    filter_name.trim() &&
+                    !normalize_text(d.name).includes(
+                        normalize_text(filter_name),
+                    )
+                )
+                    return false;
+                if (
+                    filter_film.trim() &&
+                    !normalize_text(d.film).includes(
+                        normalize_text(filter_film),
+                    )
                 )
                     return false;
                 return true;
@@ -213,14 +361,55 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
                     group_index: group_map.get(group) ?? 0,
                 } as BubblePoint;
             });
-    }, [data, filter_winner, filter_gender, filter_race, groups]);
+    }, [
+        data,
+        filter_winner,
+        filter_gender,
+        filter_race,
+        filter_name,
+        filter_film,
+        groups,
+    ]);
+
+    const active_highlights = useMemo(() => {
+        const allowed = new Set(highlight_ids);
+        return HIGHLIGHTS.filter((h) => allowed.has(h.id));
+    }, [highlight_ids]);
+
+    const highlight_matches = useMemo(() => {
+        const matches: Array<{ id: string; bubble_id: string }> = [];
+        active_highlights.forEach((h) => {
+            const target_name = normalize_text(h.match.name);
+            const target_category = normalize_text(h.match.category || "");
+            const match = all_bubble_points.find((p) => {
+                if (target_name && normalize_text(p.name) !== target_name) {
+                    return false;
+                }
+                if (h.match.year && p.year !== h.match.year) return false;
+                if (
+                    target_category &&
+                    !normalize_text(p.category).includes(target_category)
+                ) {
+                    return false;
+                }
+                return true;
+            });
+            if (!match) return;
+            matches.push({ id: h.id, bubble_id: match.id });
+        });
+        return matches;
+    }, [active_highlights, all_bubble_points]);
 
     const sampled_bubbles = useMemo(() => {
+        const highlight_set = new Set(
+            highlight_matches.map((m) => m.bubble_id),
+        );
         if (sampling_rate <= 1) return all_bubble_points;
         return all_bubble_points.filter((p) => {
+            if (highlight_set.has(p.id)) return true;
             return hash_string(p.id) % sampling_rate === 0;
         });
-    }, [all_bubble_points, sampling_rate]);
+    }, [all_bubble_points, sampling_rate, highlight_matches]);
 
     const bubble_points = useMemo(() => {
         if (!selected_category) return [];
@@ -245,6 +434,14 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
             .scaleLinear()
             .domain([years.min, years.max])
             .range([MARGIN.left, width - MARGIN.right]);
+    }, [years, width]);
+
+    const cloud_x_scale = useMemo(() => {
+        const pad = 440;
+        return d3
+            .scaleLinear()
+            .domain([years.min, years.max])
+            .range([MARGIN.left + pad, width - MARGIN.right - pad]);
     }, [years, width]);
 
     const y_scale = useMemo(() => {
@@ -355,7 +552,12 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
     }, [view_mode, sampled_bubbles, stream_data, series, x_scale, y_scale]);
 
     const overlay_bands_layout = useMemo(() => {
-        if (view_mode !== "bands-bubbles") return { nodes: [], densities: [] };
+        if (
+            view_mode !== "bands-bubbles" &&
+            view_mode !== "category-cloud"
+        ) {
+            return { nodes: [], densities: [] };
+        }
 
         // Build density-sorted horizontal bands with local spreading.
 
@@ -462,7 +664,108 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
         });
 
         return { nodes: all_nodes, densities };
+    }, [view_mode, sampled_bubbles, groups, years, width, inner_h, cloud_x_scale]);
+
+    const overlay_cloud_layout = useMemo(() => {
+        if (view_mode !== "category-cloud") return [];
+
+        const x_scale_local = cloud_x_scale;
+
+        const by_group = d3.group(sampled_bubbles, (d) => d.group_index);
+        const densities = groups.map((g, i) => ({
+            group: g,
+            group_index: i,
+            count: (by_group.get(i) || []).length,
+        }));
+
+        densities.sort((a, b) => b.count - a.count);
+
+        const rank_map = new Map<number, number>();
+        densities.forEach((d, i) => {
+            rank_map.set(d.group_index, i);
+        });
+
+        const group_step = Math.max(26, BUBBLE_RADIUS * 6.5);
+        const base_y = MARGIN.top + inner_h - group_step;
+
+        const nodes = sampled_bubbles.map((p) => {
+            const rank = rank_map.get(p.group_index) ?? 0;
+            return {
+                ...p,
+                x: x_scale_local(p.year),
+                y:
+                    base_y - rank * group_step +
+                    (seeded_random(p.id, "cloud") - 0.5) * 10,
+                target_x: x_scale_local(p.year),
+                target_y: base_y - rank * group_step,
+            };
+        });
+
+        const sim = d3
+            .forceSimulation(nodes as any)
+            .force("x", d3.forceX((d: any) => d.target_x).strength(0.98))
+            .force("y", d3.forceY((d: any) => d.target_y).strength(0.3))
+            .force(
+                "collide",
+                d3
+                    .forceCollide((d: any) => {
+                        const is_winner = d.winner ? 1.5 : 1;
+                        return BUBBLE_RADIUS * 0.6 * is_winner + BUBBLE_PADDING;
+                    })
+                    .strength(1)
+                    .iterations(2),
+            )
+            .alphaDecay(0.05)
+            .stop();
+
+        for (let i = 0; i < 110; i++) {
+            sim.tick();
+        }
+
+        return nodes;
     }, [view_mode, sampled_bubbles, groups, years, width, inner_h]);
+
+    const overlay_timeseries_layout = useMemo(() => {
+        if (view_mode !== "category-timeseries") return [];
+        const group =
+            timeseries_category === "All" ? null : timeseries_category;
+        const nodes = sampled_bubbles.filter((p) => !group || p.group === group);
+
+        if (!nodes.length) return [];
+
+        const x_scale_local = d3
+            .scaleLinear()
+            .domain([years.min, years.max])
+            .range([MARGIN.left + 30, width - MARGIN.right - 30]);
+
+        const center_y = MARGIN.top + inner_h / 2;
+        const sim_nodes = nodes.map((p) => ({
+            ...p,
+            x: x_scale_local(p.year),
+            y: center_y + (seeded_random(p.id, "time") - 0.5) * 80,
+            target_x: x_scale_local(p.year),
+        }));
+
+        const sim = d3
+            .forceSimulation(sim_nodes as any)
+            .force("x", d3.forceX((d: any) => d.target_x).strength(0.7))
+            .force("y", d3.forceY(center_y).strength(0.08))
+            .force(
+                "collide",
+                d3
+                    .forceCollide(BUBBLE_RADIUS * 0.8 + BUBBLE_PADDING)
+                    .strength(0.8)
+                    .iterations(2),
+            )
+            .alphaDecay(0.05)
+            .stop();
+
+        for (let i = 0; i < 60; i++) {
+            sim.tick();
+        }
+
+        return sim_nodes;
+    }, [view_mode, sampled_bubbles, timeseries_category, years, width, inner_h]);
 
     const [bubble_transform, set_bubble_transform] = useState(d3.zoomIdentity);
     const [bands_transform, set_bands_transform] = useState(d3.zoomIdentity);
@@ -487,7 +790,13 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
     }, [view_mode, width]);
 
     useEffect(() => {
-        if (view_mode !== "bands-bubbles" || !canvas_ref.current) return;
+        if (
+            view_mode !== "bands-bubbles" &&
+            view_mode !== "category-cloud" &&
+            view_mode !== "category-timeseries"
+        )
+            return;
+        if (!canvas_ref.current) return;
 
         // Zoom both axes in bands mode to explore dense regions.
 
@@ -512,10 +821,74 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
     }, [view_mode]);
 
     useEffect(() => {
-        if (view_mode === "bands-bubbles") {
+        if (
+            view_mode === "bands-bubbles" ||
+            view_mode === "category-cloud" ||
+            view_mode === "category-timeseries"
+        ) {
             set_bands_transform(d3.zoomIdentity);
         }
     }, [view_mode]);
+
+    const highlight_positions = useMemo(() => {
+        if (
+            (view_mode !== "bands-bubbles" &&
+                view_mode !== "category-cloud") ||
+            !show_highlights
+        )
+            return [];
+
+        const nodes =
+            view_mode === "category-cloud"
+                ? overlay_cloud_layout
+                : overlay_bands_layout.nodes;
+        const matches: Array<{
+            id: string;
+            bubble_id: string;
+            x: number;
+            y: number;
+            label: string;
+            note?: string;
+            dx?: number;
+            dy?: number;
+        }> = [];
+
+        const match_map = new Map(
+            highlight_matches.map((m) => [m.id, m.bubble_id]),
+        );
+
+        active_highlights.forEach((h) => {
+            const match_id = match_map.get(h.id);
+            if (!match_id) return;
+            const match = nodes.find((p) => p.id === match_id);
+            if (!match || match.x === undefined || match.y === undefined) return;
+
+            matches.push({
+                id: h.id,
+                bubble_id: match.id,
+                x: bands_transform.applyX(match.x),
+                y: bands_transform.applyY(match.y),
+                label: h.label,
+                note: h.note,
+                dx: h.dx,
+                dy: h.dy,
+            });
+        });
+
+        return matches;
+    }, [
+        view_mode,
+        show_highlights,
+        active_highlights,
+        highlight_matches,
+        overlay_bands_layout.nodes,
+        overlay_cloud_layout,
+        bands_transform,
+    ]);
+
+    const highlight_bubble_ids = useMemo(() => {
+        return new Set(highlight_matches.map((h) => h.bubble_id));
+    }, [highlight_matches]);
 
     const detail_x_scale = useMemo(() => {
         return d3
@@ -561,7 +934,18 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
                     .tickFormat(d3.format("d")) as any,
             );
             d3.select(y_axis_ref.current).selectAll("*").remove();
-        } else if (view_mode === "bands-bubbles") {
+        } else if (view_mode === "category-cloud") {
+            d3.select(x_axis_ref.current).call(
+                d3
+                    .axisBottom(cloud_x_scale)
+                    .ticks(8)
+                    .tickFormat(d3.format("d")) as any,
+            );
+            d3.select(y_axis_ref.current).selectAll("*").remove();
+        } else if (
+            view_mode === "bands-bubbles" ||
+            view_mode === "category-timeseries"
+        ) {
             d3.select(x_axis_ref.current).call(
                 d3
                     .axisBottom(x_scale)
@@ -582,6 +966,7 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
         }
     }, [
         x_scale,
+        cloud_x_scale,
         y_scale,
         view_mode,
         detail_x_scale,
@@ -648,7 +1033,10 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
 
     useEffect(() => {
         if (
-            (view_mode !== "stream-bubbles" && view_mode !== "bands-bubbles") ||
+            (view_mode !== "stream-bubbles" &&
+                view_mode !== "bands-bubbles" &&
+                view_mode !== "category-cloud" &&
+                view_mode !== "category-timeseries") ||
             !canvas_ref.current
         )
             return;
@@ -685,32 +1073,69 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
                 const radius = base_radius * transform.k * safe_scale;
                 if (!Number.isFinite(radius) || radius <= 0) return;
 
-                const color = race_color(p.race);
+                const group_color = color_scale(p.group);
+                const race_stroke = race_color(p.race);
                 const is_female = p.gender.toLowerCase() === "female";
 
-                ctx.globalAlpha = base_alpha * alpha;
+                let highlight_alpha = 1;
+                if (
+                    view_mode === "bands-bubbles" &&
+                    focus_highlights &&
+                    highlight_bubble_ids.size > 0 &&
+                    !highlight_bubble_ids.has(p.id)
+                ) {
+                    highlight_alpha = 0.15;
+                }
+
+                ctx.globalAlpha = base_alpha * alpha * highlight_alpha;
+
+                const size_scale =
+                    view_mode === "category-cloud" && p.winner ? 1.6 : 1;
+                const render_radius = radius * size_scale;
 
                 if (is_female) {
                     ctx.beginPath();
-                    const h = radius * 1.5;
+                    const h = render_radius * 1.1;
                     ctx.moveTo(tx, ty - h);
-                    ctx.lineTo(tx - radius, ty + h * 0.6);
-                    ctx.lineTo(tx + radius, ty + h * 0.6);
+                    ctx.lineTo(tx - render_radius, ty + h * 0.9);
+                    ctx.lineTo(tx + render_radius, ty + h * 0.9);
                     ctx.closePath();
-                    ctx.fillStyle = color;
+                    if (view_mode === "category-cloud") {
+                        ctx.fillStyle = group_color;
+                    } else if (view_mode === "category-timeseries") {
+                        ctx.fillStyle = race_stroke;
+                    } else {
+                        ctx.fillStyle = race_stroke;
+                    }
                     ctx.fill();
 
-                    ctx.strokeStyle = p.winner ? "#c08f2d" : "#7a6d58";
-                    ctx.lineWidth = p.winner ? 1.8 : 0.8;
+                    if (view_mode === "category-cloud") {
+                        ctx.strokeStyle = race_stroke;
+                        ctx.lineWidth = 1;
+                    } else {
+                        ctx.strokeStyle = p.winner ? "#c08f2d" : "#7a6d58";
+                        ctx.lineWidth = p.winner ? 1.8 : 0.8;
+                    }
                     ctx.stroke();
                 } else {
                     ctx.beginPath();
-                    ctx.arc(tx, ty, radius, 0, Math.PI * 2);
-                    ctx.fillStyle = color;
+                    ctx.arc(tx, ty, render_radius, 0, Math.PI * 2);
+                    if (view_mode === "category-cloud") {
+                        ctx.fillStyle = group_color;
+                    } else if (view_mode === "category-timeseries") {
+                        ctx.fillStyle = race_stroke;
+                    } else {
+                        ctx.fillStyle = race_stroke;
+                    }
                     ctx.fill();
 
-                    ctx.strokeStyle = p.winner ? "#c08f2d" : "#7a6d58";
-                    ctx.lineWidth = p.winner ? 1.8 : 0.8;
+                    if (view_mode === "category-cloud") {
+                        ctx.strokeStyle = race_stroke;
+                        ctx.lineWidth = 1;
+                    } else {
+                        ctx.strokeStyle = p.winner ? "#c08f2d" : "#7a6d58";
+                        ctx.lineWidth = p.winner ? 1.8 : 0.8;
+                    }
                     ctx.stroke();
                 }
             });
@@ -727,6 +1152,30 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
                 scale: 1,
             }));
             draw_bubbles(bubbles, d3.zoomIdentity, BUBBLE_RADIUS * 0.85, 0.7);
+            return;
+        }
+
+        if (view_mode === "category-cloud") {
+            const bubbles = overlay_cloud_layout.map((p) => ({
+                p,
+                x: p.x!,
+                y: p.y!,
+                alpha: 1,
+                scale: 1,
+            }));
+            draw_bubbles(bubbles, bands_transform, BUBBLE_RADIUS * 0.7, 0.7);
+            return;
+        }
+
+        if (view_mode === "category-timeseries") {
+            const bubbles = overlay_timeseries_layout.map((p) => ({
+                p,
+                x: p.x!,
+                y: p.y!,
+                alpha: 1,
+                scale: 1,
+            }));
+            draw_bubbles(bubbles, bands_transform, BUBBLE_RADIUS * 0.7, 0.7);
             return;
         }
 
@@ -831,10 +1280,14 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
         view_mode,
         overlay_stream_layout,
         overlay_bands_layout,
+        overlay_cloud_layout,
+        overlay_timeseries_layout,
         width,
         inner_w,
         inner_h,
         bands_transform,
+        focus_highlights,
+        highlight_bubble_ids,
     ]);
 
     const handle_detail_hover = (evt: React.MouseEvent<HTMLCanvasElement>) => {
@@ -892,20 +1345,38 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
         const bubbles =
             view_mode === "stream-bubbles"
                 ? overlay_stream_layout
-                : overlay_bands_layout.nodes;
+                : view_mode === "category-cloud"
+                  ? overlay_cloud_layout
+                  : view_mode === "category-timeseries"
+                    ? overlay_timeseries_layout
+                    : overlay_bands_layout.nodes;
         const transform =
-            view_mode === "bands-bubbles" ? bands_transform : d3.zoomIdentity;
+            view_mode === "bands-bubbles" ||
+            view_mode === "category-cloud" ||
+            view_mode === "category-timeseries"
+                ? bands_transform
+                : d3.zoomIdentity;
 
         let closest: BubblePoint | null = null;
         let closest_dist = Infinity;
 
         for (const p of bubbles) {
             const x =
-                view_mode === "bands-bubbles" ? transform.applyX(p.x!) : p.x!;
+                view_mode === "bands-bubbles" ||
+                view_mode === "category-cloud" ||
+                view_mode === "category-timeseries"
+                    ? transform.applyX(p.x!)
+                    : p.x!;
             const y =
-                view_mode === "bands-bubbles" ? transform.applyY(p.y!) : p.y!;
+                view_mode === "bands-bubbles" ||
+                view_mode === "category-cloud" ||
+                view_mode === "category-timeseries"
+                    ? transform.applyY(p.y!)
+                    : p.y!;
             const radius =
-                view_mode === "bands-bubbles"
+                view_mode === "bands-bubbles" ||
+                view_mode === "category-cloud" ||
+                view_mode === "category-timeseries"
                     ? BUBBLE_RADIUS * 0.7 * transform.k
                     : BUBBLE_RADIUS * 0.85;
 
@@ -923,7 +1394,7 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
             set_tip({
                 x: evt.clientX,
                 y: evt.clientY,
-                text: `${closest.name || "Unknown"}\n${closest.year} • ${closest.category}\n${closest.winner ? "Winner" : "Nominee"}`,
+                text: `${closest.name || "Unknown"}\n${closest.year} • ${closest.category}\n${closest.film || "Unknown"}\n${closest.winner ? "Winner" : "Nominee"}`,
             });
         } else {
             set_tip(null);
@@ -954,6 +1425,10 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
                 minHeight: 0,
             }}
         >
+            <div style={{ fontSize: 12, color: "#5b5b5b" }}>
+                Each mark is a nominee or winner. Color = race, shape = gender,
+                outline = winner status.
+            </div>
             <div
                 ref={controls_ref}
                 style={{
@@ -991,6 +1466,87 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
                         </option>
                     ))}
                 </select>
+                <input
+                    type="text"
+                    placeholder="Search person"
+                    value={filter_name}
+                    onChange={(e) => set_filter_name(e.target.value)}
+                    style={{ padding: "4px 6px", fontSize: 12 }}
+                />
+                <input
+                    type="text"
+                    placeholder="Search film"
+                    value={filter_film}
+                    onChange={(e) => set_filter_film(e.target.value)}
+                    style={{ padding: "4px 6px", fontSize: 12 }}
+                />
+
+                {(view_mode === "bands-bubbles" ||
+                    view_mode === "category-cloud") && (
+                    <div
+                        style={{
+                            display: "flex",
+                            gap: 6,
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                        }}
+                    >
+                        <span style={{ fontSize: 12, color: "#666" }}>
+                            Highlights
+                        </span>
+                        <label style={{ fontSize: 12, color: "#444" }}>
+                            <input
+                                type="checkbox"
+                                checked={show_highlights}
+                                onChange={(e) =>
+                                    set_show_highlights(e.target.checked)
+                                }
+                                style={{ marginRight: 4 }}
+                            />
+                            Show
+                        </label>
+                        <label style={{ fontSize: 12, color: "#444" }}>
+                            <input
+                                type="checkbox"
+                                checked={focus_highlights}
+                                onChange={(e) =>
+                                    set_focus_highlights(e.target.checked)
+                                }
+                                style={{ marginRight: 4 }}
+                            />
+                            Focus
+                        </label>
+                        <button onClick={enable_all_highlights}>All</button>
+                        <button onClick={clear_highlights}>None</button>
+                        {HIGHLIGHTS.map((h) => (
+                            <button
+                                key={h.id}
+                                onClick={() => toggle_highlight(h.id)}
+                                style={{
+                                    fontWeight: highlight_ids.includes(h.id)
+                                        ? "bold"
+                                        : "normal",
+                                }}
+                            >
+                                {h.label}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {view_mode === "category-timeseries" && (
+                    <select
+                        value={timeseries_category}
+                        onChange={(e) => set_timeseries_category(e.target.value)}
+                    >
+                        <option value="All">All Categories</option>
+                        {groups.map((g) => (
+                            <option key={g} value={g}>
+                                {g}
+                            </option>
+                        ))}
+                    </select>
+                )}
 
                 {view_mode !== "detail" && (
                     <>
@@ -1027,11 +1583,37 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
                         >
                             Bands + Bubbles
                         </button>
+                        <button
+                            onClick={() => set_view_mode("category-cloud")}
+                            style={{
+                                fontWeight:
+                                    view_mode === "category-cloud"
+                                        ? "bold"
+                                        : "normal",
+                            }}
+                        >
+                            Category Cloud
+                        </button>
+                        <button
+                            onClick={() =>
+                                set_view_mode("category-timeseries")
+                            }
+                            style={{
+                                fontWeight:
+                                    view_mode === "category-timeseries"
+                                        ? "bold"
+                                        : "normal",
+                            }}
+                        >
+                            Category Timeline
+                        </button>
                     </>
                 )}
 
                 {(view_mode === "stream-bubbles" ||
-                    view_mode === "bands-bubbles") && (
+                    view_mode === "bands-bubbles" ||
+                    view_mode === "category-cloud" ||
+                    view_mode === "category-timeseries") && (
                     <>
                         <span style={{ fontSize: 12, color: "#666" }}>
                             Bubble density (1 in
@@ -1059,7 +1641,9 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
                             }}
                         />
                         <span style={{ fontSize: 12, color: "#666" }}>)</span>
-                        {view_mode === "bands-bubbles" && (
+                        {(view_mode === "bands-bubbles" ||
+                            view_mode === "category-cloud" ||
+                            view_mode === "category-timeseries") && (
                             <button
                                 onClick={() =>
                                     set_bands_transform(d3.zoomIdentity)
@@ -1163,6 +1747,62 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
                         onOverlayLeave={() => set_tip(null)}
                         svg_key={svg_key}
                     />
+                ) : view_mode === "category-cloud" ? (
+                    <BandsBubblesView
+                        width={width}
+                        height={height}
+                        margin={MARGIN}
+                        inner_w={inner_w}
+                        inner_h={inner_h}
+                        svg_ref={svg_ref}
+                        canvas_ref={canvas_ref}
+                        x_axis_ref={x_axis_ref}
+                        y_axis_ref={y_axis_ref}
+                        densities={overlay_bands_layout.densities}
+                        color_scale={color_scale}
+                        bands_transform={bands_transform}
+                        onSelectCategory={(group) => {
+                            set_selected_category(group);
+                            set_view_mode("detail");
+                        }}
+                        onOverlayHover={handle_overlay_hover}
+                        onOverlayLeave={() => set_tip(null)}
+                        svg_key={svg_key}
+                        highlights={highlight_positions.map((h) => ({
+                            id: h.id,
+                            x: h.x,
+                            y: h.y,
+                            label: h.label,
+                            note: h.note,
+                            dx: h.dx,
+                            dy: h.dy,
+                        }))}
+                        show_bands={false}
+                    />
+                ) : view_mode === "category-timeseries" ? (
+                    <BandsBubblesView
+                        width={width}
+                        height={height}
+                        margin={MARGIN}
+                        inner_w={inner_w}
+                        inner_h={inner_h}
+                        svg_ref={svg_ref}
+                        canvas_ref={canvas_ref}
+                        x_axis_ref={x_axis_ref}
+                        y_axis_ref={y_axis_ref}
+                        densities={overlay_bands_layout.densities}
+                        color_scale={color_scale}
+                        bands_transform={bands_transform}
+                        onSelectCategory={(group) => {
+                            set_selected_category(group);
+                            set_view_mode("detail");
+                        }}
+                        onOverlayHover={handle_overlay_hover}
+                        onOverlayLeave={() => set_tip(null)}
+                        svg_key={svg_key}
+                        highlights={[]}
+                        show_bands={false}
+                    />
                 ) : (
                     <BandsBubblesView
                         width={width}
@@ -1184,6 +1824,16 @@ export function BubbleOverviewSplit({ data }: { data: OscarsRow[] }) {
                         onOverlayHover={handle_overlay_hover}
                         onOverlayLeave={() => set_tip(null)}
                         svg_key={svg_key}
+                        highlights={highlight_positions.map((h) => ({
+                            id: h.id,
+                            x: h.x,
+                            y: h.y,
+                            label: h.label,
+                            note: h.note,
+                            dx: h.dx,
+                            dy: h.dy,
+                        }))}
+                        show_bands
                     />
                 )}
             </div>
