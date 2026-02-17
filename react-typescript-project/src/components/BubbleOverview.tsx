@@ -199,7 +199,8 @@ export function BubbleOverview({ data }: { data: OscarsRow[] }) {
   });
 
   return (
-    <div ref={wrap_ref} style={{ position: 'relative', width: '100%' }}>
+    <div ref={wrap_ref} style={{ position: 'relative', width: '100%'
+     }}>
       <svg
         width={width}
         height={height}

@@ -1,0 +1,151 @@
+.tf-wrap {
+  background: #faf7f2;
+  height: 100%;
+  min-height: 0;
+  padding: 28px 18px 60px;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.tf-head {
+  text-align: center;
+  margin: 8px 0 6px;
+  font-size: 44px;
+  font-weight: 650;
+}
+
+.tf-sub {
+  text-align: center;
+  margin: 0 0 30px;
+  opacity: 0.7;
+  font-size: 18px;
+}
+
+.tf-timeline {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px 0;
+}
+
+.tf-line {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.tf-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 28px 0;
+}
+
+.tf-left {
+  justify-content: flex-start;
+  padding-right: 52%;
+}
+
+.tf-right {
+  justify-content: flex-end;
+  padding-left: 52%;
+}
+
+.tf-dot {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 3px solid #faf7f2;
+}
+
+.tf-dot-gold { background: #f59e0b; }
+.tf-dot-purple { background: #8b5cf6; }
+
+.tf-card {
+  width: min(520px, 92vw);
+  text-align: left;
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 18px;
+  padding: 22px 22px 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  cursor: pointer;
+  background: #fff;
+}
+
+.tf-card-gold { background: #fbf0c6; }
+.tf-card-purple { background: #efe7ff; }
+
+.tf-cardTop {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.tf-year {
+  font-size: 40px;
+  opacity: 0.25;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.tf-pill {
+  font-size: 13px;
+  font-weight: 650;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.06);
+}
+
+.tf-pill-gold { background: #f59e0b; color: #fff; }
+.tf-pill-purple { background: #8b5cf6; color: #fff; }
+
+.tf-name {
+  font-size: 26px;
+  font-weight: 650;
+  margin: 2px 0 10px;
+}
+
+.tf-cta {
+  opacity: 0.7;
+  font-size: 15px;
+}
+
+.tf-details {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(0,0,0,0.18);
+}
+
+.tf-subtitleLine {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.tf-detailsText {
+  opacity: 0.85;
+  line-height: 1.45;
+}
+
+.tf-error {
+  color: #b91c1c;
+}
+
+.tf-empty{
+  max-width: 800px;
+  margin: 30px auto 0;
+  padding: 14px;
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 14px;
+  opacity: 0.85;
+}
+
+
