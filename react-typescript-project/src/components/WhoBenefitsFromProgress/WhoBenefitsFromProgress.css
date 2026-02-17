@@ -1,0 +1,357 @@
+
+.wbp {
+  --bg: #fbfaf8;
+  --card: rgba(255, 255, 255, 0.72);
+  --stroke: rgba(0, 0, 0, 0.08);
+  --text: rgba(0, 0, 0, 0.92);
+  --muted: rgba(0, 0, 0, 0.65);
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+
+  color: var(--text);
+  background: var(--bg);
+  padding: 10px 0 24px;
+}
+
+.wbp__header {
+  text-align: center;
+  margin-top: 8px;
+}
+
+.wbp__title {
+  font-size: 44px;
+  letter-spacing: -0.5px;
+  margin: 10px 0 8px;
+}
+
+.wbp__subtitle {
+  max-width: 760px;
+  margin: 0 auto;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.wbp__status {
+  margin: 12px auto 0;
+  width: fit-content;
+  max-width: 92vw;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.65);
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.wbp__status--error {
+  color: rgba(180, 20, 20, 0.92);
+  border-color: rgba(180, 20, 20, 0.25);
+}
+
+.wbp__controls {
+  margin: 22px auto 0;
+  background: var(--card);
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: var(--shadow);
+}
+
+.wbp__controlsRow {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.wbp__toggle {
+  display: flex;
+  gap: 10px;
+}
+
+.wbp__pill {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #fff;
+  color: var(--text);
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.wbp__pill:hover {
+  transform: translateY(-1px);
+}
+
+.wbp__pill.is-active {
+  background: #111;
+  color: #fff;
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.wbp__select {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.wbp__count {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.wbp__layoutSingle {
+  margin-top: 16px;
+}
+
+.wbp__card {
+  background: var(--card);
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.wbp__matrixWrap {
+  padding: 14px;
+  overflow-x: auto;
+  position: relative;
+}
+
+.wbp__matrix {
+  display: grid;
+  grid-template-columns: 160px repeat(2, minmax(220px, 1fr)) 110px;
+  align-items: stretch;
+}
+
+.wbp__matrixCorner {
+  height: 46px;
+}
+
+.wbp__matrixColHeader {
+  font-weight: 900;
+  text-align: center;
+  padding: 12px 8px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wbp__totalHeader {
+  opacity: 0.9;
+}
+
+.wbp__matrixRowHeader {
+  font-weight: 900;
+  padding: 14px 10px;
+  display: flex;
+  align-items: center;
+}
+
+.wbp__cell {
+  margin: 6px 8px;
+  border-radius: 16px;
+  padding: 14px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  text-align: center;
+  user-select: none;
+  transition: box-shadow 120ms ease, border-color 120ms ease;
+  will-change: box-shadow;
+}
+
+/* To reduce hover jitter/flicker: no translateY */
+.wbp__cell:hover {
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.08);
+}
+
+.wbp__cell.is-selected {
+  border: 2px solid rgba(0, 0, 0, 0.7);
+}
+
+.wbp__cellPct {
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.wbp__cellCnt {
+  font-size: 12px;
+  opacity: 0.72;
+  margin-top: 4px;
+}
+
+.wbp__rowTotal {
+  text-align: center;
+  padding: 12px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: rgba(0, 0, 0, 0.75);
+}
+
+.wbp__legend {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.wbp__legendSwatches {
+  display: flex;
+  gap: 6px;
+}
+
+.wbp__swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* ---------------------------------------------------------
+   ✅ Floating tooltip near hovered cell (does NOT affect layout)
+   --------------------------------------------------------- */
+.wbp__tooltipFloat {
+  position: fixed !important;
+  z-index: 999999 !important;
+
+  width: min(520px, 92vw);
+  max-width: 92vw;
+
+  padding: 10px 12px;
+  border-radius: 12px;
+
+  background: linear-gradient(
+    135deg,
+    rgba(230, 221, 250, 0.95),
+    rgba(230, 221, 250, 0.95)
+  ) !important;
+  color: #070707 !important;
+
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+
+  /* critical: tooltip shouldn't steal hover */
+  pointer-events: none !important;
+}
+
+.wbp__tooltipTitle {
+  font-weight: 950;
+  margin-bottom: 6px;
+}
+
+.wbp__tooltipList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 100%;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.wbp__tooltipItem {
+  opacity: 0.95;
+}
+
+.wbp__tooltipMore {
+  opacity: 0.75;
+  font-style: italic;
+}
+
+/* ---------------------------------------------------------
+   Details panel (click-to-pin)
+   --------------------------------------------------------- */
+.wbp__detail {
+  margin-top: 14px;
+}
+
+.wbp__side {
+  padding: 14px;
+}
+
+.wbp__sideHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wbp__sideTitle {
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.wbp__sideHint {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.wbp__detailControls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.wbp__search {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #fff;
+  font-weight: 700;
+}
+
+.wbp__clearSmall {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.wbp__clearSmall:hover {
+  filter: brightness(0.98);
+}
+
+.wbp__detailBox {
+  margin-top: 12px;
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.wbp__detailTitle {
+  font-weight: 950;
+  font-size: 16px;
+}
+
+.wbp__winnerList {
+  margin-top: 10px;
+  max-height: 360px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.wbp__winnerRow {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  margin-bottom: 8px;
+  line-height: 1.25;
+}
+
+.wbp__winnerMore {
+  color: var(--muted);
+  font-size: 13px;
+  padding: 4px 2px 0;
+}
