@@ -1,3 +1,104 @@
+// import React, { useMemo, useState } from "react";
+// import { OscarsRow } from "../types";
+// import { BubbleOverviewSplit } from "./BubbleOverviewSplit";
+// import { GenderRaceTrends } from "./GenderRaceTrends";
+// import RadarChart from "./radarChart";
+
+// export function Slides({
+//     data,
+//     error,
+// }: {
+//     data: OscarsRow[] | null;
+//     error: string | null;
+// }) {
+//     const [slide, set_slide] = useState(0);
+
+//     const slides = useMemo(
+//         () => [
+//             {
+//                 title: "Oscars Representation",
+//                 body: "This story explores how nominations and wins have shifted over time by gender and race.",
+//                 content: (
+//                     <div className="intro">
+//                         Use the arrows to move through the visuals.
+//                     </div>
+//                 ),
+//             },
+//             {
+//                 title: "Category Balance by Race",
+//                 body: "Use the year range and race filters to compare category representation.",
+//                 content: <RadarChart />,
+//             },
+//             {
+//                 title: "Overview Bubble Plot",
+//                 body: "Each mark is a nominee or winner, grouped by category type and positioned by year.",
+//                 content: data ? <BubbleOverviewSplit data={data} /> : null,
+//             },
+//             {
+//                 title: "How Many Are Men and Women?",
+//                 body: "Start with bars, click to expand into time-series lines. Toggle the grouping at the top.",
+//                 content: data ? <GenderRaceTrends data={data} /> : null,
+//             },
+//         ],
+//         [data],
+//     );
+
+//     const current = slides[slide];
+
+//     return (
+//         <div className="page">
+//             <div className="progress">
+//                 {slides.map((_, i) => (
+//                     <div
+//                         key={`progress-${i}`}
+//                         className={`progress-seg ${
+//                             i < slide
+//                                 ? "progress-complete"
+//                                 : i === slide
+//                                   ? "progress-active"
+//                                   : "progress-upcoming"
+//                         }`}
+//                     />
+//                 ))}
+//             </div>
+
+//             {error && <p className="error">{error}</p>}
+//             {!data && !error && <p>Loading data...</p>}
+
+//             <div className="slide">
+//                 <div className="slide-header">
+//                     <h1>{current.title}</h1>
+//                     <p className="subtitle">{current.body}</p>
+//                 </div>
+//                 <div className="slide-content">{current.content}</div>
+//             </div>
+
+//             <button
+//                 className="nav-button nav-left"
+//                 onClick={() => set_slide(Math.max(0, slide - 1))}
+//                 disabled={slide === 0}
+//                 aria-label="Previous slide"
+//             >
+//                 ←
+//             </button>
+//             <button
+//                 className="nav-button nav-right"
+//                 onClick={() =>
+//                     set_slide(Math.min(slides.length - 1, slide + 1))
+//                 }
+//                 disabled={slide === slides.length - 1}
+//                 aria-label="Next slide"
+//             >
+//                 →
+//             </button>
+
+//             <div className="nav-count">
+//                 {slide + 1} / {slides.length}
+//             </div>
+//         </div>
+//     );
+// }
+
 import React, { useMemo, useState } from "react";
 import { OscarsRow } from "../types";
 import { BubbleOverviewSplit } from "./BubbleOverviewSplit";
@@ -5,7 +106,8 @@ import { GenderRaceTrends } from "./GenderRaceTrends";
 import RadarChart from "./radarChart";
 import SankeyDiagram from "./sankeyDiagram";
 import { SlidePlaceholder } from "./SlidePlaceholder";
-
+import WhoBenefitsFromProgress from "./WhoBenefitsFromProgress/WhoBenefitsFromProgress";
+import TimelineFirsts from "./TimelineFirsts/TimelineFirsts";
 const StorySlide = ({
     title,
     lines,
@@ -44,6 +146,8 @@ const DevSandbox = ({ data }: { data: OscarsRow[] | null }) => {
                     <option value="trends">Gender/Race Trends</option>
                     <option value="radar">Radar</option>
                     <option value="sankey">Sankey</option>
+                    <option value="benefits">Who Benefits Matrix</option>
+                    <option value="timeline">Timeline Firsts</option>
                 </select>
             </div>
             <div style={{ flex: 1, minHeight: 0 }}>
@@ -51,6 +155,8 @@ const DevSandbox = ({ data }: { data: OscarsRow[] | null }) => {
                 {view === "trends" && data && <GenderRaceTrends data={data} />}
                 {view === "radar" && <RadarChart />}
                 {view === "sankey" && <SankeyDiagram />}
+                {view === "benefits" && <WhoBenefitsFromProgress />}
+                {view === "timeline" && <TimelineFirsts />}
                 {!data && <div className="intro">Loading data...</div>}
             </div>
         </div>
@@ -322,26 +428,14 @@ export function Slides({
                 title: "Who Benefits Most?",
                 body:
                     "Progress does not lift all groups equally. The matrix makes this explicit, showing who gained the most after 2015 and who barely moved at all.",
-                content: (
-                    <SlidePlaceholder
-                        title="Race and Gender Matrix"
-                        body="Planned view: grid of shares with toggle for pre 2015 vs post 2015."
-                        accent="#2f8f5b"
-                    />
-                ),
+                content: <WhoBenefitsFromProgress />,
                 theme: "#1f6fb2",
             },
             {
                 title: "Milestones",
                 body:
                     "Numbers do not capture what it felt like to be first. This timeline adds context with the moments that changed what was possible.",
-                content: (
-                    <SlidePlaceholder
-                        title="Timeline of Firsts"
-                        body="Planned view: clickable milestones with expanded context."
-                        accent="#1f6fb2"
-                    />
-                ),
+                content: <TimelineFirsts />,
                 theme: "#1f6fb2",
             },
             {
