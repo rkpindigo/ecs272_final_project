@@ -24,7 +24,13 @@ export type BubblePoint = {
     sorted_index?: number;
 };
 
-export type ViewMode = "stream" | "stream-bubbles" | "bands-bubbles" | "detail";
+export type ViewMode =
+    | "stream"
+    | "stream-bubbles"
+    | "bands-bubbles"
+    | "category-cloud"
+    | "category-timeseries"
+    | "detail";
 
 export type BandDensity = {
     // Density summary per group for band layout.
