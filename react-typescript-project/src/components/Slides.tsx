@@ -108,6 +108,8 @@ import SankeyDiagram from "./sankeyDiagram";
 import { SlidePlaceholder } from "./SlidePlaceholder";
 import WhoBenefitsFromProgress from "./WhoBenefitsFromProgress/WhoBenefitsFromProgress";
 import TimelineFirsts from "./TimelineFirsts/TimelineFirsts";
+import NominationsBeforeAfter from "./NominationsBeforeAfter/NominationsBeforeAfter";
+
 const StorySlide = ({
     title,
     lines,
@@ -423,6 +425,13 @@ export function Slides({
                     "The pipeline matters. It is one thing to be nominated and another to win. This flow shows how representation moves from category to race to outcome and where it narrows.",
                 content: <SankeyDiagram />,
                 theme: "#6b4b9a",
+            },
+            {
+                title: "Before vs After 2015",
+                body:
+                    "The hashtag became a turning point in public conversation. If it mattered, we should see a break. This comparison makes it clearer whether representation shifted or whether the story changed more than the outcomes.",
+                content: data ? <NominationsBeforeAfter data={data} /> : null,
+                theme: "#2f8f5b",
             },
             {
                 title: "Who Benefits Most?",

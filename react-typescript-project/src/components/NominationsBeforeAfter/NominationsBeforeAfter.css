@@ -1,0 +1,199 @@
+/* Full-page, dark, like your reference */
+.nba2-root {
+  width: 100%;
+  height: 100%;
+
+  /* occupy the slide fully */
+  box-sizing: border-box;
+  padding: 34px 44px;
+
+  color: rgba(255, 255, 255, 0.92);
+  background: radial-gradient(ellipse at top, #2a2a2a 0%, #121212 55%, #0a0a0a 100%);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  overflow: hidden; /* no horizontal scroll */
+}
+
+/* Top pill */
+.nba2-pill {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 80, 80, 0.14);
+  border: 1px solid rgba(255, 80, 80, 0.22);
+  color: rgba(255, 160, 160, 0.95);
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  margin-bottom: 10px;
+}
+
+.nba2-title {
+  font-size: 40px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  text-align: center;
+}
+
+.nba2-subtitle {
+  margin-top: 10px;
+  max-width: 900px;
+  text-align: center;
+  font-size: 14px;
+  opacity: 0.78;
+  line-height: 1.45;
+}
+
+/* Heads */
+.nba2-head {
+  width: min(980px, 100%);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-top: 28px;
+}
+
+.nba2-head-col {
+  text-align: center;
+}
+
+.nba2-head-label {
+  font-size: 12px;
+  letter-spacing: 1.6px;
+  font-weight: 900;
+  opacity: 0.6;
+}
+
+.nba2-head-label-after {
+  color: rgba(244, 180, 26, 0.95);
+  opacity: 0.9;
+}
+
+.nba2-head-year {
+  margin-top: 8px;
+  font-weight: 900;
+  font-size: 18px;
+}
+
+/* Vertical list with ONLY vertical scroll if needed */
+.nba2-list {
+  width: min(980px, 100%);
+  margin-top: 18px;
+
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding: 6px 2px 18px;
+}
+
+/* Rows */
+.nba2-row {
+  padding: 18px 0 12px;
+}
+
+.nba2-row-label {
+  text-align: center;
+  font-weight: 900;
+  font-size: 14px;
+  opacity: 0.9;
+  margin-bottom: 12px;
+}
+
+.nba2-row-bars {
+  display: grid;
+  grid-template-columns: 1fr 16px 1fr auto;
+  gap: 14px;
+  align-items: center;
+}
+
+/* Bar wraps decide alignment to center */
+.nba2-barwrap {
+  height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.nba2-barwrap-before {
+  justify-content: flex-end; /* grow towards center */
+}
+
+.nba2-barwrap-after {
+  justify-content: flex-start; /* grow from center */
+}
+
+.nba2-divider {
+  width: 2px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  justify-self: center;
+}
+
+/* Bars */
+.nba2-bar {
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  box-sizing: border-box;
+  min-width: 70px;
+}
+
+.nba2-bar-before {
+  background: rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.nba2-bar-after {
+  background: rgba(244, 180, 26, 0.96);
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.nba2-bartext {
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.nba2-bartext-dark {
+  color: rgba(0, 0, 0, 0.88);
+}
+
+/* Delta pills */
+.nba2-delta {
+  font-weight: 900;
+  font-size: 14px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  min-width: 82px;
+  text-align: center;
+}
+
+.nba2-delta.pos {
+  background: rgba(28, 155, 82, 0.30);
+  border-color: rgba(28, 155, 82, 0.48);
+  color: rgba(190, 255, 225, 0.95);
+}
+
+.nba2-delta.neg {
+  background: rgba(220, 60, 60, 0.26);
+  border-color: rgba(220, 60, 60, 0.42);
+  color: rgba(255, 210, 210, 0.95);
+}
+
+/* nicer scrollbar */
+.nba2-list::-webkit-scrollbar {
+  width: 10px;
+}
+.nba2-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+}
+.nba2-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+}
