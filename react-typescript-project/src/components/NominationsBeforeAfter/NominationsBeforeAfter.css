@@ -1,11 +1,7 @@
-/* Full-page, dark, like your reference */
 .nba2-root {
   width: 100%;
-  height: 100%;
-
-  /* occupy the slide fully */
+  height: 100%;              /* ✅ match slide-content > * { height: 100% } */
   box-sizing: border-box;
-  padding: 34px 44px;
 
   color: rgba(255, 255, 255, 0.92);
   background: radial-gradient(ellipse at top, #2a2a2a 0%, #121212 55%, #0a0a0a 100%);
@@ -14,7 +10,49 @@
   flex-direction: column;
   align-items: center;
 
-  overflow: hidden; /* no horizontal scroll */
+  overflow: hidden;          /* ✅ root never scrolls; inner area does */
+  border-radius: 12px;       /* matches your slide rounding nicely */
+}
+
+/* Top area is fixed (does not scroll) */
+.nba2-top {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 34px 44px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ✅ The scrolling region
+   - must be flex:1
+   - must have min-height:0 (critical)
+   - must be full width so scrollbar is far right of black */
+.nba2-scroll {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;            /* ✅ CRITICAL for flex scroll */
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  display: flex;
+  justify-content: center;
+
+  padding: 10px 44px 20px;     /* aligns with top padding */
+  box-sizing: border-box;
+}
+
+/* Scrollbar styling on the scroll region (far right edge) */
+.nba2-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+.nba2-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+}
+.nba2-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
 }
 
 /* Top pill */
@@ -77,16 +115,11 @@
   font-size: 18px;
 }
 
-/* Vertical list with ONLY vertical scroll if needed */
+/* List is centered inside scroll area */
 .nba2-list {
   width: min(980px, 100%);
-  margin-top: 18px;
-
-  flex: 1 1 auto;
-  overflow-y: auto;
-  overflow-x: hidden;
-
-  padding: 6px 2px 18px;
+  padding: 0 2px;
+  box-sizing: border-box;
 }
 
 /* Rows */
@@ -117,11 +150,11 @@
 }
 
 .nba2-barwrap-before {
-  justify-content: flex-end; /* grow towards center */
+  justify-content: flex-end;
 }
 
 .nba2-barwrap-after {
-  justify-content: flex-start; /* grow from center */
+  justify-content: flex-start;
 }
 
 .nba2-divider {
@@ -185,15 +218,9 @@
   color: rgba(255, 210, 210, 0.95);
 }
 
-/* nicer scrollbar */
-.nba2-list::-webkit-scrollbar {
-  width: 10px;
-}
-.nba2-list::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 999px;
-}
-.nba2-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.16);
-  border-radius: 999px;
+/* extra space at bottom so last row isn't tight */
+.nba2-bottom-spacer {
+  height: 24px;
+  width: 1px;
+  flex: 0 0 auto;
 }

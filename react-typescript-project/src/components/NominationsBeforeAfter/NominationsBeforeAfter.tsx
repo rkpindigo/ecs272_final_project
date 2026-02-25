@@ -34,7 +34,6 @@ function computeWindow(data: OscarsRow[], hashtagYear: number): Window {
   const beforeEnd = hashtagYear - 1;
   let beforeStart = beforeEnd - (span - 1);
 
-  // shrink if not enough history
   if (beforeStart < minYear) {
     const maxSpan = Math.max(1, beforeEnd - minYear + 1);
     beforeStart = beforeEnd - (maxSpan - 1);
@@ -53,7 +52,6 @@ function computeWindow(data: OscarsRow[], hashtagYear: number): Window {
   };
 }
 
-/** Dataset-friendly category matching */
 const CAT_PRED = {
   all: (_: string) => true,
   best_picture: (c: string) => norm(c).includes("best picture"),
@@ -88,8 +86,10 @@ function pctPOC(
     if (d.year_ceremony < years.start || d.year_ceremony > years.end) return false;
     return pred(d.category || "");
   });
+
   const denom = subset.length;
   if (denom === 0) return 0;
+
   const numer = subset.reduce((acc, d) => acc + (isPOC(d.race || "") ? 1 : 0), 0);
   return (100 * numer) / denom;
 }
@@ -100,7 +100,6 @@ function relDelta(beforePct: number, afterPct: number) {
 }
 
 function fmtPct(x: number) {
-  // keep 1 decimal if needed (like your screenshot 9.5%)
   if (!isFinite(x)) return "0%";
   const r = Math.round(x * 10) / 10;
   return r % 1 === 0 ? `${r.toFixed(0)}%` : `${r.toFixed(1)}%`;
@@ -133,68 +132,74 @@ export default function NominationsBeforeAfter({ data }: { data: OscarsRow[] }) 
     ];
   }, [data, win]);
 
-  // Scale bars by max within the view (so it fills space nicely)
   const maxPct = useMemo(() => {
     const vals = rows.flatMap((r) => [r.before, r.after]).filter((x) => isFinite(x));
-    return Math.max(10, ...vals); // avoid tiny max
+    return Math.max(10, ...vals);
   }, [rows]);
 
   const barW = (pct: number) => `${Math.max(6, (pct / maxPct) * 100)}%`;
 
   return (
     <div className="nba2-root">
-      <div className="nba2-pill">#OscarsSoWhite</div>
+      {/* Header (fixed) */}
+      <div className="nba2-top">
+        {/* <div className="nba2-pill">#OscarsSoWhite</div>
 
-      <div className="nba2-title">Before &amp; After the Hashtag</div>
-      <div className="nba2-subtitle">
-        Comparing nominations for people of color: <b>{win.years} years before</b> ({win.before.start}–{win.before.end})
-        {" "}vs. <b>{win.years} years after</b> ({win.after.start}–{win.after.end})
-      </div>
+        <div className="nba2-title">Before &amp; After the Hashtag</div>
+        <div className="nba2-subtitle">
+          Comparing nominations for people of color: <b>{win.years} years before</b> ({win.before.start}–{win.before.end}) vs.{" "}
+          <b>{win.years} years after</b> ({win.after.start}–{win.after.end})
+        </div> */}
 
-      <div className="nba2-head">
-        <div className="nba2-head-col nba2-head-before">
-          <div className="nba2-head-label">BEFORE</div>
-          <div className="nba2-head-year">
-            {win.before.start}–{win.before.end}
-          </div>
-        </div>
-
-        <div className="nba2-head-col nba2-head-after">
-          <div className="nba2-head-label nba2-head-label-after">AFTER</div>
-          <div className="nba2-head-year">
-            {win.after.start}–{win.after.end}
-          </div>
-        </div>
-      </div>
-
-      <div className="nba2-list" role="list">
-        {rows.map((r) => (
-          <div className="nba2-row" key={r.label} role="listitem">
-            <div className="nba2-row-label">{r.label}</div>
-
-            <div className="nba2-row-bars">
-              {/* BEFORE (right-aligned to center) */}
-              <div className="nba2-barwrap nba2-barwrap-before">
-                <div className="nba2-bar nba2-bar-before" style={{ width: barW(r.before) }}>
-                  <span className="nba2-bartext">{fmtPct(r.before)}</span>
-                </div>
-              </div>
-
-              <div className="nba2-divider" />
-
-              {/* AFTER (left-aligned from center) */}
-              <div className="nba2-barwrap nba2-barwrap-after">
-                <div className="nba2-bar nba2-bar-after" style={{ width: barW(r.after) }}>
-                  <span className="nba2-bartext nba2-bartext-dark">{fmtPct(r.after)}</span>
-                </div>
-              </div>
-
-              <div className={`nba2-delta ${r.delta < 0 ? "neg" : "pos"}`}>
-                {fmtDelta(r.delta)}
-              </div>
+        <div className="nba2-head">
+          <div className="nba2-head-col nba2-head-before">
+            <div className="nba2-head-label">BEFORE</div>
+            <div className="nba2-head-year">
+              {win.before.start}–{win.before.end}
             </div>
           </div>
-        ))}
+
+          <div className="nba2-head-col nba2-head-after">
+            <div className="nba2-head-label nba2-head-label-after">AFTER</div>
+            <div className="nba2-head-year">
+              {win.after.start}–{win.after.end}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ✅ Scroll area (inside the slide-content 100% height box) */}
+      <div className="nba2-scroll">
+        <div className="nba2-list" role="list">
+          {rows.map((r) => (
+            <div className="nba2-row" key={r.label} role="listitem">
+              <div className="nba2-row-label">{r.label}</div>
+
+              <div className="nba2-row-bars">
+                <div className="nba2-barwrap nba2-barwrap-before">
+                  <div className="nba2-bar nba2-bar-before" style={{ width: barW(r.before) }}>
+                    <span className="nba2-bartext">{fmtPct(r.before)}</span>
+                  </div>
+                </div>
+
+                <div className="nba2-divider" />
+
+                <div className="nba2-barwrap nba2-barwrap-after">
+                  <div className="nba2-bar nba2-bar-after" style={{ width: barW(r.after) }}>
+                    <span className="nba2-bartext nba2-bartext-dark">{fmtPct(r.after)}</span>
+                  </div>
+                </div>
+
+                <div className={`nba2-delta ${r.delta < 0 ? "neg" : "pos"}`}>
+                  {fmtDelta(r.delta)}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* bottom breathing space so last row never feels clipped */}
+        <div className="nba2-bottom-spacer" />
       </div>
     </div>
   );

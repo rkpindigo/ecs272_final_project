@@ -388,10 +388,10 @@ export default function WhoBenefitsFromProgress() {
   return (
     <div className="wbp" ref={container_ref}>
       <div className="wbp__header" ref={header_ref}>
-        <h1 className="wbp__title">Who Benefits From Progress?</h1>
+        {/* <h1 className="wbp__title">Who Benefits From Progress?</h1>
         <p className="wbp__subtitle">
           Who gained recognition as the Oscars evolved?
-        </p>
+        </p> */}
 
         {dataStatus === "loading" && <div className="wbp__status">Loading dataset…</div>}
         {dataStatus === "error" && (
