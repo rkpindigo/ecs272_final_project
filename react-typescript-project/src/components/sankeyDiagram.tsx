@@ -20,22 +20,36 @@ type SLink = SankeyLink<NodeExtra, LinkExtra>;
 
 const SankeyDiagram: React.FC = () => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [data, setData] = useState<{ nodes: SNode[], links: SLink[] } | null>(null);
   const [yearRange, setYearRange] = useState<[number, number]>([1927, 2024]);
   const [bounds, setBounds] = useState({ min: 1927, max: 2024 });
   const [rawData, setRawData] = useState<OscarData[]>([]);
+  const [selectedLink, setSelectedLink] = useState<{ source: string, target: string } | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const normalize = (cat: string) => {
       if (/Actor|Actress/i.test(cat)) return "Acting";
-      if (/Director/i.test(cat)) return "Directing";
+      if (/Direct/i.test(cat)) return "Directing";
       if (/Screenplay|Writing/i.test(cat)) return "Writing";
       if (/Music|Score/i.test(cat)) return "Music";
       if (/Sound|Editing/i.test(cat)) return "Technical";
       return "Other";
   };
 
-  const width = 1400;
-  const height = 600;
+  let width = 1400;
+  let height = 500;
+
+  useEffect(() => {
+    const node = svgRef.current;
+    if (!node) return;
+    // Resize observer keeps the chart responsive to layout changes.
+    const ro = new ResizeObserver(() => {
+      const rect = node.getBoundingClientRect();
+      width = Math.max(1400, rect.width);
+      height = Math.max(500, rect.height);
+    });
+    ro.observe(node);
+    return () => ro.disconnect();
+  }, [svgRef]);
 
   // 1. Initial Load
   useEffect(() => {
@@ -60,9 +74,32 @@ const SankeyDiagram: React.FC = () => {
   const graph = useMemo(() => {
       if (rawData.length === 0) return null;
 
-      const filtered = rawData.filter(d => 
+      let filtered = rawData.filter(d => 
           d.year_film >= yearRange[0] && d.year_film <= yearRange[1]
       );
+
+      //Restrict by selection
+      if (selectedLink) {
+        //If a link between Category and Race is selected, we restrict all data to only those specific rows.
+        filtered = filtered.filter(d => {
+            const cat = normalize(d.Category);
+            const race = d.Race || "Unknown";
+            const status = d.winner === "TRUE" ? "Winner" : "Nominee";
+
+            const isSecondStage = selectedLink.target === "Winner" || selectedLink.target === "Nominee";
+
+            //Need to know which stage of flow we're in to apply the correct filter logic
+            if (isSecondStage) {
+              //If in second stage, we check if race and status match selected link
+              return race === selectedLink.source && status === selectedLink.target;
+            } else {
+              //If in first stage, we check if category and race match selected link
+              return cat === selectedLink.source && race === selectedLink.target;
+            }
+        });
+      }
+
+      if (filtered.length === 0) return null;
 
       const nodes: NodeExtra[] = [];
       const nodeMap = new Map<string, number>();
@@ -102,7 +139,7 @@ const SankeyDiagram: React.FC = () => {
           nodes: nodes.map(d => ({ ...d })),
           links: links.map(d => ({ ...d }))
       });
-  }, [rawData, yearRange]);
+  }, [rawData, yearRange, selectedLink]);
 
   return (
         <div style={{ fontFamily: 'sans-serif' }}>
@@ -122,17 +159,37 @@ const SankeyDiagram: React.FC = () => {
               {graph ? (
                 <g>
                   {/* Links */}
-                  {graph.links.map((link, i) => (
-                    <path
-                      key={`link-${i}`}
-                      d={sankeyLinkHorizontal()(link) || ""}
-                      fill="none"
-                      stroke="#000"
-                      strokeOpacity={0.15}
-                      // We use || 0 to ensure strokeWidth is never undefined
-                      strokeWidth={Math.max(1, link.width || 0)}
-                    />
-                  ))}
+                  {graph.links.map((link, i) => {
+                    const sourceName = (link.source as SNode).name;
+                    const targetName = (link.target as SNode).name;
+                    const isSelected = selectedLink?.source === sourceName && selectedLink?.target === targetName;
+                    const isHovered = hoveredIndex === i;
+                    
+                    return (<path
+                        key={`link-${i}`}
+                        d={sankeyLinkHorizontal()(link) || ""}
+                        fill="none"
+                        stroke={isSelected ? "#ffcc00" : (isHovered ? '#333' : "#000")}
+                        strokeOpacity={isSelected ? 0.7 : (isHovered ? 0.4 : 0.15)}
+                        strokeWidth={Math.max(1, link.width || 0)}
+                        style={{
+                          cursor: 'pointer',
+                          transition: 'stroke-opacity 0.2s, stroke 0.2s'
+                        }}
+                        onMouseEnter={() => setHoveredIndex(i)}
+                        onMouseLeave={() => setHoveredIndex(null)}
+                        onClick = {() => {
+                          if (isSelected) {
+                            setSelectedLink(null);
+                          }
+                          else {
+                            setSelectedLink({ source: sourceName, target: targetName });
+                          }
+                        }}
+                      >
+                        <title>{`${sourceName} → ${targetName}: ${link.value} records`}</title>
+                      </path>);
+                  })}
 
                   {/* Nodes */}
                   {graph.nodes.map((node, i) => (
