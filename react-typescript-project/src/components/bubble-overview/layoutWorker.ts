@@ -217,7 +217,7 @@ function compute_cloud_layout(
     bubble_padding: number,
 ): BubblePoint[] {
     const inner_h = height - margin.top - margin.bottom;
-    const pad = 440;
+    const pad = Math.max(220, Math.min(360, width * 0.22));
     const x_scale_local = d3
         .scaleLinear()
         .domain([years.min, years.max])
@@ -237,7 +237,11 @@ function compute_cloud_layout(
         rank_map.set(d.group_index, i);
     });
 
-    const group_step = Math.max(26, bubble_radius * 6.5);
+    const density = nodes_in.length / Math.max(1, groups.length);
+    // Keep low-density spacing close to the old look.
+    const group_scale = Math.min(1.9, 1 + Math.sqrt(density) / 22);
+    const collision_scale = Math.min(1.6, 1 + Math.sqrt(density) / 40);
+    const group_step = Math.max(26, bubble_radius * 6.5) * group_scale;
     const base_y = margin.top + inner_h - group_step;
 
     const nodes = nodes_in.map((p) => {
@@ -245,9 +249,10 @@ function compute_cloud_layout(
         return {
             ...p,
             x: x_scale_local(p.year),
-            y:
-                base_y - rank * group_step +
-                (seeded_random(p.id, "cloud") - 0.5) * 10,
+                y:
+                    base_y - rank * group_step +
+                    (seeded_random(p.id, "cloud") - 0.5) *
+                        (10 / group_scale),
             target_x: x_scale_local(p.year),
             target_y: base_y - rank * group_step,
         };
@@ -260,10 +265,13 @@ function compute_cloud_layout(
         .force(
             "collide",
             d3
-                .forceCollide((d: any) => {
-                    const is_winner = d.winner ? 1.5 : 1;
-                    return bubble_radius * 0.6 * is_winner + bubble_padding;
-                })
+                    .forceCollide((d: any) => {
+                        const is_winner = d.winner ? 1.5 : 1;
+                        return (
+                            bubble_radius * 0.6 * is_winner * collision_scale +
+                            bubble_padding
+                        );
+                    })
                 .strength(1)
                 .iterations(2),
         )

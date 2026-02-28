@@ -35,9 +35,10 @@ export function useBubbleAxes({
             );
             d3.select(y_axis_ref.current).selectAll("*").remove();
         } else if (view_mode === "category-cloud") {
+            const zoomed = bands_transform.rescaleX(cloud_x_scale);
             d3.select(x_axis_ref.current).call(
                 d3
-                    .axisBottom(cloud_x_scale)
+                    .axisBottom(zoomed)
                     .ticks(8)
                     .tickFormat(d3.format("d") as any) as any,
             );

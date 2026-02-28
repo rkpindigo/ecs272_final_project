@@ -374,13 +374,20 @@ export function BubbleOverview({
 
     const [bubble_transform, set_bubble_transform] = useState(d3.zoomIdentity);
     const [bands_transform, set_bands_transform] = useState(d3.zoomIdentity);
+    const user_zoomed_ref = useRef(false);
+    const last_cloud_layout_ref = useRef<string>("");
 
     useBubbleZoom({
         view_mode,
         canvas_ref,
         width,
+        bubble_transform,
+        bands_transform,
         set_bubble_transform,
         set_bands_transform,
+        on_bands_zoom: () => {
+            user_zoomed_ref.current = true;
+        },
     });
 
     useEffect(() => {
@@ -395,9 +402,90 @@ export function BubbleOverview({
             view_mode === "category-cloud" ||
             view_mode === "category-timeseries"
         ) {
-            set_bands_transform(d3.zoomIdentity);
+            user_zoomed_ref.current = false;
+            if (view_mode === "category-cloud") {
+                last_cloud_layout_ref.current = "";
+            } else {
+                set_bands_transform(d3.zoomIdentity);
+            }
         }
     }, [view_mode]);
+
+    useEffect(() => {
+        if (view_mode !== "category-cloud") return;
+        if (!overlay_cloud_layout.length) return;
+        if (user_zoomed_ref.current) return;
+
+        // Fit the cloud height to ~95% of the plot area.
+        const ys = overlay_cloud_layout
+            .map((p) => p.y)
+            .filter((v) => typeof v === "number") as number[];
+        if (!ys.length) return;
+
+        const min_y = Math.min(...ys);
+        const max_y = Math.max(...ys);
+        const span = Math.max(1, max_y - min_y);
+        const target_span = inner_h * 0.95;
+        let scale = target_span / span;
+
+        // Ensure the default view is slightly zoomed in.
+        scale = Math.max(scale, 1.08);
+        scale = Math.min(scale, 2.2);
+
+        const xs = overlay_cloud_layout
+            .map((p) => p.x)
+            .filter((v) => typeof v === "number") as number[];
+        if (!xs.length) return;
+
+        const min_x = Math.min(...xs);
+        const max_x = Math.max(...xs);
+        const current_center_x = (min_x + max_x) / 2;
+        const desired_center_x = MARGIN.left + inner_w / 2;
+        const tx = desired_center_x - scale * current_center_x;
+
+        const current_center_y = (min_y + max_y) / 2;
+        const desired_center_y = MARGIN.top + inner_h / 2;
+        const ty = desired_center_y - scale * current_center_y;
+
+        const layout_key = `${sampling_rate}-${overlay_cloud_layout.length}-${min_x}-${max_x}-${min_y}-${max_y}`;
+        if (layout_key === last_cloud_layout_ref.current) return;
+        last_cloud_layout_ref.current = layout_key;
+
+        set_bands_transform(d3.zoomIdentity.translate(tx, ty).scale(scale));
+    }, [view_mode, overlay_cloud_layout, inner_h, inner_w, sampling_rate]);
+
+    const get_cloud_fit_transform = () => {
+        if (view_mode !== "category-cloud") return d3.zoomIdentity;
+        if (!overlay_cloud_layout.length) return d3.zoomIdentity;
+
+        const ys = overlay_cloud_layout
+            .map((p) => p.y)
+            .filter((v) => typeof v === "number") as number[];
+        const xs = overlay_cloud_layout
+            .map((p) => p.x)
+            .filter((v) => typeof v === "number") as number[];
+        if (!ys.length || !xs.length) return d3.zoomIdentity;
+
+        const min_y = Math.min(...ys);
+        const max_y = Math.max(...ys);
+        const min_x = Math.min(...xs);
+        const max_x = Math.max(...xs);
+        const span_y = Math.max(1, max_y - min_y);
+        const target_span = inner_h * 0.95;
+        let scale = target_span / span_y;
+        scale = Math.max(scale, 1.08);
+        scale = Math.min(scale, 2.2);
+
+        const current_center_x = (min_x + max_x) / 2;
+        const desired_center_x = MARGIN.left + inner_w / 2;
+        const tx = desired_center_x - scale * current_center_x;
+
+        const current_center_y = (min_y + max_y) / 2;
+        const desired_center_y = MARGIN.top + inner_h / 2;
+        const ty = desired_center_y - scale * current_center_y;
+
+        return d3.zoomIdentity.translate(tx, ty).scale(scale);
+    };
 
     const highlight_positions = useMemo(() => {
         if (
@@ -575,7 +663,17 @@ export function BubbleOverview({
                     on_reset_zoom={() =>
                         view_mode === "detail"
                             ? set_bubble_transform(d3.zoomIdentity)
-                            : set_bands_transform(d3.zoomIdentity)
+                            : (() => {
+                                  if (view_mode === "category-cloud") {
+                                      user_zoomed_ref.current = false;
+                                      last_cloud_layout_ref.current = "";
+                                      set_bands_transform(
+                                          get_cloud_fit_transform(),
+                                      );
+                                      return;
+                                  }
+                                  set_bands_transform(d3.zoomIdentity);
+                              })()
                     }
                 />
             </div>

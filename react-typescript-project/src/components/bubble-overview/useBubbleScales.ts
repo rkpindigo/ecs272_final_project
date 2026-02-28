@@ -37,7 +37,8 @@ export function useBubbleScales({
     }, [years, width, margin]);
 
     const cloud_x_scale = useMemo(() => {
-        const pad = 440;
+        // Smaller pad keeps the cloud tighter on wide screens.
+        const pad = Math.max(220, Math.min(360, width * 0.22));
         return d3
             .scaleLinear()
             .domain([years.min, years.max])
