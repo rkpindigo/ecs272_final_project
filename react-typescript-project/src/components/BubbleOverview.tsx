@@ -1,305 +1,757 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { OscarsRow } from '../types';
-import { category_group } from '../utils/category_group';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import * as d3 from "d3";
+import { OscarsRow } from "../types";
+import { BubblePoint, ViewMode } from "./bubble-overview/types";
+import { StreamOnlyView } from "./bubble-overview/plots/StreamOnlyView";
+import { StreamBubblesView } from "./bubble-overview/plots/StreamBubblesView";
+import { BandsBubblesView } from "./bubble-overview/plots/BandsBubblesView";
+import { DetailBubblesView } from "./bubble-overview/plots/DetailBubblesView";
+import { BubbleControls } from "./bubble-overview/BubbleControls";
+import { BubbleTooltip } from "./bubble-overview/BubbleTooltip";
+import {
+    BUBBLE_PADDING,
+    BUBBLE_RADIUS,
+    HIGHLIGHTS,
+    MARGIN,
+} from "./bubble-overview/constants";
+import { useLayoutWorker } from "./bubble-overview/useLayoutWorker";
+import { useBubbleData } from "./bubble-overview/useBubbleData";
+import { useBubbleLayouts } from "./bubble-overview/useBubbleLayouts";
+import { useBubbleInteractions } from "./bubble-overview/useBubbleInteractions";
+import { useBubbleScales } from "./bubble-overview/useBubbleScales";
+import { useBubbleAxes } from "./bubble-overview/useBubbleAxes";
+import { useBubbleZoom } from "./bubble-overview/useBubbleZoom";
+import { useBubbleCanvas } from "./bubble-overview/useBubbleCanvas";
 
-const MARGIN = { top: 20, right: 20, bottom: 40, left: 140 };
-const HEIGHT = 520;
 
-type BubblePoint = {
-  year: number;
-  group: string;
-  group_index: number;
-  race: string;
-  gender: string;
-  winner: boolean;
-  name: string;
-  film: string;
-  category: string;
-  jx: number;
-  jy: number;
-};
 
-function hash_seed(str: string): number {
-  // Stable jitter seed so points don't flicker on pan/zoom.
-  let h = 2166136261;
-  for (let i = 0; i < str.length; i += 1) {
-    h ^= str.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
-}
+export function BubbleOverview({
+    data,
+    initial_view_mode = "bands-bubbles",
+    initial_show_highlights = true,
+    initial_focus_highlights = false,
+    initial_highlight_ids,
+    initial_filter_gender = "all",
+    initial_filter_race = "all",
+    initial_filter_winner = "All",
+    initial_filter_name = "",
+    initial_filter_film = "",
+    initial_sampling_rate = 5,
+}: {
+    data: OscarsRow[];
+    initial_view_mode?: ViewMode;
+    initial_show_highlights?: boolean;
+    initial_focus_highlights?: boolean;
+    initial_highlight_ids?: string[];
+    initial_filter_gender?: string;
+    initial_filter_race?: string;
+    initial_filter_winner?: "All" | "Winner" | "Nominee";
+    initial_filter_name?: string;
+    initial_filter_film?: string;
+    initial_sampling_rate?: number;
+}) {
+    // Split rendering into small view components to keep the main file readable.
+    const svg_ref = useRef<SVGSVGElement | null>(null);
+    const canvas_ref = useRef<HTMLCanvasElement | null>(null);
+    const x_axis_ref = useRef<SVGGElement | null>(null);
+    const y_axis_ref = useRef<SVGGElement | null>(null);
+    const container_ref = useRef<HTMLDivElement | null>(null);
+    const plot_ref = useRef<HTMLDivElement | null>(null);
+    const controls_ref = useRef<HTMLDivElement | null>(null);
+    const [filter_winner, set_filter_winner] = useState<
+        "All" | "Winner" | "Nominee"
+    >(initial_filter_winner);
+    const [filter_gender, set_filter_gender] = useState<string>(
+        initial_filter_gender,
+    );
+    const [filter_race, set_filter_race] = useState<string>(
+        initial_filter_race,
+    );
+    const [filter_name, set_filter_name] = useState<string>(
+        initial_filter_name,
+    );
+    const [filter_film, set_filter_film] = useState<string>(
+        initial_filter_film,
+    );
+    const [timeseries_category, set_timeseries_category] = useState<string>(
+        "All",
+    );
+    const [selected_category, set_selected_category] = useState<string | null>(
+        null,
+    );
+    const [view_mode, set_view_mode] = useState<ViewMode>(
+        initial_view_mode,
+    );
+    const [sampling_rate, set_sampling_rate] = useState(
+        Math.max(1, Math.min(20, initial_sampling_rate)),
+    );
+    const [show_highlights, set_show_highlights] = useState(
+        initial_show_highlights,
+    );
+    const [focus_highlights, set_focus_highlights] = useState(
+        initial_focus_highlights,
+    );
+    const [highlight_ids, set_highlight_ids] = useState<string[]>(
+        initial_highlight_ids || HIGHLIGHTS.map((h) => h.id),
+    );
 
-function use_size(ref: React.RefObject<HTMLDivElement | null>) {
-  const [size, set_size] = useState({ width: 900, height: HEIGHT });
-
-  useEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-    // Resize observer keeps the chart responsive to layout changes.
-    const ro = new ResizeObserver(() => {
-      const rect = node.getBoundingClientRect();
-      set_size({ width: Math.max(600, rect.width), height: HEIGHT });
+    const [container_size, set_container_size] = useState({
+        width: 1000,
+        height: 640,
     });
-    ro.observe(node);
-    return () => ro.disconnect();
-  }, [ref]);
 
-  return size;
-}
+    const toggle_highlight = (id: string) => {
+        set_highlight_ids((prev) =>
+            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+        );
+    };
 
-function clamp(v: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, v));
-}
+    const enable_all_highlights = () => {
+        set_highlight_ids(HIGHLIGHTS.map((h) => h.id));
+    };
 
-export function BubbleOverview({ data }: { data: OscarsRow[] }) {
-  const wrap_ref = useRef<HTMLDivElement>(null);
-  const { width, height } = use_size(wrap_ref);
-  const [tip, set_tip] = useState<{ x: number; y: number; text: string } | null>(null);
+    const clear_highlights = () => {
+        set_highlight_ids([]);
+    };
 
-  const groups = useMemo(() => {
-    const set = new Set<string>();
-    data.forEach((d) => set.add(category_group(d.category)));
-    return Array.from(set).sort();
-  }, [data]);
+    useEffect(() => {
+        if (!container_ref.current) return;
 
-  const points = useMemo(() => {
-    const group_map = new Map<string, number>();
-    groups.forEach((g, i) => group_map.set(g, i));
-    return data.map((d) => {
-      const group = category_group(d.category);
-      const group_index = group_map.get(group) ?? 0;
-      // Jitter is per-entry so the layout is stable.
-      const seed = hash_seed(`${d.name}|${d.year_ceremony}|${d.category}|${d.film}`);
-      const r1 = (seed % 1000) / 1000;
-      const r2 = ((seed * 9301 + 49297) % 233280) / 233280;
-      return {
-        year: d.year_ceremony,
-        group,
-        group_index,
-        race: d.race || 'Unknown',
-        gender: d.gender || 'Unknown',
-        winner: d.winner === 1,
-        name: d.name,
-        film: d.film,
-        category: d.category,
-        jx: (r1 - 0.5),
-        jy: (r2 - 0.5),
-      } as BubblePoint;
+        const observer = new ResizeObserver((entries) => {
+            if (!entries.length) return;
+            const { width, height } = entries[0].contentRect;
+            if (!width || !height) return;
+            const controls_h = controls_ref.current
+                ? controls_ref.current.getBoundingClientRect().height
+                : 0;
+            const available_h = Math.max(0, height - controls_h - 8);
+            set_container_size({
+                width: Math.round(width),
+                height: Math.round(available_h),
+            });
+        });
+
+        observer.observe(container_ref.current);
+        return () => observer.disconnect();
+    }, []);
+
+    const width = container_size.width || 1000;
+    const height = container_size.height || 600;
+    const inner_w = width - MARGIN.left - MARGIN.right;
+    const inner_h = height - MARGIN.top - MARGIN.bottom;
+
+    // Shared data prep for all view modes.
+    const {
+        data_signature,
+        groups,
+        genders,
+        races,
+        years,
+        stream_data,
+        all_bubble_points,
+        active_highlights,
+        highlight_matches,
+        get_sampled_bubbles,
+    } = useBubbleData({
+        data,
+        filter_winner,
+        filter_gender,
+        filter_race,
+        filter_name,
+        filter_film,
+        highlight_ids,
+        sampling_rate,
     });
-  }, [data, groups]);
 
-  const years = useMemo(() => {
-    const ys = data.map((d) => d.year_ceremony).filter(Boolean);
-    return { min: Math.min(...ys), max: Math.max(...ys) };
-  }, [data]);
+    useEffect(() => {
+        if (timeseries_category === "All" && groups.length > 0) return;
+        if (!groups.includes(timeseries_category) && groups.length > 0) {
+            set_timeseries_category(groups[0]);
+        }
+    }, [groups, timeseries_category]);
 
-  const [view, set_view] = useState({
-    x0: years.min,
-    x1: years.max,
-    y0: 0,
-    y1: Math.max(0, groups.length - 1),
-  });
+    const make_cache_key = (
+        kind: string,
+        rate: number,
+        extra: Array<string | number | undefined> = [],
+    ) => {
+        if (filter_name.trim() || filter_film.trim()) return "";
+        return [
+            kind,
+            data_signature,
+            rate,
+            width,
+            height,
+            filter_winner,
+            filter_gender,
+            filter_race,
+            ...extra,
+        ].join("|");
+    };
 
-  useEffect(() => {
-    set_view({
-      x0: years.min,
-      x1: years.max,
-      y0: 0,
-      y1: Math.max(0, groups.length - 1),
+    const make_worker_nodes = (rate: number) => {
+        return get_sampled_bubbles(rate).map((p) => ({
+            id: p.id,
+            year: p.year,
+            group: p.group,
+            group_index: p.group_index,
+            winner: p.winner,
+            race: p.race,
+            gender: p.gender,
+            name: p.name,
+            film: p.film,
+            category: p.category,
+        }));
+    };
+
+    // Kick off worker layouts when needed.
+    const { layout_tick } = useLayoutWorker({
+        view_mode,
+        sampling_rate,
+        width,
+        height,
+        filter_name,
+        filter_film,
+        timeseries_category,
+        data_signature,
+        groups,
+        years,
+        make_cache_key,
+        make_worker_nodes,
+        margin: MARGIN,
+        bubble_radius: BUBBLE_RADIUS,
+        bubble_padding: BUBBLE_PADDING,
     });
-  }, [years.min, years.max, groups.length]);
 
-  const inner_w = width - MARGIN.left - MARGIN.right;
-  const inner_h = height - MARGIN.top - MARGIN.bottom;
-  const band = inner_h / Math.max(groups.length, 1);
+    const bubble_points = useMemo(() => {
+        if (!selected_category) return [];
 
-  function sx(year: number) {
-    return ((year - view.x0) / (view.x1 - view.x0)) * inner_w + MARGIN.left;
-  }
+        return all_bubble_points.filter((d) => d.group === selected_category);
+    }, [all_bubble_points, selected_category]);
 
-  function sy(idx: number) {
-    return ((idx - view.y0) / (view.y1 - view.y0)) * inner_h + MARGIN.top;
-  }
-
-  function on_wheel(evt: React.WheelEvent<SVGSVGElement>) {
-    evt.preventDefault();
-    // Zoom toward the cursor to keep context.
-    const factor = evt.deltaY > 0 ? 1.1 : 0.9;
-    const x = evt.nativeEvent.offsetX - MARGIN.left;
-    const y = evt.nativeEvent.offsetY - MARGIN.top;
-    const x_ratio = x / inner_w;
-    const y_ratio = y / inner_h;
-
-    const nx0 = view.x0 + (view.x1 - view.x0) * x_ratio;
-    const ny0 = view.y0 + (view.y1 - view.y0) * y_ratio;
-
-    const new_x0 = nx0 + (view.x0 - nx0) * factor;
-    const new_x1 = nx0 + (view.x1 - nx0) * factor;
-    const new_y0 = ny0 + (view.y0 - ny0) * factor;
-    const new_y1 = ny0 + (view.y1 - ny0) * factor;
-
-    set_view({
-      x0: clamp(new_x0, years.min, years.max - 1),
-      x1: clamp(new_x1, years.min + 1, years.max),
-      y0: clamp(new_y0, 0, groups.length - 1),
-      y1: clamp(new_y1, 0, groups.length - 1),
+    const {
+        series,
+        x_scale,
+        cloud_x_scale,
+        detail_x_scale,
+        y_scale,
+        area,
+        color_scale,
+    } = useBubbleScales({
+        groups,
+        years,
+        width,
+        height,
+        margin: MARGIN,
+        stream_data,
     });
-  }
 
-  const drag_ref = useRef<{ x: number; y: number } | null>(null);
+    const bubble_layout = useMemo(() => {
+        if (bubble_points.length === 0) return [];
 
-  function on_mouse_down(evt: React.MouseEvent<SVGSVGElement>) {
-    drag_ref.current = { x: evt.clientX, y: evt.clientY };
-  }
+        // Spread bubbles vertically based on local density per year.
 
-  function on_mouse_up() {
-    drag_ref.current = null;
-  }
+        const x_scale_local = d3
+            .scaleLinear()
+            .domain([years.min, years.max])
+            .range([MARGIN.left + 50, width - MARGIN.right - 50]);
 
-  function on_mouse_move(evt: React.MouseEvent<SVGSVGElement>) {
-    if (!drag_ref.current) return;
-    // Drag pans the visible window.
-    const dx = evt.clientX - drag_ref.current.x;
-    const dy = evt.clientY - drag_ref.current.y;
-    drag_ref.current = { x: evt.clientX, y: evt.clientY };
+        const density_by_year = new Map<number, number>();
+        bubble_points.forEach((p) => {
+            density_by_year.set(p.year, (density_by_year.get(p.year) || 0) + 1);
+        });
 
-    const x_span = view.x1 - view.x0;
-    const y_span = view.y1 - view.y0;
+        const get_vertical_space = (year: number): number => {
+            const count = density_by_year.get(year) || 1;
+            const base = 80;
+            const extra = Math.sqrt(count) * 25;
+            return Math.min(inner_h * 0.75, base + extra);
+        };
 
-    const x_shift = -(dx / inner_w) * x_span;
-    const y_shift = -(dy / inner_h) * y_span;
+        const center_y = MARGIN.top + inner_h / 2;
 
-    set_view({
-      x0: clamp(view.x0 + x_shift, years.min, years.max - 1),
-      x1: clamp(view.x1 + x_shift, years.min + 1, years.max),
-      y0: clamp(view.y0 + y_shift, 0, groups.length - 1),
-      y1: clamp(view.y1 + y_shift, 0, groups.length - 1),
+        const nodes = bubble_points.map((p) => {
+            const vertical_space = get_vertical_space(p.year);
+            const rand = Math.random() - 0.5;
+            return {
+                ...p,
+                x: x_scale_local(p.year),
+                y: center_y + rand * vertical_space,
+                target_x: x_scale_local(p.year),
+            };
+        });
+
+        const sim = d3
+            .forceSimulation(nodes as any)
+            .force("x", d3.forceX((d: any) => d.target_x).strength(0.5))
+            .force("y", d3.forceY(center_y).strength(0.01))
+            .force(
+                "collide",
+                d3
+                    .forceCollide(BUBBLE_RADIUS + BUBBLE_PADDING)
+                    .strength(0.7)
+                    .iterations(2),
+            )
+            .alphaDecay(0.05)
+            .velocityDecay(0.3)
+            .stop();
+
+        const max_iterations = Math.min(
+            150,
+            50 + Math.floor(bubble_points.length / 10),
+        );
+
+        for (let i = 0; i < max_iterations; i++) {
+            sim.tick();
+        }
+
+        const min_y = MARGIN.top + BUBBLE_RADIUS + 5;
+        const max_y = height - MARGIN.bottom - BUBBLE_RADIUS - 5;
+        nodes.forEach((n) => {
+            n.y = Math.max(min_y, Math.min(max_y, n.y));
+        });
+
+        return nodes;
+    }, [bubble_points, years, width, inner_h, height]);
+
+    const overlay_stream_layout = useMemo(() => {
+        if (view_mode !== "stream-bubbles" || !series.length) return [];
+
+        // Place bubbles inside their stream layer bands.
+
+        const nodes: BubblePoint[] = [];
+        const sampled = get_sampled_bubbles(sampling_rate);
+
+        sampled.forEach((p) => {
+            const year_data = stream_data.find((d) => d.year === p.year);
+            if (!year_data) return;
+
+            const layer = series.find((s) => s.key === p.group);
+            if (!layer) return;
+
+            const data_point = layer.find((d) => d.data.year === p.year);
+            if (!data_point) return;
+
+            const x = x_scale(p.year);
+            const y0 = y_scale(data_point[0]);
+            const y1 = y_scale(data_point[1]);
+            const y = y0 + Math.random() * (y1 - y0);
+
+            nodes.push({ ...p, x, y });
+        });
+
+        return nodes;
+    }, [
+        view_mode,
+        stream_data,
+        series,
+        x_scale,
+        y_scale,
+        sampling_rate,
+        get_sampled_bubbles,
+    ]);
+
+    const {
+        overlay_bands_layout,
+        overlay_cloud_layout,
+        overlay_timeseries_layout,
+        layout_ready,
+    } = useBubbleLayouts({
+        view_mode,
+        sampling_rate,
+        layout_tick,
+        timeseries_category,
+        make_cache_key,
+        filter_winner,
+        filter_gender,
+        filter_race,
+        filter_name,
+        filter_film,
+        data_signature,
+        width,
+        height,
     });
-  }
 
-  function race_color(race: string) {
-    // Simple palette keyed to race values in the dataset.
-    if (race === 'White') return '#2f2f2f';
-    if (race === 'Black') return '#1f6fb2';
-    if (race === 'Asian') return '#b21f2d';
-    if (race === 'Hispanic') return '#2f8f5b';
-    return '#888888';
-  }
+    const [bubble_transform, set_bubble_transform] = useState(d3.zoomIdentity);
+    const [bands_transform, set_bands_transform] = useState(d3.zoomIdentity);
 
-  const ticks_x = 8;
-  const ticks_y = Math.min(groups.length, 8);
-  const x_tick_vals = Array.from({ length: ticks_x }, (_, i) => {
-    const t = i / (ticks_x - 1);
-    return Math.round(view.x0 + (view.x1 - view.x0) * t);
-  });
+    useBubbleZoom({
+        view_mode,
+        canvas_ref,
+        width,
+        set_bubble_transform,
+        set_bands_transform,
+    });
 
-  const y_tick_vals = Array.from({ length: ticks_y }, (_, i) => {
-    const t = i / (ticks_y - 1);
-    return Math.round(view.y0 + (view.y1 - view.y0) * t);
-  });
+    useEffect(() => {
+        if (view_mode === "detail") {
+            set_bubble_transform(d3.zoomIdentity);
+        }
+    }, [view_mode]);
 
-  return (
-    <div ref={wrap_ref} style={{ position: 'relative', width: '100%'
-     }}>
-      <svg
-        width={width}
-        height={height}
-        onWheel={on_wheel}
-        onMouseDown={on_mouse_down}
-        onMouseUp={on_mouse_up}
-        onMouseLeave={on_mouse_up}
-        onMouseMove={on_mouse_move}
-        style={{ border: '1px solid #c9c2b4', background: '#ffffff' }}
-      >
-        <g>
-          {/* Grid and axis labels are rendered first so points sit on top. */}
-          {x_tick_vals.map((v) => {
-            const x = sx(v);
-            return (
-              <g key={`xt-${v}`}>
-                <line x1={x} y1={MARGIN.top} x2={x} y2={height - MARGIN.bottom} stroke="#eee8db" />
-                <text x={x} y={height - 12} fontSize="11" textAnchor="middle" fill="#5b5b5b">{v}</text>
-              </g>
-            );
-          })}
-          {y_tick_vals.map((v) => {
-            const y = sy(v);
-            const label = groups[v] || '';
-            return (
-              <g key={`yt-${v}`}>
-                <line x1={MARGIN.left} y1={y} x2={width - MARGIN.right} y2={y} stroke="#eee8db" />
-                <text x={10} y={y + 4} fontSize="11" fill="#5b5b5b">{label}</text>
-              </g>
-            );
-          })}
-        </g>
+    useEffect(() => {
+        if (
+            view_mode === "bands-bubbles" ||
+            view_mode === "category-cloud" ||
+            view_mode === "category-timeseries"
+        ) {
+            set_bands_transform(d3.zoomIdentity);
+        }
+    }, [view_mode]);
 
-        <g>
-          {/* Render each entry as a mark. */}
-          {points.map((p, i) => {
-            const x = sx(p.year) + p.jx * 10;
-            const y = sy(p.group_index) + p.jy * band * 0.6;
-            const size = p.winner ? 6 : 4;
-            const color = race_color(p.race);
-            const is_female = p.gender.toLowerCase() === 'female';
-            const tip_text = `${p.name || 'Unknown'}\\n${p.year} • ${p.category}\\n${p.race} • ${p.gender}\\n${p.winner ? 'Winner' : 'Nominee'}\\n${p.film || 'Unknown'}`;
+    const highlight_positions = useMemo(() => {
+        if (
+            (view_mode !== "bands-bubbles" &&
+                view_mode !== "category-cloud") ||
+            !show_highlights
+        )
+            return [];
 
-            if (is_female) {
-              const h = size * 1.8;
-              const points_str = `${x},${y - h} ${x - size},${y + h * 0.6} ${x + size},${y + h * 0.6}`;
-              return (
-                <polygon
-                  key={`p-${i}`}
-                  points={points_str}
-                  fill={color}
-                  stroke="#7a6d58"
-                  opacity={0.7}
-                  onMouseMove={(evt) => {
-                    set_tip({ x: evt.clientX, y: evt.clientY, text: tip_text });
-                  }}
-                  onMouseLeave={() => set_tip(null)}
-                />
-              );
-            }
-            return (
-              <circle
-                key={`p-${i}`}
-                cx={x}
-                cy={y}
-                r={size}
-                fill={color}
-                stroke="#7a6d58"
-                opacity={0.7}
-                onMouseMove={(evt) => {
-                  set_tip({ x: evt.clientX, y: evt.clientY, text: tip_text });
-                }}
-                onMouseLeave={() => set_tip(null)}
-              />
-            );
-          })}
-        </g>
-      </svg>
-      {tip && (
+        const nodes =
+            view_mode === "category-cloud"
+                ? overlay_cloud_layout
+                : overlay_bands_layout.nodes;
+        const matches: Array<{
+            id: string;
+            bubble_id: string;
+            x: number;
+            y: number;
+            label: string;
+            note?: string;
+            dx?: number;
+            dy?: number;
+        }> = [];
+
+        const match_map = new Map(
+            highlight_matches.map((m) => [m.id, m.bubble_id]),
+        );
+
+        active_highlights.forEach((h) => {
+            const match_id = match_map.get(h.id);
+            if (!match_id) return;
+            const match = nodes.find((p) => p.id === match_id);
+            if (!match || match.x === undefined || match.y === undefined) return;
+
+            matches.push({
+                id: h.id,
+                bubble_id: match.id,
+                x: bands_transform.applyX(match.x),
+                y: bands_transform.applyY(match.y),
+                label: h.label,
+                note: h.note,
+                dx: h.dx,
+                dy: h.dy,
+            });
+        });
+
+        return matches;
+    }, [
+        view_mode,
+        show_highlights,
+        active_highlights,
+        highlight_matches,
+        overlay_bands_layout.nodes,
+        overlay_cloud_layout,
+        bands_transform,
+    ]);
+
+    const highlight_bubble_ids = useMemo(() => {
+        return new Set(highlight_matches.map((h) => h.bubble_id));
+    }, [highlight_matches]);
+
+    useBubbleAxes({
+        view_mode,
+        x_axis_ref,
+        y_axis_ref,
+        x_scale,
+        y_scale,
+        detail_x_scale,
+        cloud_x_scale,
+        sampling_rate,
+        bands_transform,
+    });
+
+    useBubbleCanvas({
+        view_mode,
+        width,
+        height,
+        margin: MARGIN,
+        inner_w,
+        inner_h,
+        bubble_layout,
+        bubble_transform,
+        overlay_stream_layout,
+        overlay_cloud_layout,
+        overlay_timeseries_layout,
+        overlay_bands_layout,
+        bands_transform,
+        focus_highlights,
+        highlight_bubble_ids,
+        color_scale,
+        canvas_ref,
+        bubble_radius: BUBBLE_RADIUS,
+        bubble_padding: BUBBLE_PADDING,
+    });
+
+    const { tip, set_tip, handle_detail_hover, handle_overlay_hover } =
+        useBubbleInteractions({
+            view_mode,
+            bubble_layout,
+            bubble_transform,
+            overlay_stream_layout,
+            overlay_cloud_layout,
+            overlay_timeseries_layout,
+            overlay_bands_layout,
+            bands_transform,
+            canvas_ref,
+            bubble_radius: BUBBLE_RADIUS,
+        });
+
+    const svg_key = `${view_mode}-${sampling_rate}-${bands_transform.k}`;
+
+    return (
         <div
-          style={{
-            position: 'fixed',
-            left: tip.x + 12,
-            top: tip.y + 12,
-            background: '#ffffff',
-            border: '1px solid #c9c2b4',
-            borderRadius: 6,
-            padding: '6px 8px',
-            fontSize: 12,
-            color: '#1b1b1b',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-            whiteSpace: 'pre-line',
-            pointerEvents: 'none',
-            zIndex: 10,
-          }}
+            ref={container_ref}
+            style={{
+                position: "relative",
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+                minHeight: 0,
+            }}
         >
-          {tip.text}
+            <div style={{ fontSize: 12, color: "#5b5b5b" }}>
+                Each mark is a nominee or winner. Color = race, shape = gender,
+                outline = winner status.
+            </div>
+            <div
+                ref={controls_ref}
+                style={{
+                    display: "flex",
+                    gap: 8,
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                }}
+            >
+                <BubbleControls
+                    filter_winner={filter_winner}
+                    set_filter_winner={set_filter_winner}
+                    filter_gender={filter_gender}
+                    set_filter_gender={set_filter_gender}
+                    filter_race={filter_race}
+                    set_filter_race={set_filter_race}
+                    genders={genders}
+                    races={races}
+                    filter_name={filter_name}
+                    set_filter_name={set_filter_name}
+                    filter_film={filter_film}
+                    set_filter_film={set_filter_film}
+                    view_mode={view_mode}
+                    set_view_mode={set_view_mode}
+                    sampling_rate={sampling_rate}
+                    set_sampling_rate={set_sampling_rate}
+                    timeseries_category={timeseries_category}
+                    set_timeseries_category={set_timeseries_category}
+                    groups={groups}
+                    show_highlights={show_highlights}
+                    set_show_highlights={set_show_highlights}
+                    focus_highlights={focus_highlights}
+                    set_focus_highlights={set_focus_highlights}
+                    highlight_ids={highlight_ids}
+                    enable_all_highlights={enable_all_highlights}
+                    clear_highlights={clear_highlights}
+                    toggle_highlight={toggle_highlight}
+                    highlights={HIGHLIGHTS.map((h) => ({
+                        id: h.id,
+                        label: h.label,
+                    }))}
+                    selected_category={selected_category}
+                    on_back_to_overview={() => {
+                        set_view_mode("stream");
+                        set_selected_category(null);
+                    }}
+                    on_reset_zoom={() =>
+                        view_mode === "detail"
+                            ? set_bubble_transform(d3.zoomIdentity)
+                            : set_bands_transform(d3.zoomIdentity)
+                    }
+                />
+            </div>
+
+            <div
+                ref={plot_ref}
+                style={{ position: "relative", flex: 1, minHeight: 0 }}
+            >
+                {!layout_ready && (
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: 12,
+                            right: 12,
+                            background: "#ffffff",
+                            border: "1px solid #c9c2b4",
+                            borderRadius: 6,
+                            padding: "6px 8px",
+                            fontSize: 12,
+                            color: "#5b5b5b",
+                            zIndex: 5,
+                        }}
+                    >
+                        Building layout…
+                    </div>
+                )}
+                {view_mode === "detail" ? (
+                    <DetailBubblesView
+                        width={width}
+                        height={height}
+                        margin={MARGIN}
+                        canvas_ref={canvas_ref}
+                        x_axis_ref={x_axis_ref}
+                        y_axis_ref={y_axis_ref}
+                        onHover={handle_detail_hover}
+                        onLeave={() => set_tip(null)}
+                    />
+                ) : view_mode === "stream" ? (
+                    <StreamOnlyView
+                        width={width}
+                        height={height}
+                        margin={MARGIN}
+                        inner_w={inner_w}
+                        inner_h={inner_h}
+                        svg_ref={svg_ref}
+                        x_axis_ref={x_axis_ref}
+                        y_axis_ref={y_axis_ref}
+                        area={area}
+                        series={series as any}
+                        color_scale={color_scale}
+                        x_scale={x_scale}
+                        stream_data={stream_data}
+                        onSelectCategory={(group) => {
+                            set_selected_category(group);
+                            set_view_mode("detail");
+                        }}
+                        onTip={set_tip}
+                        svg_key={svg_key}
+                    />
+                ) : view_mode === "stream-bubbles" ? (
+                    <StreamBubblesView
+                        width={width}
+                        height={height}
+                        margin={MARGIN}
+                        inner_w={inner_w}
+                        inner_h={inner_h}
+                        svg_ref={svg_ref}
+                        canvas_ref={canvas_ref}
+                        x_axis_ref={x_axis_ref}
+                        y_axis_ref={y_axis_ref}
+                        area={area}
+                        series={series as any}
+                        color_scale={color_scale}
+                        x_scale={x_scale}
+                        stream_data={stream_data}
+                        onSelectCategory={(group) => {
+                            set_selected_category(group);
+                            set_view_mode("detail");
+                        }}
+                        onTip={set_tip}
+                        onOverlayHover={handle_overlay_hover}
+                        onOverlayLeave={() => set_tip(null)}
+                        svg_key={svg_key}
+                    />
+                ) : view_mode === "category-cloud" ? (
+                    <BandsBubblesView
+                        width={width}
+                        height={height}
+                        margin={MARGIN}
+                        inner_w={inner_w}
+                        inner_h={inner_h}
+                        svg_ref={svg_ref}
+                        canvas_ref={canvas_ref}
+                        x_axis_ref={x_axis_ref}
+                        y_axis_ref={y_axis_ref}
+                        densities={overlay_bands_layout.densities}
+                        color_scale={color_scale}
+                        bands_transform={bands_transform}
+                        onSelectCategory={(group) => {
+                            set_selected_category(group);
+                            set_view_mode("detail");
+                        }}
+                        onOverlayHover={handle_overlay_hover}
+                        onOverlayLeave={() => set_tip(null)}
+                        svg_key={svg_key}
+                        highlights={highlight_positions.map((h) => ({
+                            id: h.id,
+                            x: h.x,
+                            y: h.y,
+                            label: h.label,
+                            note: h.note,
+                            dx: h.dx,
+                            dy: h.dy,
+                        }))}
+                        show_bands={false}
+                    />
+                ) : view_mode === "category-timeseries" ? (
+                    <BandsBubblesView
+                        width={width}
+                        height={height}
+                        margin={MARGIN}
+                        inner_w={inner_w}
+                        inner_h={inner_h}
+                        svg_ref={svg_ref}
+                        canvas_ref={canvas_ref}
+                        x_axis_ref={x_axis_ref}
+                        y_axis_ref={y_axis_ref}
+                        densities={overlay_bands_layout.densities}
+                        color_scale={color_scale}
+                        bands_transform={bands_transform}
+                        onSelectCategory={(group) => {
+                            set_selected_category(group);
+                            set_view_mode("detail");
+                        }}
+                        onOverlayHover={handle_overlay_hover}
+                        onOverlayLeave={() => set_tip(null)}
+                        svg_key={svg_key}
+                        highlights={[]}
+                        show_bands={false}
+                    />
+                ) : (
+                    <BandsBubblesView
+                        width={width}
+                        height={height}
+                        margin={MARGIN}
+                        inner_w={inner_w}
+                        inner_h={inner_h}
+                        svg_ref={svg_ref}
+                        canvas_ref={canvas_ref}
+                        x_axis_ref={x_axis_ref}
+                        y_axis_ref={y_axis_ref}
+                        densities={overlay_bands_layout.densities}
+                        color_scale={color_scale}
+                        bands_transform={bands_transform}
+                        onSelectCategory={(group) => {
+                            set_selected_category(group);
+                            set_view_mode("detail");
+                        }}
+                        onOverlayHover={handle_overlay_hover}
+                        onOverlayLeave={() => set_tip(null)}
+                        svg_key={svg_key}
+                        highlights={highlight_positions.map((h) => ({
+                            id: h.id,
+                            x: h.x,
+                            y: h.y,
+                            label: h.label,
+                            note: h.note,
+                            dx: h.dx,
+                            dy: h.dy,
+                        }))}
+                        show_bands
+                    />
+                )}
+            </div>
+
+            <BubbleTooltip tip={tip} />
         </div>
-      )}
-    </div>
-  );
+    );
 }

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { OscarsRow } from "../types";
-import { BubbleOverviewSplit } from "./BubbleOverviewSplit";
+import { BubbleOverview } from "./BubbleOverview";
 import { GenderRaceTrends } from "./GenderRaceTrends";
 import RadarChart from "./radarChart";
 import SankeyDiagram from "./sankeyDiagram";
@@ -52,7 +52,7 @@ const DevSandbox = ({ data }: { data: OscarsRow[] | null }) => {
                 </select>
             </div>
             <div style={{ flex: 1, minHeight: 0 }}>
-                {view === "bubble" && data && <BubbleOverviewSplit data={data} />}
+                {view === "bubble" && data && <BubbleOverview data={data} />}
                 {view === "trends" && data && <GenderRaceTrends data={data} />}
                 {view === "radar" && <RadarChart />}
                 {view === "sankey" && <SankeyDiagram />}
@@ -142,11 +142,12 @@ export function Slides({
                 body:
                     "Before we narrow the lens, we need the big picture. Every Oscar nominee and winner is here, from 1920 to 2020. Each bubble is a person, each band is the category group they were nominated for. Shape represents gender and color represents race, while the outline marks winners.",
                 content: data ? (
-                    <BubbleOverviewSplit
+                    <BubbleOverview
                         key="bubble-overview"
                         data={data}
                         initial_show_highlights={false}
                         initial_focus_highlights={false}
+                        initial_sampling_rate={3}
                     />
                 ) : null,
                 theme: undefined,
@@ -161,13 +162,14 @@ export function Slides({
                     </span>
                 ),
                 content: data ? (
-                    <BubbleOverviewSplit
+                    <BubbleOverview
                         key="bubble-gender"
                         data={data}
                         initial_filter_gender="female"
                         initial_show_highlights
                         initial_focus_highlights={false}
                         initial_highlight_ids={["kathryn-bigelow", "halle-berry"]}
+                        initial_sampling_rate={3}
                     />
                 ) : null,
                 theme: "#b21f2d",
@@ -217,13 +219,14 @@ export function Slides({
                     </span>
                 ),
                 content: data ? (
-                    <BubbleOverviewSplit
+                    <BubbleOverview
                         key="bubble-race"
                         data={data}
                         initial_filter_race="non-white"
                         initial_show_highlights
                         initial_focus_highlights={false}
                         initial_highlight_ids={["hattie-mcdaniel", "halle-berry", "bong-joon-ho"]}
+                        initial_sampling_rate={3}
                     />
                 ) : null,
                 theme: "#2f8f5b",
@@ -351,11 +354,12 @@ export function Slides({
                 body:
                     "Now that we have seen the milestones and the category patterns, we return to the full field. The same cloud of points reads differently once you know where the pressure points are.",
                 content: data ? (
-                    <BubbleOverviewSplit
+                    <BubbleOverview
                         key="bubble-return"
                         data={data}
                         initial_show_highlights
                         initial_focus_highlights={false}
+                        initial_sampling_rate={3}
                     />
                 ) : null,
                 theme: undefined,

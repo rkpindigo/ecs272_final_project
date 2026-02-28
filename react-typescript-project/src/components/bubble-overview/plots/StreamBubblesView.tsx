@@ -1,5 +1,5 @@
 import React from "react";
-import { StreamData } from "./types";
+import { StreamData } from "../types";
 
 export function StreamBubblesView({
     width,

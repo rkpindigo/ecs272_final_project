@@ -1,5 +1,5 @@
 import React from "react";
-import { BandDensity } from "./types";
+import { BandDensity } from "../types";
 
 function compute_band_heights(
     densities: BandDensity[],
