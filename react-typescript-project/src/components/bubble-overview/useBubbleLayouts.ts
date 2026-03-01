@@ -10,14 +10,6 @@ export function useBubbleLayouts({
     layout_tick,
     timeseries_category,
     make_cache_key,
-    filter_winner,
-    filter_gender,
-    filter_race,
-    filter_name,
-    filter_film,
-    data_signature,
-    width,
-    height,
 }: {
     view_mode: string;
     sampling_rate: number;
@@ -27,15 +19,8 @@ export function useBubbleLayouts({
         kind: string,
         rate: number,
         extra?: Array<string | number | undefined>,
+        ignore_filters?: boolean,
     ) => string;
-    filter_winner: string;
-    filter_gender: string;
-    filter_race: string;
-    filter_name: string;
-    filter_film: string;
-    data_signature: string;
-    width: number;
-    height: number;
 }) {
     // Read the latest cached layouts produced by the worker.
     const overlay_bands_layout = useMemo(() => {
@@ -44,24 +29,24 @@ export function useBubbleLayouts({
         if (view_mode !== "bands-bubbles" && view_mode !== "category-cloud") {
             return { nodes: [], densities: [] };
         }
-        const cache_key = make_cache_key("bands", sampling_rate, [view_mode]);
+        const cache_key = make_cache_key(
+            "bands",
+            sampling_rate,
+            [view_mode],
+            view_mode === "category-cloud",
+        );
         if (cache_key) {
             const hit = cache_get<BandsLayout>(cache_key);
             if (hit) return hit;
         }
         return { nodes: [], densities: [] };
-    }, [
-        view_mode,
-        sampling_rate,
-        layout_tick,
-        make_cache_key,
-    ]);
+    }, [view_mode, sampling_rate, layout_tick, make_cache_key]);
 
     const overlay_cloud_layout = useMemo(() => {
         // Use layout_tick to refresh when worker results land.
         if (layout_tick < 0) return [];
         if (view_mode !== "category-cloud") return [];
-        const cache_key = make_cache_key("cloud", sampling_rate);
+        const cache_key = make_cache_key("cloud", sampling_rate, [], true);
         if (cache_key) {
             const hit = cache_get<BubblePoint[]>(cache_key);
             if (hit) return hit;
@@ -78,9 +63,12 @@ export function useBubbleLayouts({
         // Use layout_tick to refresh when worker results land.
         if (layout_tick < 0) return [];
         if (view_mode !== "category-timeseries") return [];
-        const cache_key = make_cache_key("timeseries", sampling_rate, [
-            timeseries_category,
-        ]);
+        const cache_key = make_cache_key(
+            "timeseries",
+            sampling_rate,
+            [timeseries_category],
+            true,
+        );
         if (cache_key) {
             const hit = cache_get<BubblePoint[]>(cache_key);
             if (hit) return hit;

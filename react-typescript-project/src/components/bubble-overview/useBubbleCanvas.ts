@@ -18,8 +18,10 @@ export function useBubbleCanvas({
     overlay_bands_layout,
     bands_transform,
     focus_highlights,
-    highlight_bubble_ids,
-    color_scale,
+        highlight_bubble_ids,
+        filter_match_ids_ref,
+        is_filter_active,
+        color_scale,
     canvas_ref,
     bubble_radius,
     bubble_padding,
@@ -39,6 +41,8 @@ export function useBubbleCanvas({
     bands_transform: d3.ZoomTransform;
     focus_highlights: boolean;
     highlight_bubble_ids: Set<string>;
+    filter_match_ids_ref: React.MutableRefObject<Set<string>>;
+    is_filter_active: boolean;
     color_scale: (v: string) => string;
     canvas_ref: React.RefObject<HTMLCanvasElement | null>;
     bubble_radius: number;
@@ -170,6 +174,17 @@ export function useBubbleCanvas({
                     !highlight_bubble_ids.has(p.id)
                 ) {
                     highlight_alpha = 0.15;
+                }
+
+                if (
+                    (view_mode === "category-cloud" ||
+                        view_mode === "category-timeseries") &&
+                    is_filter_active
+                ) {
+                    const matches = filter_match_ids_ref.current;
+                    if (matches.size > 0 && !matches.has(p.id)) {
+                        highlight_alpha *= 0.15;
+                    }
                 }
 
                 ctx.globalAlpha = base_alpha * alpha * highlight_alpha;
@@ -385,6 +400,8 @@ export function useBubbleCanvas({
         bands_transform,
         focus_highlights,
         highlight_bubble_ids,
+        filter_match_ids_ref,
+        is_filter_active,
         color_scale,
         bubble_radius,
         bubble_padding,

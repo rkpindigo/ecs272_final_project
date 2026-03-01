@@ -46,6 +46,7 @@ export function useLayoutWorker({
         kind: string,
         rate: number,
         extra?: Array<string | number | undefined>,
+        ignore_filters?: boolean,
     ) => string;
     make_worker_nodes: (rate: number) => any[];
     margin: { top: number; right: number; bottom: number; left: number };
@@ -81,12 +82,25 @@ export function useLayoutWorker({
     useEffect(() => {
         if (!worker_ref.current) return;
         if (!width || !height) return;
-        if (filter_name.trim() || filter_film.trim()) return;
+        const search_active = Boolean(filter_name.trim() || filter_film.trim());
+        if (
+            search_active &&
+            view_mode !== "category-cloud" &&
+            view_mode !== "category-timeseries"
+        )
+            return;
 
         const rate = sampling_rate;
 
         if (view_mode === "bands-bubbles" || view_mode === "category-cloud") {
-            const key = make_cache_key("bands", rate, [view_mode]);
+            const ignore_filters =
+                view_mode === "category-cloud" ? true : false;
+            const key = make_cache_key(
+                "bands",
+                rate,
+                [view_mode],
+                ignore_filters,
+            );
             if (key && !cache_get(key) && !inflight_ref.current.has(key)) {
                 inflight_ref.current.add(key);
                 const msg: WorkerRequest = {
@@ -106,7 +120,7 @@ export function useLayoutWorker({
         }
 
         if (view_mode === "category-cloud") {
-            const key = make_cache_key("cloud", rate);
+            const key = make_cache_key("cloud", rate, [], true);
             if (key && !cache_get(key) && !inflight_ref.current.has(key)) {
                 inflight_ref.current.add(key);
                 const msg: WorkerRequest = {
@@ -126,9 +140,12 @@ export function useLayoutWorker({
         }
 
         if (view_mode === "category-timeseries") {
-            const key = make_cache_key("timeseries", rate, [
-                timeseries_category,
-            ]);
+            const key = make_cache_key(
+                "timeseries",
+                rate,
+                [timeseries_category],
+                true,
+            );
             if (key && !cache_get(key) && !inflight_ref.current.has(key)) {
                 inflight_ref.current.add(key);
                 const msg: WorkerRequest = {

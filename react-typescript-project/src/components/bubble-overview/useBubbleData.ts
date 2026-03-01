@@ -108,7 +108,29 @@ export function useBubbleData({
         return result;
     }, [data, filter_winner, filter_gender, filter_race, groups, years]);
 
-    const all_bubble_points = useMemo(() => {
+    const base_bubble_points = useMemo(() => {
+        const group_map = new Map<string, number>();
+        groups.forEach((g, i) => group_map.set(g, i));
+
+        return data.map((d) => {
+            const group = category_group(d.category);
+            const id = `${d.year_ceremony}-${d.name || "unknown"}-${d.film || "unknown"}-${d.category}`;
+            return {
+                id,
+                year: d.year_ceremony,
+                race: d.race || "Unknown",
+                gender: d.gender || "Unknown",
+                winner: d.winner === 1,
+                name: d.name,
+                film: d.film,
+                category: d.category,
+                group,
+                group_index: group_map.get(group) ?? 0,
+            } as BubblePoint;
+        });
+    }, [data, groups]);
+
+    const filtered_bubble_points = useMemo(() => {
         const group_map = new Map<string, number>();
         groups.forEach((g, i) => group_map.set(g, i));
 
@@ -176,7 +198,7 @@ export function useBubbleData({
         active_highlights.forEach((h) => {
             const target_name = normalize_text(h.match.name);
             const target_category = normalize_text(h.match.category || "");
-            const match = all_bubble_points.find((p) => {
+            const match = filtered_bubble_points.find((p) => {
                 if (target_name && normalize_text(p.name) !== target_name) {
                     return false;
                 }
@@ -193,25 +215,83 @@ export function useBubbleData({
             matches.push({ id: h.id, bubble_id: match.id });
         });
         return matches;
-    }, [active_highlights, all_bubble_points]);
+    }, [active_highlights, filtered_bubble_points]);
+
+    const filter_match_ids = useMemo(() => {
+        const matches = new Set<string>();
+        base_bubble_points.forEach((p) => {
+            if (filter_winner === "Winner" && !p.winner) return;
+            if (filter_winner === "Nominee" && p.winner) return;
+            if (filter_gender !== "all" && normalize_key(p.gender) !== filter_gender)
+                return;
+            if (filter_race !== "all") {
+                if (filter_race === "non-white") {
+                    if (normalize_key(p.race) === "white") return;
+                } else if (normalize_key(p.race) !== filter_race) {
+                    return;
+                }
+            }
+            if (
+                filter_name.trim() &&
+                !normalize_text(p.name).includes(normalize_text(filter_name))
+            )
+                return;
+            if (
+                filter_film.trim() &&
+                !normalize_text(p.film).includes(normalize_text(filter_film))
+            )
+                return;
+            matches.add(p.id);
+        });
+        return matches;
+    }, [
+        base_bubble_points,
+        filter_winner,
+        filter_gender,
+        filter_race,
+        filter_name,
+        filter_film,
+    ]);
+
+    const is_filter_active = useMemo(() => {
+        return !(
+            filter_winner === "All" &&
+            filter_gender === "all" &&
+            filter_race === "all" &&
+            !filter_name.trim() &&
+            !filter_film.trim()
+        );
+    }, [
+        filter_winner,
+        filter_gender,
+        filter_race,
+        filter_name,
+        filter_film,
+    ]);
 
     const get_sampled_bubbles = useCallback(
         (rate: number) => {
-        const highlight_set = new Set(
-            highlight_matches.map((m) => m.bubble_id),
-        );
-        if (rate <= 1) return all_bubble_points;
-        return all_bubble_points.filter((p) => {
-            if (highlight_set.has(p.id)) return true;
-            return hash_string(p.id) % rate === 0;
-        });
-    },
-        [all_bubble_points, highlight_matches],
+            const highlight_set = new Set(
+                highlight_matches.map((m) => m.bubble_id),
+            );
+            if (rate <= 1) return filtered_bubble_points;
+            return filtered_bubble_points.filter((p) => {
+                if (highlight_set.has(p.id)) return true;
+                return hash_string(p.id) % rate === 0;
+            });
+        },
+        [filtered_bubble_points, highlight_matches],
     );
 
-    const sampled_bubbles = useMemo(() => {
-        return get_sampled_bubbles(sampling_rate);
-    }, [get_sampled_bubbles, sampling_rate]);
+    const get_sampled_base_bubbles = useCallback(
+        (rate: number) => {
+            if (rate <= 1) return base_bubble_points;
+            return base_bubble_points.filter(
+                (p) => hash_string(p.id) % rate === 0,
+            );
+        },
+        [base_bubble_points],
+    );
 
     return {
         data_signature,
@@ -220,10 +300,13 @@ export function useBubbleData({
         races,
         years,
         stream_data,
-        all_bubble_points,
+        base_bubble_points,
+        filtered_bubble_points,
         active_highlights,
         highlight_matches,
-        sampled_bubbles,
         get_sampled_bubbles,
+        get_sampled_base_bubbles,
+        filter_match_ids,
+        is_filter_active,
     };
 }

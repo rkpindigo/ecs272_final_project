@@ -8,6 +8,7 @@ import { SlidePlaceholder } from "./SlidePlaceholder";
 import WhoBenefitsFromProgress from "./WhoBenefitsFromProgress/WhoBenefitsFromProgress";
 import TimelineFirsts from "./TimelineFirsts/TimelineFirsts";
 import NominationsBeforeAfter from "./NominationsBeforeAfter/NominationsBeforeAfter";
+import { category_group } from "../utils/category_group";
 
 const StorySlide = ({
     title,
@@ -84,8 +85,65 @@ export function Slides({
 }) {
     const [slide, set_slide] = useState(1);
 
+    const compute_most_diverse_category = (
+        rows: OscarsRow[],
+        mode: "gender" | "race",
+    ): { group: string; share: number; total: number } | null => {
+        const totals = new Map<
+            string,
+            { focus: number; total: number }
+        >();
+        const min_count = 25;
+
+        rows.forEach((d) => {
+            const group = category_group(d.category);
+            const entry = totals.get(group) || { focus: 0, total: 0 };
+
+            if (mode === "gender") {
+                const gender = d.gender?.trim().toLowerCase();
+                if (gender !== "female" && gender !== "male") return;
+                entry.total += 1;
+                if (gender === "female") entry.focus += 1;
+            } else {
+                const race = d.race?.trim().toLowerCase();
+                if (!race || race === "unknown") return;
+                entry.total += 1;
+                if (race !== "white") entry.focus += 1;
+            }
+
+            totals.set(group, entry);
+        });
+
+        let best: { group: string; share: number; total: number } | null = null;
+        totals.forEach((value, group) => {
+            if (value.total < min_count) return;
+            const share = value.focus / value.total;
+            if (!best || share > best.share) {
+                best = { group, share, total: value.total };
+            }
+        });
+
+        return best;
+    };
+
     const slides = useMemo(
-        () => [
+        () => {
+            const best_gender: {
+                group: string;
+                share: number;
+                total: number;
+            } | null = data
+                ? compute_most_diverse_category(data, "gender")
+                : null;
+            const best_race: {
+                group: string;
+                share: number;
+                total: number;
+            } | null = data
+                ? compute_most_diverse_category(data, "race")
+                : null;
+
+            return [
             {
                 title: "Dev Sandbox",
                 body: "Internal view for quick iteration. Not part of the final story.",
@@ -243,6 +301,57 @@ export function Slides({
                 theme: "#b21f2d",
             },
             {
+                title: "Gender by Category",
+                body: (
+                    <span>
+                        Which category group shows the strongest{" "}
+                        <span className="story-accent-red">
+                            <strong>women</strong>
+                        </span>{" "}
+                        presence? The female nominees are highlighted while
+                        the male nominees stay visible in the background.
+                        {best_gender && (
+                            <>
+                                {" "}
+                                The highest female share is in{" "}
+                                <strong>{best_gender.group}</strong> (
+                                {(best_gender.share * 100).toFixed(1)}% of{" "}
+                                {best_gender.total} nominations).
+                            </>
+                        )}
+                        <br></br>
+                        You can also explore other category groups in the
+                        dropdown.
+                    </span>
+                ),
+                content: data ? (
+                    <BubbleOverview
+                        key="gender-category-timeseries"
+                        data={data}
+                        initial_view_mode="category-timeseries"
+                        initial_filter_gender="female"
+                        initial_timeseries_category={
+                            best_gender?.group || "All"
+                        }
+                        initial_show_highlights={false}
+                        initial_focus_highlights={false}
+                        initial_sampling_rate={1}
+                        control_config={{
+                            show_view_buttons: false,
+                            show_winner: false,
+                            show_gender: false,
+                            show_race: false,
+                            show_search_person: false,
+                            show_search_film: false,
+                            show_highlights_section: false,
+                            show_highlight_buttons: false,
+                            show_timeseries_category: true,
+                        }}
+                    />
+                ) : null,
+                theme: "#b21f2d",
+            },
+            {
                 title: "Race After 2015",
                 body: (
                     <span>
@@ -329,6 +438,55 @@ export function Slides({
                 theme: "#2f8f5b",
             },
             {
+                title: "Race by Category",
+                body: (
+                    <span>
+                        Which category group shows the strongest{" "}
+                        <span className="story-accent-green">
+                            <strong>non-white</strong>
+                        </span>{" "}
+                        presence? Non-white nominees are highlighted while
+                        white nominees stay visible for context.
+                        {best_race && (
+                            <>
+                                {" "}
+                                The highest non-white share is in{" "}
+                                <strong>{best_race.group}</strong> (
+                                {(best_race.share * 100).toFixed(1)}% of{" "}
+                                {best_race.total} nominations).
+                            </>
+                        )}
+                        <br></br>
+                        You can also explore other category groups in the
+                        dropdown.
+                    </span>
+                ),
+                content: data ? (
+                    <BubbleOverview
+                        key="race-category-timeseries"
+                        data={data}
+                        initial_view_mode="category-timeseries"
+                        initial_filter_race="non-white"
+                        initial_timeseries_category={best_race?.group || "All"}
+                        initial_show_highlights={false}
+                        initial_focus_highlights={false}
+                        initial_sampling_rate={1}
+                        control_config={{
+                            show_view_buttons: false,
+                            show_winner: false,
+                            show_gender: false,
+                            show_race: false,
+                            show_search_person: false,
+                            show_search_film: false,
+                            show_highlights_section: false,
+                            show_highlight_buttons: false,
+                            show_timeseries_category: true,
+                        }}
+                    />
+                ) : null,
+                theme: "#2f8f5b",
+            },
+            {
                 title: "Race Winners",
                 body: "Looking at winners only, the early years are stark. Up to around 1980, White winners often take nearly the full share. This is the imbalance the hashtag brought to public attention.",
                 content: data ? (
@@ -400,14 +558,34 @@ export function Slides({
             },
             {
                 title: "Back to the System",
-                body: "Now that we have seen the milestones and the category patterns, we return to the full field. The same cloud of points reads differently once you know where the pressure points are.",
+                body: (
+                    <span>
+                        Now that we have seen the milestones and category
+                        patterns, we return to the full field. The same cloud
+                        reads differently once you know where the pressure
+                        points are. Try searching for a person or film you
+                        recognize.
+                    </span>
+                ),
                 content: data ? (
                     <BubbleOverview
                         key="bubble-return"
                         data={data}
-                        initial_show_highlights
+                        initial_view_mode="category-cloud"
+                        initial_show_highlights={false}
                         initial_focus_highlights={false}
                         initial_sampling_rate={3}
+                        control_config={{
+                            show_view_buttons: false,
+                            show_winner: false,
+                            show_gender: false,
+                            show_race: false,
+                            show_search_person: true,
+                            show_search_film: true,
+                            show_highlights_section: false,
+                            show_highlight_buttons: false,
+                            show_timeseries_category: false,
+                        }}
                     />
                 ) : null,
                 theme: undefined,
@@ -453,7 +631,8 @@ export function Slides({
                 hide_header: true,
                 theme: undefined,
             },
-        ],
+        ];
+        },
         [data],
     );
 

@@ -37,6 +37,7 @@ export function BubbleOverview({
     initial_filter_name = "",
     initial_filter_film = "",
     initial_sampling_rate = 5,
+    initial_timeseries_category = "All",
     control_config,
 }: {
     data: OscarsRow[];
@@ -50,6 +51,7 @@ export function BubbleOverview({
     initial_filter_name?: string;
     initial_filter_film?: string;
     initial_sampling_rate?: number;
+    initial_timeseries_category?: string;
     control_config?: Partial<{
         show_winner: boolean;
         show_gender: boolean;
@@ -87,7 +89,7 @@ export function BubbleOverview({
         initial_filter_film,
     );
     const [timeseries_category, set_timeseries_category] = useState<string>(
-        "All",
+        initial_timeseries_category,
     );
     const [selected_category, set_selected_category] = useState<string | null>(
         null,
@@ -161,10 +163,13 @@ export function BubbleOverview({
         races,
         years,
         stream_data,
-        all_bubble_points,
+        filtered_bubble_points,
         active_highlights,
         highlight_matches,
         get_sampled_bubbles,
+        get_sampled_base_bubbles,
+        filter_match_ids,
+        is_filter_active,
     } = useBubbleData({
         data,
         filter_winner,
@@ -187,17 +192,20 @@ export function BubbleOverview({
         kind: string,
         rate: number,
         extra: Array<string | number | undefined> = [],
+        ignore_filters = false,
     ) => {
-        if (filter_name.trim() || filter_film.trim()) return "";
+        if (filter_name.trim() || filter_film.trim()) {
+            if (!ignore_filters) return "";
+        }
         return [
             kind,
             data_signature,
             rate,
             width,
             height,
-            filter_winner,
-            filter_gender,
-            filter_race,
+            ...(ignore_filters
+                ? []
+                : [filter_winner, filter_gender, filter_race]),
             ...extra,
         ].join("|");
     };
@@ -217,6 +225,31 @@ export function BubbleOverview({
         }));
     };
 
+    const make_worker_nodes_for_mode = (
+        rate: number,
+        mode: ViewMode,
+    ) => {
+        if (
+            (mode === "category-cloud" || mode === "category-timeseries") &&
+            is_filter_active
+        ) {
+            return get_sampled_base_bubbles(rate).map((p) => ({
+                id: p.id,
+                year: p.year,
+                group: p.group,
+                group_index: p.group_index,
+                winner: p.winner,
+                race: p.race,
+                gender: p.gender,
+                name: p.name,
+                film: p.film,
+                category: p.category,
+            }));
+        }
+
+        return make_worker_nodes(rate);
+    };
+
     // Kick off worker layouts when needed.
     const { layout_tick } = useLayoutWorker({
         view_mode,
@@ -230,7 +263,8 @@ export function BubbleOverview({
         groups,
         years,
         make_cache_key,
-        make_worker_nodes,
+        make_worker_nodes: (rate: number) =>
+            make_worker_nodes_for_mode(rate, view_mode),
         margin: MARGIN,
         bubble_radius: BUBBLE_RADIUS,
         bubble_padding: BUBBLE_PADDING,
@@ -239,8 +273,10 @@ export function BubbleOverview({
     const bubble_points = useMemo(() => {
         if (!selected_category) return [];
 
-        return all_bubble_points.filter((d) => d.group === selected_category);
-    }, [all_bubble_points, selected_category]);
+        return filtered_bubble_points.filter(
+            (d) => d.group === selected_category,
+        );
+    }, [filtered_bubble_points, selected_category]);
 
     const {
         series,
@@ -375,14 +411,6 @@ export function BubbleOverview({
         layout_tick,
         timeseries_category,
         make_cache_key,
-        filter_winner,
-        filter_gender,
-        filter_race,
-        filter_name,
-        filter_film,
-        data_signature,
-        width,
-        height,
     });
 
     const [bubble_transform, set_bubble_transform] = useState(d3.zoomIdentity);
@@ -560,6 +588,11 @@ export function BubbleOverview({
         return new Set(highlight_matches.map((h) => h.bubble_id));
     }, [highlight_matches]);
 
+    const filter_match_ids_ref = useRef(filter_match_ids);
+    useEffect(() => {
+        filter_match_ids_ref.current = filter_match_ids;
+    }, [filter_match_ids]);
+
     useBubbleAxes({
         view_mode,
         x_axis_ref,
@@ -588,6 +621,8 @@ export function BubbleOverview({
         bands_transform,
         focus_highlights,
         highlight_bubble_ids,
+        filter_match_ids_ref,
+        is_filter_active,
         color_scale,
         canvas_ref,
         bubble_radius: BUBBLE_RADIUS,
