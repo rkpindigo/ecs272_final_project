@@ -453,12 +453,6 @@ export function Slides({
                 hide_header: true,
                 theme: undefined,
             },
-            {
-                content: <WhoBenefitsFromProgress />,
-            },
-            {
-                content: <TimelineFirsts />,
-            },
         ],
         [data],
     );
