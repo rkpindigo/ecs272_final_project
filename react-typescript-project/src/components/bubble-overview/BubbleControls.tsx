@@ -3,6 +3,16 @@ import React from "react";
 type Option = { key: string; label: string };
 
 export function BubbleControls({
+    show_winner = true,
+    show_gender = true,
+    show_race = true,
+    show_search_person = true,
+    show_search_film = true,
+    show_view_buttons = true,
+    show_density = true,
+    show_highlights_section = true,
+    show_highlight_buttons = true,
+    show_timeseries_category = true,
     filter_winner,
     set_filter_winner,
     filter_gender,
@@ -35,6 +45,16 @@ export function BubbleControls({
     on_back_to_overview,
     on_reset_zoom,
 }: {
+    show_winner?: boolean;
+    show_gender?: boolean;
+    show_race?: boolean;
+    show_search_person?: boolean;
+    show_search_film?: boolean;
+    show_view_buttons?: boolean;
+    show_density?: boolean;
+    show_highlights_section?: boolean;
+    show_highlight_buttons?: boolean;
+    show_timeseries_category?: boolean;
     filter_winner: "All" | "Winner" | "Nominee";
     set_filter_winner: (v: "All" | "Winner" | "Nominee") => void;
     filter_gender: string;
@@ -76,53 +96,66 @@ export function BubbleControls({
                 flexWrap: "wrap",
             }}
         >
-            <select
-                value={filter_winner}
-                onChange={(e) =>
-                    set_filter_winner(e.target.value as "All" | "Winner" | "Nominee")
-                }
-            >
-                <option>All</option>
-                <option>Winner</option>
-                <option>Nominee</option>
-            </select>
-            <select
-                value={filter_gender}
-                onChange={(e) => set_filter_gender(e.target.value)}
-            >
-                {genders.map((g) => (
-                    <option key={g.key} value={g.key}>
-                        {g.label}
-                    </option>
-                ))}
-            </select>
-            <select
-                value={filter_race}
-                onChange={(e) => set_filter_race(e.target.value)}
-            >
-                {races.map((r) => (
-                    <option key={r.key} value={r.key}>
-                        {r.label}
-                    </option>
-                ))}
-            </select>
-            <input
-                type="text"
-                placeholder="Search person"
-                value={filter_name}
-                onChange={(e) => set_filter_name(e.target.value)}
-                style={{ padding: "4px 6px", fontSize: 12 }}
-            />
-            <input
-                type="text"
-                placeholder="Search film"
-                value={filter_film}
-                onChange={(e) => set_filter_film(e.target.value)}
-                style={{ padding: "4px 6px", fontSize: 12 }}
-            />
+            {show_winner && (
+                <select
+                    value={filter_winner}
+                    onChange={(e) =>
+                        set_filter_winner(
+                            e.target.value as "All" | "Winner" | "Nominee",
+                        )
+                    }
+                >
+                    <option>All</option>
+                    <option>Winner</option>
+                    <option>Nominee</option>
+                </select>
+            )}
+            {show_gender && (
+                <select
+                    value={filter_gender}
+                    onChange={(e) => set_filter_gender(e.target.value)}
+                >
+                    {genders.map((g) => (
+                        <option key={g.key} value={g.key}>
+                            {g.label}
+                        </option>
+                    ))}
+                </select>
+            )}
+            {show_race && (
+                <select
+                    value={filter_race}
+                    onChange={(e) => set_filter_race(e.target.value)}
+                >
+                    {races.map((r) => (
+                        <option key={r.key} value={r.key}>
+                            {r.label}
+                        </option>
+                    ))}
+                </select>
+            )}
+            {show_search_person && (
+                <input
+                    type="text"
+                    placeholder="Search person"
+                    value={filter_name}
+                    onChange={(e) => set_filter_name(e.target.value)}
+                    style={{ padding: "4px 6px", fontSize: 12 }}
+                />
+            )}
+            {show_search_film && (
+                <input
+                    type="text"
+                    placeholder="Search film"
+                    value={filter_film}
+                    onChange={(e) => set_filter_film(e.target.value)}
+                    style={{ padding: "4px 6px", fontSize: 12 }}
+                />
+            )}
 
-            {(view_mode === "bands-bubbles" ||
-                view_mode === "category-cloud") && (
+            {show_highlights_section &&
+                (view_mode === "bands-bubbles" ||
+                    view_mode === "category-cloud") && (
                 <div
                     style={{
                         display: "flex",
@@ -156,25 +189,29 @@ export function BubbleControls({
                         />
                         Focus
                     </label>
-                    <button onClick={enable_all_highlights}>All</button>
-                    <button onClick={clear_highlights}>None</button>
-                    {highlights.map((h) => (
-                        <button
-                            key={h.id}
-                            onClick={() => toggle_highlight(h.id)}
-                            style={{
-                                fontWeight: highlight_ids.includes(h.id)
-                                    ? "bold"
-                                    : "normal",
-                            }}
-                        >
-                            {h.label}
-                        </button>
-                    ))}
+                    {show_highlight_buttons && (
+                        <>
+                            <button onClick={enable_all_highlights}>All</button>
+                            <button onClick={clear_highlights}>None</button>
+                            {highlights.map((h) => (
+                                <button
+                                    key={h.id}
+                                    onClick={() => toggle_highlight(h.id)}
+                                    style={{
+                                        fontWeight: highlight_ids.includes(h.id)
+                                            ? "bold"
+                                            : "normal",
+                                    }}
+                                >
+                                    {h.label}
+                                </button>
+                            ))}
+                        </>
+                    )}
                 </div>
             )}
 
-            {view_mode === "category-timeseries" && (
+            {show_timeseries_category && view_mode === "category-timeseries" && (
                 <select
                     value={timeseries_category}
                     onChange={(e) => set_timeseries_category(e.target.value)}
@@ -188,7 +225,7 @@ export function BubbleControls({
                 </select>
             )}
 
-            {view_mode !== "detail" && (
+            {show_view_buttons && view_mode !== "detail" && (
                 <>
                     <button
                         onClick={() => set_view_mode("stream")}
@@ -248,10 +285,11 @@ export function BubbleControls({
                 </>
             )}
 
-            {(view_mode === "stream-bubbles" ||
-                view_mode === "bands-bubbles" ||
-                view_mode === "category-cloud" ||
-                view_mode === "category-timeseries") && (
+            {show_density &&
+                (view_mode === "stream-bubbles" ||
+                    view_mode === "bands-bubbles" ||
+                    view_mode === "category-cloud" ||
+                    view_mode === "category-timeseries") && (
                 <>
                     <span style={{ fontSize: 12, color: "#666" }}>
                         Bubble density (1 in

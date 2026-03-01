@@ -21,7 +21,10 @@ const StorySlide = ({
     return (
         <div className="story-center">
             <div className="story-block">
-                <div className="story-title" style={{ color: accent || "#1b1b1b" }}>
+                <div
+                    className="story-title"
+                    style={{ color: accent || "#1b1b1b" }}
+                >
                     {title}
                 </div>
                 <div className="story-lines">
@@ -39,7 +42,15 @@ const StorySlide = ({
 const DevSandbox = ({ data }: { data: OscarsRow[] | null }) => {
     const [view, set_view] = useState("bubble");
     return (
-        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", gap: 12 }}>
+        <div
+            style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+            }}
+        >
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <span style={{ fontSize: 12, color: "#666" }}>Dev view</span>
                 <select value={view} onChange={(e) => set_view(e.target.value)}>
@@ -83,17 +94,18 @@ export function Slides({
             },
             {
                 title: "Are the Oscars Getting Better at Representation?",
-                body:
-                    "You have probably seen the headline: “The Oscars are so white.” It sparked a global debate and a hashtag. But has anything actually changed? The short answer is not simple. The data tells a more uneven story than the headlines.",
+                body: "You have probably seen the headline: “The Oscars are so white.” It sparked a global debate and a hashtag. But has anything actually changed? The short answer is not simple. The data tells a more uneven story than the headlines.",
                 content: (
                     <StorySlide
                         title="Have you ever seen a comment like this?"
                         lines={[
                             <span key="l1">
-                                “The Oscars are still <strong>so white</strong>.”
+                                “The Oscars are still <strong>so white</strong>
+                                .”
                             </span>,
                             <span key="l2">
-                                The hashtag sparked a global debate. We’re using data to test it.
+                                The hashtag sparked a global debate. We’re using
+                                data to test it.
                             </span>,
                         ]}
                         accent="#1f6fb2"
@@ -104,14 +116,14 @@ export function Slides({
             },
             {
                 title: "The Question",
-                body:
-                    "One viral moment can feel like a turning point. But real change is not always obvious. We will follow nominees and winners across decades to see whether the industry actually shifted after 2015 and who benefited most.",
+                body: "One viral moment can feel like a turning point. But real change is not always obvious. We will follow nominees and winners across decades to see whether the industry actually shifted after 2015 and who benefited most.",
                 content: (
                     <StorySlide
                         title="So what changed after #OscarsSoWhite?"
                         lines={[
                             <span key="l1">
-                                We track <strong>nominees</strong> and <strong>winners</strong> by race and gender.
+                                We track <strong>nominees</strong> and{" "}
+                                <strong>winners</strong> by race and gender.
                             </span>,
                             <span key="l2">
                                 Then we compare the years before and after 2015.
@@ -130,7 +142,10 @@ export function Slides({
                     <StorySlide
                         title="Are the Oscars more progressive and accepting?"
                         lines={[
-                            <span key="l1">by Sayali Lokhande, Ritesh Patro, Pablo Rodriguez Quinonez</span>,
+                            <span key="l1">
+                                by Sayali Lokhande, Ritesh Patro, Pablo
+                                Rodriguez Quinonez
+                            </span>,
                         ]}
                     />
                 ),
@@ -139,8 +154,7 @@ export function Slides({
             },
             {
                 title: "All Entries at Once",
-                body:
-                    "Before we narrow the lens, we need the big picture. Every Oscar nominee and winner is here, from 1920 to 2020. Each bubble is a person, each band is the category group they were nominated for. Shape represents gender and color represents race, while the outline marks winners.",
+                body: "Before we narrow the lens, we need the big picture. Every Oscar nominee and winner is here, from 1920 to 2020. Each bubble is a person, each band is the category group they were nominated for. Shape represents gender and color represents race, while the outline marks winners.",
                 content: data ? (
                     <BubbleOverview
                         key="bubble-overview"
@@ -157,8 +171,16 @@ export function Slides({
                 body: (
                     <span>
                         Now let’s look at the{" "}
-                        <span className="story-accent-red"><strong>gender</strong></span>{" "}
-                        category. These are the women nominees and winners at the Oscars. We can already see how the density of each band drops quickly compared to the full picture.
+                        <span className="story-accent-red">
+                            <strong>gender</strong>
+                        </span>{" "}
+                        category. These are the women nominees and winners at
+                        the Oscars. We can already see how the density of each
+                        band drops quickly compared to the full picture.{" "}
+                        <br></br>
+                        <span className="story-accent-red">
+                            Turn on highlights to see key individuals.
+                        </span>
                     </span>
                 ),
                 content: data ? (
@@ -166,10 +188,18 @@ export function Slides({
                         key="bubble-gender"
                         data={data}
                         initial_filter_gender="female"
-                        initial_show_highlights
+                        initial_show_highlights={false}
                         initial_focus_highlights={false}
-                        initial_highlight_ids={["kathryn-bigelow", "halle-berry"]}
+                        initial_highlight_ids={[
+                            "kathryn-bigelow",
+                            "halle-berry",
+                        ]}
                         initial_sampling_rate={3}
+                        control_config={{
+                            show_view_buttons: false,
+                            show_race: false,
+                            show_highlight_buttons: false,
+                        }}
                     />
                 ) : null,
                 theme: "#b21f2d",
@@ -179,8 +209,12 @@ export function Slides({
                 body: (
                     <span>
                         If we switch the{" "}
-                        <span className="story-accent-red"><strong>gender</strong></span>{" "}
-                        view to bars, the disparity becomes clear. The male share dominates the winners, and the female share is much smaller than the overall nominee share.
+                        <span className="story-accent-red">
+                            <strong>gender</strong>
+                        </span>{" "}
+                        view to bars, the disparity becomes clear. The male
+                        share dominates the winners, and the female share is
+                        much smaller than the overall nominee share.
                     </span>
                 ),
                 content: data ? (
@@ -196,8 +230,7 @@ export function Slides({
             },
             {
                 title: "Gender Over Time",
-                body:
-                    "Here is the time series of nominees and winners over time, using the share of nominees. After around 1981, the female nominee share rises. But the winners line shows a much slower climb. The gap never fully closes.",
+                body: "Here is the time series of nominees and winners over time, using the share of nominees. After around 1981, the female nominee share rises. But the winners line shows a much slower climb. The gap never fully closes.",
                 content: data ? (
                     <GenderRaceTrends
                         key="trends-gender-lines"
@@ -213,9 +246,16 @@ export function Slides({
                 title: "Race After 2015",
                 body: (
                     <span>
-                        In 2015, the #OscarsSoWhite movement put race in the spotlight. Now let’s shift to the{" "}
-                        <span className="story-accent-green"><strong>race</strong></span>{" "}
+                        In 2015, the #OscarsSoWhite movement put race in the
+                        spotlight. Now let’s shift to the{" "}
+                        <span className="story-accent-green">
+                            <strong>race</strong>
+                        </span>{" "}
                         category and see how the picture changes.
+                        <br></br>
+                        <span className="story-accent-green">
+                            Turn on highlights to see key individuals.
+                        </span>
                     </span>
                 ),
                 content: data ? (
@@ -223,10 +263,19 @@ export function Slides({
                         key="bubble-race"
                         data={data}
                         initial_filter_race="non-white"
-                        initial_show_highlights
+                        initial_show_highlights={false}
                         initial_focus_highlights={false}
-                        initial_highlight_ids={["hattie-mcdaniel", "halle-berry", "bong-joon-ho"]}
+                        initial_highlight_ids={[
+                            "hattie-mcdaniel",
+                            "halle-berry",
+                            "bong-joon-ho",
+                        ]}
                         initial_sampling_rate={3}
+                        control_config={{
+                            show_view_buttons: false,
+                            show_gender: false,
+                            show_highlight_buttons: false,
+                        }}
                     />
                 ) : null,
                 theme: "#2f8f5b",
@@ -236,8 +285,12 @@ export function Slides({
                 body: (
                     <span>
                         With the{" "}
-                        <span className="story-accent-green"><strong>race</strong></span>{" "}
-                        bars, it is nearly impossible to compare White to Non White without zooming in. The gap is huge even before we look at the timeline.
+                        <span className="story-accent-green">
+                            <strong>race</strong>
+                        </span>{" "}
+                        bars, it is nearly impossible to compare White to Non
+                        White without zooming in. The gap is huge even before we
+                        look at the timeline.
                     </span>
                 ),
                 content: data ? (
@@ -256,8 +309,12 @@ export function Slides({
                 body: (
                     <span>
                         Compared to gender, the{" "}
-                        <span className="story-accent-green"><strong>race</strong></span>{" "}
-                        story looks worse. There is growth in the last twenty years, but other races still struggle to surpass the share of White winners.
+                        <span className="story-accent-green">
+                            <strong>race</strong>
+                        </span>{" "}
+                        story looks worse. There is growth in the last twenty
+                        years, but other races still struggle to surpass the
+                        share of White winners.
                     </span>
                 ),
                 content: data ? (
@@ -273,8 +330,7 @@ export function Slides({
             },
             {
                 title: "Race Winners",
-                body:
-                    "Looking at winners only, the early years are stark. Up to around 1980, White winners often take nearly the full share. This is the imbalance the hashtag brought to public attention.",
+                body: "Looking at winners only, the early years are stark. Up to around 1980, White winners often take nearly the full share. This is the imbalance the hashtag brought to public attention.",
                 content: data ? (
                     <GenderRaceTrends
                         key="trends-race-lines-win"
@@ -288,8 +344,7 @@ export function Slides({
             },
             {
                 title: "Race and Gender Together",
-                body:
-                    "Race and gender do not move in lockstep. When we look at them together, some groups gain ground while others stay flat. This is where the matrix and timeline will add needed detail.",
+                body: "Race and gender do not move in lockstep. When we look at them together, some groups gain ground while others stay flat. This is where the matrix and timeline will add needed detail.",
                 content: data ? (
                     <GenderRaceTrends
                         key="trends-all-lines-win"
@@ -303,8 +358,7 @@ export function Slides({
             },
             {
                 title: "Before vs After 2015",
-                body:
-                    "If the hashtag mattered, we should see a break. This comparison makes it clearer whether representation shifted or whether the story changed more than the outcomes.",
+                body: "If the hashtag mattered, we should see a break. This comparison makes it clearer whether representation shifted or whether the story changed more than the outcomes.",
                 content: (
                     <SlidePlaceholder
                         title="Pre/Post 2015 Comparison"
@@ -316,43 +370,37 @@ export function Slides({
             },
             {
                 title: "Category Balance by Race",
-                body:
-                    "Progress can hide inside categories. Some groups show diversity gains while others remain stubbornly uniform. This view shows where representation is concentrated and where it is missing.",
+                body: "Progress can hide inside categories. Some groups show diversity gains while others remain stubbornly uniform. This view shows where representation is concentrated and where it is missing.",
                 content: <RadarChart />,
                 theme: "#6b4b9a",
             },
             {
                 title: "Flows Across Category, Race, and Outcome",
-                body:
-                    "The pipeline matters. It is one thing to be nominated and another to win. This flow shows how representation moves from category to race to outcome and where it narrows.",
+                body: "The pipeline matters. It is one thing to be nominated and another to win. This flow shows how representation moves from category to race to outcome and where it narrows.",
                 content: <SankeyDiagram />,
                 theme: "#6b4b9a",
             },
             {
                 title: "Before vs After 2015",
-                body:
-                    "The hashtag became a turning point in public conversation. If it mattered, we should see a break. This comparison makes it clearer whether representation shifted or whether the story changed more than the outcomes.",
+                body: "The hashtag became a turning point in public conversation. If it mattered, we should see a break. This comparison makes it clearer whether representation shifted or whether the story changed more than the outcomes.",
                 content: data ? <NominationsBeforeAfter data={data} /> : null,
                 theme: "#2f8f5b",
             },
             {
                 title: "Who Benefits Most?",
-                body:
-                    "Who gained recognition as the Oscars evolved?",
+                body: "Who gained recognition as the Oscars evolved?",
                 content: <WhoBenefitsFromProgress />,
                 theme: "#1f6fb2",
             },
             {
                 title: "Milestones",
-                body:
-                    "Numbers do not capture what it felt like to be first. This timeline adds context with the moments that changed what was possible.",
+                body: "Numbers do not capture what it felt like to be first. This timeline adds context with the moments that changed what was possible.",
                 content: <TimelineFirsts />,
                 theme: "#1f6fb2",
             },
             {
                 title: "Back to the System",
-                body:
-                    "Now that we have seen the milestones and the category patterns, we return to the full field. The same cloud of points reads differently once you know where the pressure points are.",
+                body: "Now that we have seen the milestones and the category patterns, we return to the full field. The same cloud of points reads differently once you know where the pressure points are.",
                 content: data ? (
                     <BubbleOverview
                         key="bubble-return"
@@ -366,17 +414,18 @@ export function Slides({
             },
             {
                 title: "So, Did It Change?",
-                body:
-                    "The Oscars did not transform overnight. Some lines bend. Others barely move. The real story is uneven progress and how much remains stuck.",
+                body: "The Oscars did not transform overnight. Some lines bend. Others barely move. The real story is uneven progress and how much remains stuck.",
                 content: (
                     <StorySlide
                         title="The story is uneven."
                         lines={[
                             <span key="l1">
-                                Some categories shifted fast. Others barely moved.
+                                Some categories shifted fast. Others barely
+                                moved.
                             </span>,
                             <span key="l2">
-                                The question isn’t just “did it change?” but <strong>who benefited</strong>.
+                                The question isn’t just “did it change?” but{" "}
+                                <strong>who benefited</strong>.
                             </span>,
                         ]}
                         accent="#2f8f5b"
@@ -387,8 +436,7 @@ export function Slides({
             },
             {
                 title: "Thanks for Reading",
-                body:
-                    "Data source: Academy Awards dataset. Built by our team for ECS272. Thanks for reading.",
+                body: "Data source: Academy Awards dataset. Built by our team for ECS272. Thanks for reading.",
                 content: (
                     <StorySlide
                         title="Thanks for reading."

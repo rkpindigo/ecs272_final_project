@@ -37,6 +37,7 @@ export function BubbleOverview({
     initial_filter_name = "",
     initial_filter_film = "",
     initial_sampling_rate = 5,
+    control_config,
 }: {
     data: OscarsRow[];
     initial_view_mode?: ViewMode;
@@ -49,6 +50,18 @@ export function BubbleOverview({
     initial_filter_name?: string;
     initial_filter_film?: string;
     initial_sampling_rate?: number;
+    control_config?: Partial<{
+        show_winner: boolean;
+        show_gender: boolean;
+        show_race: boolean;
+        show_search_person: boolean;
+        show_search_film: boolean;
+        show_view_buttons: boolean;
+        show_density: boolean;
+        show_highlights_section: boolean;
+        show_highlight_buttons: boolean;
+        show_timeseries_category: boolean;
+    }>;
 }) {
     // Split rendering into small view components to keep the main file readable.
     const svg_ref = useRef<SVGSVGElement | null>(null);
@@ -624,6 +637,7 @@ export function BubbleOverview({
                 }}
             >
                 <BubbleControls
+                    {...control_config}
                     filter_winner={filter_winner}
                     set_filter_winner={set_filter_winner}
                     filter_gender={filter_gender}
