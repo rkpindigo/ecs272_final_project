@@ -4,7 +4,6 @@ import { BubbleOverview } from "./BubbleOverview";
 import { GenderRaceTrends } from "./GenderRaceTrends";
 import RadarChart from "./radarChart";
 import SankeyDiagram from "./sankeyDiagram";
-import { SlidePlaceholder } from "./SlidePlaceholder";
 import WhoBenefitsFromProgress from "./WhoBenefitsFromProgress/WhoBenefitsFromProgress";
 import TimelineFirsts from "./TimelineFirsts/TimelineFirsts";
 import NominationsBeforeAfter from "./NominationsBeforeAfter/NominationsBeforeAfter";
@@ -512,18 +511,6 @@ export function Slides({
                         initial_metric="percent_winners"
                     />
                 ) : null,
-                theme: "#2f8f5b",
-            },
-            {
-                title: "Before vs After 2015",
-                body: "If the hashtag mattered, we should see a break. This comparison makes it clearer whether representation shifted or whether the story changed more than the outcomes.",
-                content: (
-                    <SlidePlaceholder
-                        title="Pre/Post 2015 Comparison"
-                        body="Planned view: side by side bars or small multiples of nomination shares before and after 2015."
-                        accent="#b21f2d"
-                    />
-                ),
                 theme: "#2f8f5b",
             },
             {
