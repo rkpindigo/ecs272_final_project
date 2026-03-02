@@ -28,9 +28,9 @@ function mode_keys(mode: Mode): string[] {
 function palette(key: string): string {
   // Simple palette for consistent reading across modes.
   if (key === 'Female') return '#b21f2d';
-  if (key === 'White-Male') return '#2f2f2f';
+  if (key === 'White-Male') return '#f1d98a';
   if (key === 'Non-White') return '#1f6fb2';
-  if (key === 'White') return '#2f2f2f';
+  if (key === 'White') return '#f1d98a';
   return '#1f6fb2';
 }
 
@@ -190,7 +190,7 @@ export function GenderRaceTrends({
   });
 
   return (
-    <div style={{ marginTop: 12 }}>
+    <div className="plot-dark" style={{ marginTop: 12 }}>
       <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
         <button onClick={() => { set_mode('all'); set_selected(null); }}>All</button>
         <button onClick={() => { set_mode('gender'); set_selected(null); }}>Gender</button>
@@ -203,7 +203,11 @@ export function GenderRaceTrends({
         </button>
       </div>
 
-      <div ref={wrap_ref} style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <div
+        ref={wrap_ref}
+        className="plot-surface"
+        style={{ position: 'relative', width: '100%', height: '100%' }}
+      >
         <div style={{ position: 'relative', width: '100%', height: chart_height }}>
         <div style={layer_style(view === 'bar')}>
           <GenderRaceBars
@@ -246,13 +250,13 @@ export function GenderRaceTrends({
             position: 'fixed',
             left: hover.x + 12,
             top: hover.y + 12,
-            background: '#ffffff',
-            border: '1px solid #c9c2b4',
+            background: '#11100d',
+            border: '1px solid rgba(212, 175, 55, 0.35)',
             borderRadius: 6,
             padding: '6px 8px',
             fontSize: 12,
-            color: '#1b1b1b',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            color: '#f7f1e5',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
             pointerEvents: 'none',
             zIndex: 10,
           }}

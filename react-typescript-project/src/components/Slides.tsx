@@ -23,7 +23,7 @@ const StorySlide = ({
             <div className="story-block">
                 <div
                     className="story-title"
-                    style={{ color: accent || "#1b1b1b" }}
+                    style={{ color: accent || "var(--oscars-gold)" }}
                 >
                     {title}
                 </div>
@@ -228,14 +228,12 @@ export function Slides({
                 body: (
                     <span>
                         Now let’s look at the{" "}
-                        <span className="story-accent-red">
-                            <strong>gender</strong>
-                        </span>{" "}
+                        <span className="story-accent-red">gender</span>{" "}
                         category. These are the women nominees and winners at
                         the Oscars. We can already see how the density of each
                         band drops quickly compared to the full picture.{" "}
                         <br></br>
-                        <span className="story-accent-red">
+                        <span className="story-accent-line">
                             Turn on highlights to see key individuals.
                         </span>
                     </span>
@@ -319,8 +317,10 @@ export function Slides({
                             </>
                         )}
                         <br></br>
-                        You can also explore other category groups in the
-                        dropdown.
+                        <span className="story-accent-line">
+                            You can also explore other category groups in the
+                            dropdown.
+                        </span>
                     </span>
                 ),
                 content: data ? (
@@ -356,12 +356,10 @@ export function Slides({
                     <span>
                         In 2015, the #OscarsSoWhite movement put race in the
                         spotlight. Now let’s shift to the{" "}
-                        <span className="story-accent-green">
-                            <strong>race</strong>
-                        </span>{" "}
+                        <span className="story-accent-green">race</span>{" "}
                         category and see how the picture changes.
                         <br></br>
-                        <span className="story-accent-green">
+                        <span className="story-accent-line">
                             Turn on highlights to see key individuals.
                         </span>
                     </span>
@@ -456,8 +454,10 @@ export function Slides({
                             </>
                         )}
                         <br></br>
-                        You can also explore other category groups in the
-                        dropdown.
+                        <span className="story-accent-line">
+                            You can also explore other category groups in the
+                            dropdown.
+                        </span>
                     </span>
                 ),
                 content: data ? (
@@ -550,8 +550,11 @@ export function Slides({
                         Now that we have seen the milestones and category
                         patterns, we return to the full field. The same cloud
                         reads differently once you know where the pressure
-                        points are. Try searching for a person or film you
-                        recognize.
+                        points are.
+                        <br></br>
+                        <span className="story-accent-line">
+                            Try searching for a person or film you recognize.
+                        </span>
                     </span>
                 ),
                 content: data ? (
@@ -624,9 +627,13 @@ export function Slides({
     );
 
     const current = slides[slide];
+    const accent = current.theme || "#d4af37";
 
     return (
-        <div className="page">
+        <div
+            className="page"
+            style={{ "--accent": accent } as React.CSSProperties}
+        >
             <button
                 onClick={() => set_slide(0)}
                 style={{

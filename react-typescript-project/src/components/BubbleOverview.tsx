@@ -648,6 +648,7 @@ export function BubbleOverview({
     return (
         <div
             ref={container_ref}
+            className="plot-dark"
             style={{
                 position: "relative",
                 width: "100%",
@@ -658,12 +659,13 @@ export function BubbleOverview({
                 minHeight: 0,
             }}
         >
-            <div style={{ fontSize: 12, color: "#5b5b5b" }}>
+            <div style={{ fontSize: 12 }}>
                 Each mark is a nominee or winner. Color = race, shape = gender,
                 outline = winner status.
             </div>
             <div
                 ref={controls_ref}
+                className="plot-controls"
                 style={{
                     display: "flex",
                     gap: 8,
@@ -729,6 +731,7 @@ export function BubbleOverview({
 
             <div
                 ref={plot_ref}
+                className="plot-surface"
                 style={{ position: "relative", flex: 1, minHeight: 0 }}
             >
                 {!layout_ready && (

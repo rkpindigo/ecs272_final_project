@@ -38,18 +38,16 @@ export function StreamOnlyView({
 }) {
     // Stream view without bubbles; tooltip and click behavior live here.
     return (
-        <svg
-            ref={svg_ref}
-            width={width}
-            height={height}
-            style={{
-                border: "1px solid #c9c2b4",
-                background: "#ffffff",
-                position: "relative",
-                zIndex: 1,
-            }}
-            key={svg_key}
-        >
+            <svg
+                ref={svg_ref}
+                width={width}
+                height={height}
+                style={{
+                    position: "relative",
+                    zIndex: 1,
+                }}
+                key={svg_key}
+            >
             <defs>
                 <clipPath id="plot-clip">
                     <rect
@@ -63,9 +61,14 @@ export function StreamOnlyView({
 
             <g
                 ref={x_axis_ref}
+                className="axis axis-x"
                 transform={`translate(0,${height - margin.bottom})`}
             />
-            <g ref={y_axis_ref} transform={`translate(${margin.left},0)`} />
+            <g
+                ref={y_axis_ref}
+                className="axis axis-y"
+                transform={`translate(${margin.left},0)`}
+            />
 
             <g clipPath="url(#plot-clip)">
                 {series.map((layer) => (

@@ -91,8 +91,6 @@ export function BandsBubblesView({
                 width={width}
                 height={height}
                 style={{
-                    border: "1px solid #c9c2b4",
-                    background: "#ffffff",
                     position: "relative",
                     zIndex: 1,
                 }}
@@ -111,9 +109,14 @@ export function BandsBubblesView({
 
                 <g
                     ref={x_axis_ref}
-                    transform={`translate(0,${height - margin.bottom})`}
+                    className="axis axis-x"
+                    transform={`translate(0,${height - margin.bottom - 6})`}
                 />
-                <g ref={y_axis_ref} transform={`translate(${margin.left},0)`} />
+                <g
+                    ref={y_axis_ref}
+                    className="axis axis-y"
+                    transform={`translate(${margin.left},0)`}
+                />
 
                 <g clipPath="url(#plot-clip)">
                     {show_bands && densities.length > 0 && (() => {
@@ -170,7 +173,7 @@ export function BandsBubblesView({
                                 textAnchor="end"
                                 dominantBaseline="middle"
                                 fontSize={11}
-                                fill="#333"
+                                fill="var(--plot-text, #333)"
                             >
                                 {density_info.group}
                             </text>
@@ -220,7 +223,7 @@ export function BandsBubblesView({
                                     y1={h.y}
                                     x2={h.x + dx}
                                     y2={h.y + dy}
-                                    stroke={h.color || "#1b1b1b"}
+                                    stroke={h.color || "rgba(212, 175, 55, 0.8)"}
                                     strokeWidth={1}
                                 />
                                 <rect
@@ -229,8 +232,8 @@ export function BandsBubblesView({
                                     width={box_w}
                                     height={box_h}
                                     rx={6}
-                                    fill="#ffffff"
-                                    stroke={h.color || "#1b1b1b"}
+                                    fill="#11100d"
+                                    stroke={h.color || "rgba(212, 175, 55, 0.8)"}
                                     strokeWidth={0.8}
                                     opacity={0.97}
                                 />
@@ -238,7 +241,7 @@ export function BandsBubblesView({
                                     x={h.x + dx + 8}
                                     y={h.y + dy}
                                     fontSize={11}
-                                    fill="#1b1b1b"
+                                    fill="#f7f1e5"
                                 >
                                     {h.label}
                                 </text>
@@ -247,7 +250,7 @@ export function BandsBubblesView({
                                         x={h.x + dx + 8}
                                         y={h.y + dy + 12}
                                         fontSize={10}
-                                        fill="#5b5b5b"
+                                        fill="rgba(247, 241, 229, 0.75)"
                                     >
                                         {h.note}
                                     </text>

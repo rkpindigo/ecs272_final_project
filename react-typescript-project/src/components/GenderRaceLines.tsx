@@ -67,7 +67,7 @@ export function GenderRaceLines({
   const clip_id = `line-clip-${animate_key}`;
 
   return (
-    <svg width={width} height={height} style={{ border: '1px solid #c9c2b4', background: '#ffffff' }}>
+    <svg width={width} height={height} style={{ background: 'transparent' }}>
       <defs key={`defs-${clip_id}`}>
         <clipPath id={clip_id}>
           <rect
@@ -92,10 +92,10 @@ export function GenderRaceLines({
           }
         `}
       </style>
-      <g ref={x_axis_ref} transform={`translate(0,${height - margin.bottom})`} />
-      <g ref={y_axis_ref} transform={`translate(${margin.left},0)`} />
+      <g ref={x_axis_ref} className="axis axis-x" transform={`translate(0,${height - margin.bottom})`} />
+      <g ref={y_axis_ref} className="axis axis-y" transform={`translate(${margin.left},0)`} />
       {metric === 'percent_winners' && (
-        <text x={margin.left + 6} y={margin.top + 6} fontSize="11" fill="#5b5b5b">
+        <text x={margin.left + 6} y={margin.top + 6} fontSize="11" fill="var(--plot-muted, #5b5b5b)">
           Nominees share of nominees, winners share of winners.
         </text>
       )}
@@ -188,11 +188,11 @@ export function GenderRaceLines({
         })}
       </g>
       <g transform={`translate(${width - margin.right - 190},${margin.top + 6})`}>
-        <rect width={182} height={44} fill="#ffffff" stroke="#c9c2b4" rx={6} />
-        <line x1={12} y1={14} x2={52} y2={14} stroke="#1b1b1b" strokeWidth={2.2} />
-        <text x={60} y={18} fontSize="11" fill="#5b5b5b">Nominees</text>
-        <line x1={12} y1={30} x2={52} y2={30} stroke="#1b1b1b" strokeWidth={2.2} strokeDasharray="4 3" />
-        <text x={60} y={34} fontSize="11" fill="#5b5b5b">Winners</text>
+        <rect width={182} height={44} fill="var(--plot-bg, #ffffff)" stroke="var(--plot-border, #c9c2b4)" rx={6} />
+        <line x1={12} y1={14} x2={52} y2={14} stroke="var(--plot-stroke, #1b1b1b)" strokeWidth={2.2} />
+        <text x={60} y={18} fontSize="11" fill="var(--plot-muted, #5b5b5b)">Nominees</text>
+        <line x1={12} y1={30} x2={52} y2={30} stroke="var(--plot-stroke, #1b1b1b)" strokeWidth={2.2} strokeDasharray="4 3" />
+        <text x={60} y={34} fontSize="11" fill="var(--plot-muted, #5b5b5b)">Winners</text>
       </g>
     </svg>
   );

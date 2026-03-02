@@ -27,8 +27,6 @@ export function DetailBubblesView({
                 width={width}
                 height={height}
                 style={{
-                    border: "1px solid #c9c2b4",
-                    background: "#ffffff",
                     cursor: "crosshair",
                     display: "block",
                 }}
@@ -47,10 +45,12 @@ export function DetailBubblesView({
             >
                 <g
                     ref={x_axis_ref}
+                    className="axis axis-x"
                     transform={`translate(0,${height - margin.bottom})`}
                 />
                 <g
                     ref={y_axis_ref}
+                    className="axis axis-y"
                     transform={`translate(${margin.left},0)`}
                 />
             </svg>

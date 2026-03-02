@@ -53,7 +53,7 @@ export function build_groups(data: OscarsRow[]) {
 }
 
 export function race_color(race: string) {
-    if (race === "White") return "#2f2f2f";
+    if (race === "White") return "#a88960";
     if (race === "Black") return "#1f6fb2";
     if (race === "Asian") return "#b21f2d";
     if (race === "Hispanic") return "#2f8f5b";

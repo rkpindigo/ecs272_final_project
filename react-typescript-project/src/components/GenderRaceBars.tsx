@@ -33,11 +33,11 @@ export function GenderRaceBars({
       key={`bars-${bar_anim_key}`}
       width={width}
       height={height}
-      style={{ border: '1px solid #c9c2b4', background: '#ffffff' }}
+      style={{ background: 'transparent' }}
     >
       <defs>
         <pattern id="nominee-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-          <line x1="0" y1="0" x2="0" y2="6" stroke="#1b1b1b" strokeWidth="1" />
+          <line x1="0" y1="0" x2="0" y2="6" stroke="var(--plot-stroke, #1b1b1b)" strokeWidth="1" />
         </pattern>
       </defs>
       {bars.map((b, i) => {
@@ -78,7 +78,7 @@ export function GenderRaceBars({
               width={w}
               height={win_h_draw}
               fill={palette(b.key)}
-              stroke="#1b1b1b"
+              stroke="var(--plot-stroke, #1b1b1b)"
               strokeWidth={0.6}
               style={{ transition: 'height 500ms ease, y 500ms ease' }}
             />
@@ -103,13 +103,13 @@ export function GenderRaceBars({
               opacity={0.2}
               style={{ transition: 'height 500ms ease, y 500ms ease' }}
             />
-            <text x={x + w / 2} y={height - 10} textAnchor="middle" fontSize="11" fill="#5b5b5b">
+            <text x={x + w / 2} y={height - 10} textAnchor="middle" fontSize="11" fill="var(--plot-muted, #5b5b5b)">
               {b.key}
             </text>
           </g>
         );
       })}
-      <text x={margin.left} y={14} fontSize="11" fill="#5b5b5b">
+      <text x={margin.left} y={14} fontSize="11" fill="var(--plot-muted, #5b5b5b)">
         Winners (solid) + non-winner nominees (hatched). Click a bar to expand.
       </text>
     </svg>
