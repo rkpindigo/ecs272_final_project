@@ -39,6 +39,25 @@ const StorySlide = ({
     );
 };
 
+const CircleStorySlide = ({
+    title,
+    lines,
+    accent,
+}: {
+    title: string;
+    lines: Array<React.ReactNode>;
+    accent?: string;
+}) => {
+    return (
+        <div className="circle-scene">
+            <span className="circle-bubble circle-bubble-left" />
+            <span className="circle-bubble circle-bubble-right-top" />
+            <span className="circle-bubble circle-bubble-right-bottom" />
+            <StorySlide title={title} lines={lines} accent={accent} />
+        </div>
+    );
+};
+
 const DevSandbox = ({ data }: { data: OscarsRow[] | null }) => {
     const [view, set_view] = useState("bubble");
     return (
@@ -143,30 +162,72 @@ export function Slides({
                 : null;
 
             return [
+            // {
+            //     title: "Dev Sandbox",
+            //     body: "Internal view for quick iteration. Not part of the final story.",
+            //     content: <DevSandbox data={data} />,
+            //     theme: undefined,
+            // },
             {
-                title: "Dev Sandbox",
-                body: "Internal view for quick iteration. Not part of the final story.",
-                content: <DevSandbox data={data} />,
+                title: "Are the Oscars more progressive and accepting?",
+                body: "by Sayali Lokhande, Ritesh Patro, Pablo Rodriguez Quinonez",
+                content: (
+                    <CircleStorySlide
+                        title="Are the Oscars more progressive and accepting?"
+                        lines={[
+                            <span key="l1">
+                                by Sayali Lokhande, Ritesh Patro, Pablo
+                                Rodriguez Quinonez
+                            </span>,
+                        ]}
+                    />
+                ),
+                hide_header: true,
                 theme: undefined,
             },
             {
                 title: "Are the Oscars Getting Better at Representation?",
                 body: "You have probably seen the headline: “The Oscars are so white.” It sparked a global debate and a hashtag. But has anything actually changed? The short answer is not simple. The data tells a more uneven story than the headlines.",
                 content: (
-                    <StorySlide
-                        title="Have you ever seen a comment like this?"
-                        lines={[
-                            <span key="l1">
-                                “The Oscars are still <strong>so white</strong>
-                                .”
-                            </span>,
-                            <span key="l2">
-                                The hashtag sparked a global debate. We’re using
-                                data to test it.
-                            </span>,
-                        ]}
-                        accent="#1f6fb2"
-                    />
+                    <div className="comment-scene">
+                        <span className="comment-bubble comment-bubble-a" />
+                        <span className="comment-bubble comment-bubble-b" />
+                        <span className="comment-bubble comment-bubble-c" />
+
+                        <div className="comment-card">
+                            <div className="comment-card-head">
+                                <span className="comment-avatar">FT</span>
+                                <div className="comment-meta">
+                                    <div className="comment-user">
+                                        Film Twitter User
+                                    </div>
+                                    <div className="comment-time">
+                                        posted 3mo ago
+                                    </div>
+                                </div>
+                            </div>
+                            <p className="comment-text">
+                                "The Oscars are{" "}
+                                <span className="comment-highlight">
+                                    finally becoming more diverse
+                                </span>
+                                ... things have really changed in the past 10
+                                years!"
+                            </p>
+                        </div>
+
+                        <h2 className="comment-title">
+                            Have you ever seen a comment like this?
+                        </h2>
+
+                        <p className="comment-subline">
+                            There&apos;s a growing sentiment that the Academy Awards
+                            have finally evolved.
+                        </p>
+                        <p className="comment-cta">
+                            But what does the data actually show?
+                        </p>
+                    </div>
                 ),
                 hide_header: true,
                 theme: undefined,
@@ -175,7 +236,7 @@ export function Slides({
                 title: "The Question",
                 body: "One viral moment can feel like a turning point. But real change is not always obvious. We will follow nominees and winners across decades to see whether the industry actually shifted after 2015 and who benefited most.",
                 content: (
-                    <StorySlide
+                    <CircleStorySlide
                         title="So what changed after #OscarsSoWhite?"
                         lines={[
                             <span key="l1">
@@ -184,24 +245,6 @@ export function Slides({
                             </span>,
                             <span key="l2">
                                 Then we compare the years before and after 2015.
-                            </span>,
-                        ]}
-                        accent="#b21f2d"
-                    />
-                ),
-                hide_header: true,
-                theme: undefined,
-            },
-            {
-                title: "Are the Oscars more progressive and accepting?",
-                body: "by Sayali Lokhande, Ritesh Patro, Pablo Rodriguez Quinonez",
-                content: (
-                    <StorySlide
-                        title="Are the Oscars more progressive and accepting?"
-                        lines={[
-                            <span key="l1">
-                                by Sayali Lokhande, Ritesh Patro, Pablo
-                                Rodriguez Quinonez
                             </span>,
                         ]}
                     />
@@ -532,13 +575,13 @@ export function Slides({
                 theme: "#2f8f5b",
             },
             {
-                title: "Who Benefits Most?",
-                body: "Who gained recognition as the Oscars evolved?",
+                title: "Who Benefits Most from Progress?",
+                body: "The matrix turns trends into distribution. It shows exactly which groups captured the largest gains in recognition.",
                 content: <WhoBenefitsFromProgress />,
                 theme: "#1f6fb2",
             },
             {
-                title: "Milestones",
+                title: "Groundbreaking Firsts",
                 body: "Numbers do not capture what it felt like to be first. This timeline adds context with the moments that changed what was possible.",
                 content: <TimelineFirsts />,
                 theme: "#1f6fb2",
@@ -584,20 +627,38 @@ export function Slides({
                 title: "So, Did It Change?",
                 body: "The Oscars did not transform overnight. Some lines bend. Others barely move. The real story is uneven progress and how much remains stuck.",
                 content: (
-                    <StorySlide
-                        title="The story is uneven."
-                        lines={[
-                            <span key="l1">
-                                Some categories shifted fast. Others barely
-                                moved.
-                            </span>,
-                            <span key="l2">
-                                The question isn’t just “did it change?” but{" "}
-                                <strong>who benefited</strong>.
-                            </span>,
-                        ]}
-                        accent="#2f8f5b"
-                    />
+                    <div className="circle-scene">
+                        <span className="circle-bubble circle-bubble-left" />
+                        <span className="circle-bubble circle-bubble-right-top" />
+                        <span className="circle-bubble circle-bubble-right-bottom" />
+                        <div className="closing-wrap">
+                            <div className="closing-quote-card">
+                                <p className="closing-quote">
+                                    "The data shows progress, but not parity.
+                                    Women and people of color gained visibility,
+                                    yet their share of nominations and wins{" "}
+                                    <span className="closing-highlight">
+                                        still falls far below proportional
+                                        representation
+                                    </span>
+                                    ."
+                                </p>
+                                <p className="closing-source">
+                                    -- Summary from this analysis
+                                </p>
+                            </div>
+
+                            <p className="closing-line">
+                                Progress is real. Equal recognition is still far
+                                away.
+                            </p>
+                            <div className="closing-dots" aria-hidden="true">
+                                <span />
+                                <span />
+                                <span />
+                            </div>
+                        </div>
+                    </div>
                 ),
                 hide_header: true,
                 theme: undefined,
@@ -606,7 +667,7 @@ export function Slides({
                 title: "Thanks for Reading",
                 body: "Data source: Academy Awards dataset. Built by our team for ECS272. Thanks for reading.",
                 content: (
-                    <StorySlide
+                    <CircleStorySlide
                         title="Thanks for reading."
                         lines={[
                             <span key="l1">

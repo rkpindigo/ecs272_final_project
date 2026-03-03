@@ -42,8 +42,8 @@ function formatPct(x: number) {
 
 function heatColor(intensity01: number) {
   const t = clamp(intensity01, 0, 1);
-  const alpha = 0.10 + 0.78 * t;
-  return `rgba(138, 92, 246, ${alpha})`;
+  const alpha = 0.12 + 0.78 * t;
+  return `rgba(212, 175, 55, ${alpha})`;
 }
 
 function normalizeRaceStrict(v: any): Race | null {
@@ -190,8 +190,10 @@ export default function WhoBenefitsFromProgress() {
   const container_ref = useRef<HTMLDivElement | null>(null);
   const header_ref = useRef<HTMLDivElement | null>(null);
   const scroll_ref = useRef<HTMLDivElement | null>(null);
+  const category_dropdown_ref = useRef<HTMLDivElement | null>(null);
   const [era, setEra] = useState<Era>("pre");
   const [categoryGroup, setCategoryGroup] = useState<string>("All");
+  const [categoryOpen, setCategoryOpen] = useState(false);
 
   const [winners, setWinners] = useState<WinnerRow[]>([]);
   const [dataStatus, setDataStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -272,6 +274,18 @@ export default function WhoBenefitsFromProgress() {
     set_scroll_enabled(fit < 0.85);
   }, [scroll_height, winners, era, categoryGroup, selected]);
 
+  useEffect(() => {
+    const onDocMouseDown = (evt: MouseEvent) => {
+      if (!category_dropdown_ref.current) return;
+      if (!category_dropdown_ref.current.contains(evt.target as Node)) {
+        setCategoryOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, []);
+
   const filteredWinners = useMemo(() => {
     return winners.filter((w) => {
       const inEra = era === "pre" ? w.year < SPLIT_YEAR : w.year >= SPLIT_YEAR;
@@ -281,6 +295,10 @@ export default function WhoBenefitsFromProgress() {
       return groupCategory(w.category) === categoryGroup;
     });
   }, [winners, era, categoryGroup]);
+
+  const selectedCategoryLabel = useMemo(() => {
+    return CATEGORY_GROUPS.find((c) => c.value === categoryGroup)?.label ?? "All Categories";
+  }, [categoryGroup]);
 
   const winnersByCell = useMemo(() => {
   const m = new Map<string, WinnerRow[]>();
@@ -432,13 +450,36 @@ export default function WhoBenefitsFromProgress() {
               </button>
             </div>
 
-            <select className="wbp__select" value={categoryGroup} onChange={(e) => setCategoryGroup(e.target.value)}>
-              {CATEGORY_GROUPS.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
+            <div className="wbp__dropdown" ref={category_dropdown_ref}>
+              <button
+                type="button"
+                className="wbp__select"
+                onClick={() => setCategoryOpen((v) => !v)}
+                aria-haspopup="listbox"
+                aria-expanded={categoryOpen}
+              >
+                <span>{selectedCategoryLabel}</span>
+                <span className="wbp__caret">v</span>
+              </button>
+
+              {categoryOpen && (
+                <div className="wbp__menu" role="listbox" aria-label="Category filter">
+                  {CATEGORY_GROUPS.map((c) => (
+                    <button
+                      key={c.value}
+                      type="button"
+                      className={`wbp__option ${categoryGroup === c.value ? "is-active" : ""}`}
+                      onClick={() => {
+                        setCategoryGroup(c.value);
+                        setCategoryOpen(false);
+                      }}
+                    >
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
@@ -472,8 +513,6 @@ export default function WhoBenefitsFromProgress() {
                           key={`${r}-${g}`}
                           className={`wbp__cell ${isSelected ? "is-selected" : ""}`}
                           style={{ background: heatColor(intensity) }}
-                          onMouseEnter={(e) => showTooltipForCell(r, g, e.currentTarget)}
-                          onMouseLeave={hideTooltipSoon}
                           onClick={() => {
                             setSearch("");
                             setSelected((prev) => (prev?.race === r && prev?.gender === g ? null : { race: r, gender: g }));
@@ -515,7 +554,7 @@ export default function WhoBenefitsFromProgress() {
           </div>
         </section>
 
-        {tooltip.visible && tooltip.key && (
+        {false && tooltip.visible && tooltip.key && (
           <div className="wbp__tooltipFloat" style={{ left: tooltip.left, top: tooltip.top }}>
             <div className="wbp__tooltipTitle">{tooltipTitle}</div>
             <div className="wbp__tooltipList">

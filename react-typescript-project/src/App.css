@@ -67,7 +67,7 @@
 }
 
 .slide-header h1 {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
   font-weight: 700;
   letter-spacing: 0.01em;
   margin: 0;
@@ -142,6 +142,304 @@
 
 .story-line strong {
   color: var(--oscars-gold);
+}
+
+.circle-scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--oscars-bg);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.circle-bubble {
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.circle-bubble-left {
+  width: 210px;
+  height: 210px;
+  left: -80px;
+  top: 44px;
+  background: rgba(212, 175, 55, 0.16);
+}
+
+.circle-bubble-right-top {
+  width: 130px;
+  height: 130px;
+  right: 180px;
+  top: 160px;
+  background: rgba(212, 175, 55, 0.13);
+}
+
+.circle-bubble-right-bottom {
+  width: 220px;
+  height: 220px;
+  right: 86px;
+  bottom: 62px;
+  background: rgba(111, 90, 42, 0.26);
+}
+
+.circle-scene .story-center,
+.circle-scene .closing-wrap {
+  position: relative;
+  z-index: 2;
+}
+
+.comment-scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--oscars-bg);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 36px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.comment-bubble {
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.comment-bubble-a {
+  width: 210px;
+  height: 210px;
+  left: -80px;
+  top: 38px;
+  background: rgba(212, 175, 55, 0.16);
+}
+
+.comment-bubble-b {
+  width: 200px;
+  height: 200px;
+  right: 68px;
+  bottom: 72px;
+  background: rgba(111, 90, 42, 0.2);
+}
+
+.comment-bubble-c {
+  width: 120px;
+  height: 120px;
+  right: 170px;
+  top: 148px;
+  background: rgba(212, 175, 55, 0.1);
+}
+
+.comment-card {
+  width: min(640px, 92%);
+  background: var(--oscars-panel);
+  border: 1px solid var(--oscars-border);
+  border-radius: 24px;
+  padding: 18px 20px 18px;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
+  z-index: 2;
+}
+
+.comment-card-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.comment-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background: var(--oscars-gold);
+  color: var(--oscars-ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.comment-user {
+  color: var(--oscars-ivory);
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1.1;
+}
+
+.comment-time {
+  color: rgba(247, 241, 229, 0.7);
+  margin-top: 2px;
+  font-size: 18px;
+}
+
+.comment-text {
+  margin: 16px 0 0;
+  color: var(--oscars-ivory);
+  font-size: 24px;
+  line-height: 1.3;
+}
+
+.comment-highlight {
+  color: var(--oscars-gold);
+}
+
+.comment-title {
+  margin: 28px 0 0;
+  font-size: clamp(20px, 2.3vw, 24px);
+  line-height: 1.08;
+  text-align: center;
+  color: var(--oscars-ivory);
+  font-family: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 300;
+  z-index: 2;
+}
+
+.comment-subline {
+  margin: 18px 0 0;
+  max-width: 1020px;
+  text-align: center;
+  color: rgba(247, 241, 229, 0.8);
+  font-size: clamp(15px, 1.5vw, 20px);
+  line-height: 1.35;
+  z-index: 2;
+}
+
+.comment-cta {
+  margin: 6px 0 0;
+  text-align: center;
+  color: var(--oscars-gold);
+  font-size: clamp(18px, 1.8vw, 24px);
+  font-weight: 700;
+  z-index: 2;
+}
+
+.closing-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.closing-quote-card {
+  position: relative;
+  width: min(980px, 94vw);
+  background: linear-gradient(
+    135deg,
+    rgba(22, 16, 11, 0.98),
+    rgba(30, 23, 17, 0.98)
+  );
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 30px;
+  padding: 46px 52px 34px;
+  box-shadow: 0 26px 60px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+
+.closing-quote-card::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  width: 220px;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(212, 175, 55, 0.9),
+    transparent
+  );
+}
+
+.closing-quote-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(212, 175, 55, 0.06),
+    transparent 62%
+  );
+  pointer-events: none;
+}
+
+.closing-quote {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(16px, 1.7vw, 20px);
+  line-height: 1.4;
+  color: var(--oscars-ivory);
+  font-family: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+}
+
+.closing-highlight {
+  color: #ffc739;
+  font-weight: 700;
+  text-shadow: 0 0 18px rgba(255, 199, 57, 0.22);
+}
+
+.closing-source {
+  margin: 26px 0 0;
+  text-align: center;
+  font-size: 16px;
+  color: rgba(247, 241, 229, 0.68);
+  letter-spacing: 0.03em;
+}
+
+.closing-line {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(14px, 1.2vw, 18px);
+  font-family: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
+  color: rgba(247, 241, 229, 0.92);
+}
+
+.closing-dots {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.closing-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.closing-dots span:nth-child(1) {
+  background: #b57ae6;
+}
+
+.closing-dots span:nth-child(2) {
+  background: var(--oscars-gold);
+}
+
+.closing-dots span:nth-child(3) {
+  background: #ef6c84;
+}
+
+@media (max-width: 900px) {
+  .closing-quote-card {
+    padding: 28px 22px 24px;
+    border-radius: 20px;
+  }
+
+  .closing-source {
+    font-size: 15px;
+  }
 }
 
 .story-accent-red {

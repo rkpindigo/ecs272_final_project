@@ -164,11 +164,11 @@ export default function TimelineFirsts() {
       id: "oscars_so_white",
       year: 2015,
       label: "#OscarsSoWhite movement",
-      person: "",
+      person: "Major diversity activism milestone",
       subtitle: "Major diversity activism milestone",
       details:
         "The #OscarsSoWhite movement brought global attention to lack of diversity in Academy Awards.",
-      color: "red",
+      color: "gold",
     });
 
     result.sort((a, b) => a.year - b.year);
@@ -197,11 +197,7 @@ export default function TimelineFirsts() {
   return (
     <div className="tf-wrap">
       <h1 className="tf-head">Groundbreaking Firsts</h1>
-
-      <p className="tf-sub">
-        Milestones that broke barriers — and the long road to representation
-      </p>
-
+      
       <div className="tf-timeline">
         <div className="tf-line" />
 
