@@ -101,7 +101,8 @@ export function Slides({
     data: OscarsRow[] | null;
     error: string | null;
 }) {
-    const [slide, set_slide] = useState(1);
+    const [slide, set_slide] = useState(0);
+    const [dev_open, set_dev_open] = useState(false);
 
     const compute_most_diverse_category = (
         rows: OscarsRow[],
@@ -696,7 +697,7 @@ export function Slides({
             style={{ "--accent": accent } as React.CSSProperties}
         >
             <button
-                onClick={() => set_slide(0)}
+                onClick={() => set_dev_open((prev) => !prev)}
                 style={{
                     position: "absolute",
                     top: 16,
@@ -704,69 +705,83 @@ export function Slides({
                     zIndex: 5,
                 }}
             >
-                Dev View
+                {dev_open ? "Back to Slides" : "Dev View"}
             </button>
-            <div className="progress">
-                {slides.map((s, i) => (
-                    <div
-                        key={`progress-${i}`}
-                        className={`progress-seg ${
-                            i < slide
-                                ? "progress-complete"
-                                : i === slide
-                                  ? "progress-active"
-                                  : "progress-upcoming"
-                        }`}
-                        onClick={() => set_slide(i)}
-                        role="button"
-                        tabIndex={0}
-                        style={{
-                            background:
+            {!dev_open && (
+                <div className="progress">
+                    {slides.map((s, i) => (
+                        <div
+                            key={`progress-${i}`}
+                            className={`progress-seg ${
                                 i < slide
-                                    ? s.theme || "#c9c2b4"
+                                    ? "progress-complete"
                                     : i === slide
-                                      ? "#1b1b1b"
-                                      : "#e6e0d3",
-                        }}
-                    />
-                ))}
-            </div>
+                                      ? "progress-active"
+                                      : "progress-upcoming"
+                            }`}
+                            onClick={() => set_slide(i)}
+                            role="button"
+                            tabIndex={0}
+                            style={{
+                                background:
+                                    i < slide
+                                        ? s.theme || "#c9c2b4"
+                                        : i === slide
+                                          ? "#1b1b1b"
+                                          : "#e6e0d3",
+                            }}
+                        />
+                    ))}
+                </div>
+            )}
 
             {error && <p className="error">{error}</p>}
             {!data && !error && <p>Loading data...</p>}
 
             <div className="slide">
-                {!current.hide_header && (
-                    <div className="slide-header">
-                        <h1>{current.title}</h1>
-                        <p className="subtitle">{current.body}</p>
+                {dev_open ? (
+                    <div className="slide-content">
+                        <DevSandbox data={data} />
                     </div>
+                ) : (
+                    <>
+                        {!current.hide_header && (
+                            <div className="slide-header">
+                                <h1>{current.title}</h1>
+                                <p className="subtitle">{current.body}</p>
+                            </div>
+                        )}
+                        <div className="slide-content">{current.content}</div>
+                    </>
                 )}
-                <div className="slide-content">{current.content}</div>
             </div>
 
-            <button
-                className="nav-button nav-left"
-                onClick={() => set_slide(Math.max(0, slide - 1))}
-                disabled={slide === 0}
-                aria-label="Previous slide"
-            >
-                ←
-            </button>
-            <button
-                className="nav-button nav-right"
-                onClick={() =>
-                    set_slide(Math.min(slides.length - 1, slide + 1))
-                }
-                disabled={slide === slides.length - 1}
-                aria-label="Next slide"
-            >
-                →
-            </button>
+            {!dev_open && (
+                <>
+                    <button
+                        className="nav-button nav-left"
+                        onClick={() => set_slide(Math.max(0, slide - 1))}
+                        disabled={slide === 0}
+                        aria-label="Previous slide"
+                    >
+                        ←
+                    </button>
+                    <button
+                        className="nav-button nav-right"
+                        onClick={() =>
+                            set_slide(Math.min(slides.length - 1, slide + 1))
+                        }
+                        disabled={slide === slides.length - 1}
+                        aria-label="Next slide"
+                    >
+                        →
+                    </button>
 
-            <div className="nav-count">
-                {slide + 1} / {slides.length}
-            </div>
+                    <div className="nav-count">
+                        {slide + 1} / {slides.length}
+                    </div>
+                </>
+            )}
         </div>
     );
 }
