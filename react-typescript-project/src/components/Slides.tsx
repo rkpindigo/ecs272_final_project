@@ -263,6 +263,12 @@ export function Slides({
                         initial_show_highlights={false}
                         initial_focus_highlights={false}
                         initial_sampling_rate={3}
+                        control_config={{
+                            show_view_buttons: false,
+                            show_highlights_section: false,
+                            show_highlight_buttons: false,
+                            show_timeseries_category: false,
+                        }}
                     />
                 ) : null,
                 theme: undefined,
