@@ -224,7 +224,21 @@ export function BubbleOverview({
         ignore_filters = false,
     ) => {
         if (filter_name.trim() || filter_film.trim()) {
-            if (!ignore_filters) return "";
+            if (!ignore_filters) {
+                return [
+                    kind,
+                    data_signature,
+                    rate,
+                    width,
+                    height,
+                    filter_winner,
+                    filter_gender,
+                    filter_race,
+                    filter_name.trim().toLowerCase(),
+                    filter_film.trim().toLowerCase(),
+                    ...extra,
+                ].join("|");
+            }
         }
         return [
             kind,

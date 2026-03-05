@@ -82,14 +82,6 @@ export function useLayoutWorker({
     useEffect(() => {
         if (!worker_ref.current) return;
         if (!width || !height) return;
-        const search_active = Boolean(filter_name.trim() || filter_film.trim());
-        if (
-            search_active &&
-            view_mode !== "category-cloud" &&
-            view_mode !== "category-timeseries"
-        )
-            return;
-
         const rate = sampling_rate;
 
         if (view_mode === "bands-bubbles" || view_mode === "category-cloud") {
