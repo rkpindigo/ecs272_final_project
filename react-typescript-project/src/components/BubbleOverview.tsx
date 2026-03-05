@@ -19,6 +19,7 @@ import { useBubbleData } from "./bubble-overview/useBubbleData";
 import { useBubbleLayouts } from "./bubble-overview/useBubbleLayouts";
 import { useBubbleInteractions } from "./bubble-overview/useBubbleInteractions";
 import { useBubbleScales } from "./bubble-overview/useBubbleScales";
+import { race_color } from "./bubble-overview/utils";
 import { useBubbleAxes } from "./bubble-overview/useBubbleAxes";
 import { useBubbleZoom } from "./bubble-overview/useBubbleZoom";
 import { useBubbleCanvas } from "./bubble-overview/useBubbleCanvas";
@@ -109,6 +110,10 @@ export function BubbleOverview({
     const [highlight_ids, set_highlight_ids] = useState<string[]>(
         initial_highlight_ids || HIGHLIGHTS.map((h) => h.id),
     );
+    const [group_modal, set_group_modal] = useState<{
+        group: string;
+        categories: string[];
+    } | null>(null);
 
     const [container_size, set_container_size] = useState({
         width: 1000,
@@ -163,6 +168,7 @@ export function BubbleOverview({
         races,
         years,
         stream_data,
+        base_bubble_points,
         filtered_bubble_points,
         active_highlights,
         highlight_matches,
@@ -180,6 +186,29 @@ export function BubbleOverview({
         highlight_ids,
         sampling_rate,
     });
+
+    const race_labels = useMemo(() => {
+        const set = new Set<string>();
+        base_bubble_points.forEach((p) =>
+            set.add(p.race || "Unknown"),
+        );
+        return Array.from(set).sort();
+    }, [base_bubble_points]);
+
+    const category_map = useMemo(() => {
+        const map = new Map<string, Set<string>>();
+        base_bubble_points.forEach((p) => {
+            const set = map.get(p.group) || new Set<string>();
+            set.add(p.category);
+            map.set(p.group, set);
+        });
+        return Array.from(map.entries())
+            .map(([group, set]) => ({
+                group,
+                categories: Array.from(set).sort(),
+            }))
+            .sort((a, b) => a.group.localeCompare(b.group));
+    }, [base_bubble_points]);
 
     useEffect(() => {
         if (timeseries_category === "All" && groups.length > 0) return;
@@ -659,74 +688,85 @@ export function BubbleOverview({
                 minHeight: 0,
             }}
         >
-            <div style={{ fontSize: 12 }}>
-                Each mark is a nominee or winner. Color = race, shape = gender,
-                outline = winner status.
-            </div>
             <div
                 ref={controls_ref}
-                className="plot-controls"
                 style={{
                     display: "flex",
-                    gap: 8,
-                    alignItems: "center",
-                    flexWrap: "wrap",
+                    flexDirection: "column",
+                    gap: 6,
                 }}
             >
-                <BubbleControls
-                    {...control_config}
-                    filter_winner={filter_winner}
-                    set_filter_winner={set_filter_winner}
-                    filter_gender={filter_gender}
-                    set_filter_gender={set_filter_gender}
-                    filter_race={filter_race}
-                    set_filter_race={set_filter_race}
-                    genders={genders}
-                    races={races}
-                    filter_name={filter_name}
-                    set_filter_name={set_filter_name}
-                    filter_film={filter_film}
-                    set_filter_film={set_filter_film}
-                    view_mode={view_mode}
-                    set_view_mode={set_view_mode}
-                    sampling_rate={sampling_rate}
-                    set_sampling_rate={set_sampling_rate}
-                    timeseries_category={timeseries_category}
-                    set_timeseries_category={set_timeseries_category}
-                    groups={groups}
-                    show_highlights={show_highlights}
-                    set_show_highlights={set_show_highlights}
-                    focus_highlights={focus_highlights}
-                    set_focus_highlights={set_focus_highlights}
-                    highlight_ids={highlight_ids}
-                    enable_all_highlights={enable_all_highlights}
-                    clear_highlights={clear_highlights}
-                    toggle_highlight={toggle_highlight}
-                    highlights={HIGHLIGHTS.map((h) => ({
-                        id: h.id,
-                        label: h.label,
-                    }))}
-                    selected_category={selected_category}
-                    on_back_to_overview={() => {
-                        set_view_mode("stream");
-                        set_selected_category(null);
+                <div style={{ fontSize: 12 }}>
+                    Each mark is a nominee or winner. Color = race, shape = gender,
+                    outline = winner status.
+                </div>
+                <div style={{ fontSize: 12 }}>
+                    Click a category label to see the full list of awards.
+                </div>
+                <div
+                    className="plot-controls"
+                    style={{
+                        display: "flex",
+                        gap: 8,
+                        alignItems: "center",
+                        flexWrap: "wrap",
                     }}
-                    on_reset_zoom={() =>
-                        view_mode === "detail"
-                            ? set_bubble_transform(d3.zoomIdentity)
-                            : (() => {
-                                  if (view_mode === "category-cloud") {
-                                      user_zoomed_ref.current = false;
-                                      last_cloud_layout_ref.current = "";
-                                      set_bands_transform(
-                                          get_cloud_fit_transform(),
-                                      );
-                                      return;
-                                  }
-                                  set_bands_transform(d3.zoomIdentity);
-                              })()
-                    }
-                />
+                >
+                    <BubbleControls
+                        {...control_config}
+                        filter_winner={filter_winner}
+                        set_filter_winner={set_filter_winner}
+                        filter_gender={filter_gender}
+                        set_filter_gender={set_filter_gender}
+                        filter_race={filter_race}
+                        set_filter_race={set_filter_race}
+                        genders={genders}
+                        races={races}
+                        filter_name={filter_name}
+                        set_filter_name={set_filter_name}
+                        filter_film={filter_film}
+                        set_filter_film={set_filter_film}
+                        view_mode={view_mode}
+                        set_view_mode={set_view_mode}
+                        sampling_rate={sampling_rate}
+                        set_sampling_rate={set_sampling_rate}
+                        timeseries_category={timeseries_category}
+                        set_timeseries_category={set_timeseries_category}
+                        groups={groups}
+                        show_highlights={show_highlights}
+                        set_show_highlights={set_show_highlights}
+                        focus_highlights={focus_highlights}
+                        set_focus_highlights={set_focus_highlights}
+                        highlight_ids={highlight_ids}
+                        enable_all_highlights={enable_all_highlights}
+                        clear_highlights={clear_highlights}
+                        toggle_highlight={toggle_highlight}
+                        highlights={HIGHLIGHTS.map((h) => ({
+                            id: h.id,
+                            label: h.label,
+                        }))}
+                        selected_category={selected_category}
+                        on_back_to_overview={() => {
+                            set_view_mode("stream");
+                            set_selected_category(null);
+                        }}
+                        on_reset_zoom={() =>
+                            view_mode === "detail"
+                                ? set_bubble_transform(d3.zoomIdentity)
+                                : (() => {
+                                      if (view_mode === "category-cloud") {
+                                          user_zoomed_ref.current = false;
+                                          last_cloud_layout_ref.current = "";
+                                          set_bands_transform(
+                                              get_cloud_fit_transform(),
+                                          );
+                                          return;
+                                      }
+                                      set_bands_transform(d3.zoomIdentity);
+                                  })()
+                        }
+                    />
+                </div>
             </div>
 
             <div
@@ -734,6 +774,72 @@ export function BubbleOverview({
                 className="plot-surface"
                 style={{ position: "relative", flex: 1, minHeight: 0 }}
             >
+                <div className="bubble-legend bubble-legend-overlay">
+                    <div className="bubble-legend-title">Legend</div>
+                    <div className="bubble-legend-row">
+                        {race_labels.map((race) => (
+                            <span key={`race-${race}`} className="legend-item">
+                                <span
+                                    className="legend-swatch"
+                                    style={{ background: race_color(race) }}
+                                />
+                                <span>{race}</span>
+                            </span>
+                        ))}
+                    </div>
+                    <div className="bubble-legend-row">
+                        <span className="legend-item">
+                            <svg width="18" height="18">
+                                <circle
+                                    cx="9"
+                                    cy="9"
+                                    r="5"
+                                    fill="#f7f1e5"
+                                    stroke="#7a6d58"
+                                    strokeWidth="1"
+                                />
+                            </svg>
+                            <span>Male</span>
+                        </span>
+                        <span className="legend-item">
+                            <svg width="18" height="18">
+                                <polygon
+                                    points="9,2 2,15 16,15"
+                                    fill="#f7f1e5"
+                                    stroke="#7a6d58"
+                                    strokeWidth="1"
+                                />
+                            </svg>
+                            <span>Female</span>
+                        </span>
+                        <span className="legend-item">
+                            <svg width="18" height="18">
+                                <circle
+                                    cx="9"
+                                    cy="9"
+                                    r="5"
+                                    fill="none"
+                                    stroke="#c08f2d"
+                                    strokeWidth="2"
+                                />
+                            </svg>
+                            <span>Winner</span>
+                        </span>
+                        <span className="legend-item">
+                            <svg width="18" height="18">
+                                <circle
+                                    cx="9"
+                                    cy="9"
+                                    r="5"
+                                    fill="none"
+                                    stroke="#7a6d58"
+                                    strokeWidth="1"
+                                />
+                            </svg>
+                            <span>Nominee</span>
+                        </span>
+                    </div>
+                </div>
                 {!layout_ready && (
                     <div
                         style={{
@@ -841,6 +947,16 @@ export function BubbleOverview({
                             dy: h.dy,
                         }))}
                         show_bands={false}
+                        onGroupInfo={(group) => {
+                            const match = category_map.find(
+                                (g) => g.group === group,
+                            );
+                            if (!match) return;
+                            set_group_modal({
+                                group: match.group,
+                                categories: match.categories,
+                            });
+                        }}
                     />
                 ) : view_mode === "category-timeseries" ? (
                     <BandsBubblesView
@@ -865,6 +981,16 @@ export function BubbleOverview({
                         svg_key={svg_key}
                         highlights={[]}
                         show_bands={false}
+                        onGroupInfo={(group) => {
+                            const match = category_map.find(
+                                (g) => g.group === group,
+                            );
+                            if (!match) return;
+                            set_group_modal({
+                                group: match.group,
+                                categories: match.categories,
+                            });
+                        }}
                     />
                 ) : (
                     <BandsBubblesView
@@ -897,7 +1023,44 @@ export function BubbleOverview({
                             dy: h.dy,
                         }))}
                         show_bands
+                        onGroupInfo={(group) => {
+                            const match = category_map.find(
+                                (g) => g.group === group,
+                            );
+                            if (!match) return;
+                            set_group_modal({
+                                group: match.group,
+                                categories: match.categories,
+                            });
+                        }}
                     />
+                )}
+                {group_modal && (
+                    <div className="group-modal">
+                        <div className="group-modal-card">
+                            <div className="group-modal-header">
+                                <div className="group-modal-title">
+                                    {group_modal.group}
+                                </div>
+                                <button
+                                    className="group-modal-close"
+                                    onClick={() => set_group_modal(null)}
+                                >
+                                    Close
+                                </button>
+                            </div>
+                            <div className="group-modal-body">
+                                {group_modal.categories.map((c) => (
+                                    <div
+                                        key={`${group_modal.group}-${c}`}
+                                        className="group-modal-item"
+                                    >
+                                        {c}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
                 )}
             </div>
 

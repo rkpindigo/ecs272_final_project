@@ -30,22 +30,44 @@ export function useBubbleData({
     highlight_ids: string[];
     sampling_rate: number;
 }) {
+    const is_person_row = (d: OscarsRow) => {
+        const name = d.name?.trim();
+        if (!name) return false;
+        const film = d.film?.trim();
+        const category = (d.category || "").toLowerCase();
+        const is_picture = category.includes("picture");
+        const is_feature =
+            category.includes("feature film") ||
+            category.includes("foreign language") ||
+            category.includes("international feature") ||
+            category.includes("short film") ||
+            category.includes("short subject") ||
+            category.includes("documentary") ||
+            category.includes("animated feature");
+        if ((is_picture || is_feature) && film && name === film) return false;
+        return true;
+    };
+
+    const person_data = useMemo(() => {
+        return data.filter(is_person_row);
+    }, [data]);
+
     // Build the derived datasets needed by all views.
     const data_signature = useMemo(() => {
-        const ys = data.map((d) => d.year_ceremony).filter(Boolean);
+        const ys = person_data.map((d) => d.year_ceremony).filter(Boolean);
         const min = ys.length ? Math.min(...ys) : 0;
         const max = ys.length ? Math.max(...ys) : 0;
-        return `${data.length}|${min}|${max}`;
-    }, [data]);
+        return `${person_data.length}|${min}|${max}`;
+    }, [person_data]);
 
-    const groups = useMemo(() => build_groups(data), [data]);
+    const groups = useMemo(() => build_groups(person_data), [person_data]);
 
     const genders = useMemo(() => {
-        return build_filter_options(data.map((d) => d.gender));
-    }, [data]);
+        return build_filter_options(person_data.map((d) => d.gender));
+    }, [person_data]);
 
     const races = useMemo(() => {
-        const options = build_filter_options(data.map((d) => d.race));
+        const options = build_filter_options(person_data.map((d) => d.race));
         const has_non_white = options.some(
             (o) => o.key !== "all" && o.label !== "White",
         );
@@ -57,15 +79,15 @@ export function useBubbleData({
             ];
         }
         return options;
-    }, [data]);
+    }, [person_data]);
 
     const years = useMemo(() => {
-        const ys = data.map((d) => d.year_ceremony).filter(Boolean);
+        const ys = person_data.map((d) => d.year_ceremony).filter(Boolean);
         return { min: Math.min(...ys), max: Math.max(...ys) };
-    }, [data]);
+    }, [person_data]);
 
     const stream_data = useMemo(() => {
-        const filtered = data.filter((d) => {
+        const filtered = person_data.filter((d) => {
             if (filter_winner === "Winner" && d.winner !== 1) return false;
             if (filter_winner === "Nominee" && d.winner !== 0) return false;
             if (
@@ -106,13 +128,20 @@ export function useBubbleData({
         }
 
         return result;
-    }, [data, filter_winner, filter_gender, filter_race, groups, years]);
+    }, [
+        person_data,
+        filter_winner,
+        filter_gender,
+        filter_race,
+        groups,
+        years,
+    ]);
 
     const base_bubble_points = useMemo(() => {
         const group_map = new Map<string, number>();
         groups.forEach((g, i) => group_map.set(g, i));
 
-        return data.map((d) => {
+        return person_data.map((d) => {
             const group = category_group(d.category);
             const id = `${d.year_ceremony}-${d.name || "unknown"}-${d.film || "unknown"}-${d.category}`;
             return {
@@ -128,13 +157,13 @@ export function useBubbleData({
                 group_index: group_map.get(group) ?? 0,
             } as BubblePoint;
         });
-    }, [data, groups]);
+    }, [person_data, groups]);
 
     const filtered_bubble_points = useMemo(() => {
         const group_map = new Map<string, number>();
         groups.forEach((g, i) => group_map.set(g, i));
 
-        return data
+        return person_data
             .filter((d) => {
                 if (filter_winner === "Winner" && d.winner !== 1) return false;
                 if (filter_winner === "Nominee" && d.winner !== 0) return false;
@@ -179,7 +208,7 @@ export function useBubbleData({
                 } as BubblePoint;
             });
     }, [
-        data,
+        person_data,
         filter_winner,
         filter_gender,
         filter_race,

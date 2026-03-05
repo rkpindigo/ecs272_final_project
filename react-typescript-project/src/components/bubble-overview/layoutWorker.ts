@@ -163,12 +163,15 @@ function compute_bands_layout(
 
         const nodes = pts.map((p) => {
             const local_height = get_local_height(p.year);
-            const rand = seeded_random(p.id, "bands") - 0.5;
+            const rand = seeded_random(p.id, "bands");
+            const target_y = center_y + (p.winner ? local_height * 0.22 : 0);
+            const jitter = p.winner ? rand * 0.75 : rand - 0.5;
             return {
                 ...p,
                 x: x_scale_local(p.year),
-                y: center_y + rand * local_height,
+                y: target_y + jitter * local_height,
                 target_x: x_scale_local(p.year),
+                target_y,
                 band_y: current_y,
                 band_height: band_height,
                 sorted_index: sorted_index,
@@ -178,7 +181,7 @@ function compute_bands_layout(
         const sim = d3
             .forceSimulation(nodes as any)
             .force("x", d3.forceX((d: any) => d.target_x).strength(0.5))
-            .force("y", d3.forceY(center_y).strength(0.03))
+            .force("y", d3.forceY((d: any) => d.target_y).strength(0.03))
             .force(
                 "collide",
                 d3

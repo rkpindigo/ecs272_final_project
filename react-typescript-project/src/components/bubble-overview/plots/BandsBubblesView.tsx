@@ -46,6 +46,7 @@ export function BandsBubblesView({
     svg_key,
     highlights,
     show_bands = true,
+    onGroupInfo,
 }: {
     width: number;
     height: number;
@@ -74,6 +75,7 @@ export function BandsBubblesView({
         dy?: number;
     }>;
     show_bands?: boolean;
+    onGroupInfo?: (group: string) => void;
 }) {
     // Bands view uses SVG for bands and canvas for bubbles.
     const band_gap = 15;
@@ -145,41 +147,11 @@ export function BandsBubblesView({
                                     opacity={0.15}
                                     stroke={color_scale(density_info.group)}
                                     strokeWidth={1}
-                                    onClick={() =>
-                                        onSelectCategory(density_info.group)
-                                    }
-                                    style={{ cursor: "pointer" }}
                                 />
                             );
                         });
                     })()}
                 </g>
-
-                {show_bands && densities.length > 0 && (() => {
-                    let current_y = margin.top;
-                    return densities.map((density_info, i) => {
-                        const band_height = band_heights[i];
-                        const y = current_y;
-                        const transformed_y = bands_transform.applyY(y);
-                        const transformed_height =
-                            band_height * bands_transform.k;
-                        current_y += band_height + band_gap;
-
-                        return (
-                            <text
-                                key={`label-${density_info.group}`}
-                                x={margin.left - 10}
-                                y={transformed_y + transformed_height / 2}
-                                textAnchor="end"
-                                dominantBaseline="middle"
-                                fontSize={11}
-                                fill="var(--plot-text, #333)"
-                            >
-                                {density_info.group}
-                            </text>
-                        );
-                    });
-                })()}
 
             </svg>
 
@@ -198,6 +170,50 @@ export function BandsBubblesView({
                 onMouseMove={onOverlayHover}
                 onMouseLeave={onOverlayLeave}
             />
+
+            {show_bands && densities.length > 0 && (
+                <svg
+                    width={margin.left}
+                    height={height}
+                    style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        pointerEvents: "auto",
+                        zIndex: 3,
+                    }}
+                >
+                    {(() => {
+                        let current_y = margin.top;
+                        return densities.map((density_info, i) => {
+                            const band_height = band_heights[i];
+                            const y = current_y;
+                            const transformed_y = bands_transform.applyY(y);
+                            const transformed_height =
+                                band_height * bands_transform.k;
+                            current_y += band_height + band_gap;
+
+                            return (
+                                <text
+                                    key={`label-overlay-${density_info.group}`}
+                                    x={margin.left - 10}
+                                    y={transformed_y + transformed_height / 2}
+                                    textAnchor="end"
+                                    dominantBaseline="middle"
+                                    fontSize={11}
+                                    fill="var(--plot-text, #333)"
+                                    style={{ cursor: "pointer" }}
+                                    onClick={() =>
+                                        onGroupInfo?.(density_info.group)
+                                    }
+                                >
+                                    {density_info.group}
+                                </text>
+                            );
+                        });
+                    })()}
+                </svg>
+            )}
 
             {highlights.length > 0 && (
                 <svg

@@ -19,6 +19,24 @@ function normalize_race(value: string): string {
   return 'Unknown';
 }
 
+function is_person_row(d: OscarsRow): boolean {
+  const name = d.name?.trim();
+  if (!name) return false;
+  const film = d.film?.trim();
+  const category = (d.category || '').toLowerCase();
+  const is_picture = category.includes('picture');
+  const is_feature =
+    category.includes('feature film') ||
+    category.includes('foreign language') ||
+    category.includes('international feature') ||
+    category.includes('short film') ||
+    category.includes('short subject') ||
+    category.includes('documentary') ||
+    category.includes('animated feature');
+  if ((is_picture || is_feature) && film && name === film) return false;
+  return true;
+}
+
 function group_key(row: OscarsRow, mode: Mode): string {
   // Bucket rows based on the selected view.
   const gender = row.gender.toLowerCase();
@@ -98,10 +116,12 @@ export function GenderRaceTrends({
   const { width, height } = useSize(wrap_ref);
   const [size_ready, set_size_ready] = useState(false);
 
+  const person_data = useMemo(() => data.filter(is_person_row), [data]);
+
   const years = useMemo(() => {
-    const ys = data.map((d) => d.year_ceremony).filter(Boolean);
+    const ys = person_data.map((d) => d.year_ceremony).filter(Boolean);
     return { min: Math.min(...ys), max: Math.max(...ys) };
-  }, [data]);
+  }, [person_data]);
 
   const race_keys = useMemo(() => {
     const counts = new Map<string, number>();
@@ -116,7 +136,7 @@ export function GenderRaceTrends({
   const series = useMemo(() => {
     // Per-year shares for the line view.
     const by_year = new Map<number, OscarsRow[]>();
-    data.forEach((d) => {
+    person_data.forEach((d) => {
       if (!by_year.has(d.year_ceremony)) by_year.set(d.year_ceremony, []);
       by_year.get(d.year_ceremony)?.push(d);
     });
@@ -154,16 +174,16 @@ export function GenderRaceTrends({
     });
 
     return out.sort((a, b) => a.year - b.year);
-  }, [data, mode, race_detail, race_keys]);
+  }, [person_data, mode, race_detail, race_keys]);
 
   const bars = useMemo(() => {
     // Stacked shares for nominees vs winners.
     const keys = mode_keys(mode, race_detail, race_keys);
-    const total_nom = data.length || 1;
-    const winners = data.filter((d) => d.winner === 1);
+    const total_nom = person_data.length || 1;
+    const winners = person_data.filter((d) => d.winner === 1);
 
     return keys.map((k) => {
-      const nom_count = data.filter((d) => {
+      const nom_count = person_data.filter((d) => {
         if (mode === 'race' && race_detail) {
           return normalize_race(d.race) === k;
         }
@@ -180,7 +200,7 @@ export function GenderRaceTrends({
       const nominee_only = Math.max(0, nom_share - win_share);
       return { key: k, winner_share: win_share, nominee_only_share: nominee_only } as BarRow;
     });
-  }, [data, mode, race_detail, race_keys]);
+  }, [person_data, mode, race_detail, race_keys]);
 
   const chart_height = Math.max(BASE_HEIGHT, height - 48);
   const inner_w = width - MARGIN.left - MARGIN.right;
