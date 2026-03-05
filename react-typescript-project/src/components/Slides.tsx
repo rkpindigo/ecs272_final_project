@@ -104,6 +104,24 @@ export function Slides({
     const [slide, set_slide] = useState(0);
     const [dev_open, set_dev_open] = useState(false);
 
+    const is_person_row = (d: OscarsRow) => {
+        const name = d.name?.trim();
+        if (!name) return false;
+        const film = d.film?.trim();
+        const category = (d.category || "").toLowerCase();
+        const is_picture = category.includes("picture");
+        const is_feature =
+            category.includes("feature film") ||
+            category.includes("foreign language") ||
+            category.includes("international feature") ||
+            category.includes("short film") ||
+            category.includes("short subject") ||
+            category.includes("documentary") ||
+            category.includes("animated feature");
+        if ((is_picture || is_feature) && film && name === film) return false;
+        return true;
+    };
+
     const compute_most_diverse_category = (
         rows: OscarsRow[],
         mode: "gender" | "race",
@@ -115,7 +133,9 @@ export function Slides({
         const min_count = 25;
 
         rows.forEach((d) => {
+            if (!is_person_row(d)) return;
             const group = category_group(d.category);
+            if (group === "Other") return;
             const entry = totals.get(group) || { focus: 0, total: 0 };
 
             if (mode === "gender") {
