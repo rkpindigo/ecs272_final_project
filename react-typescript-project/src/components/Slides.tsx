@@ -321,7 +321,7 @@ export function Slides({
                         key="trends-gender-bars"
                         data={data}
                         initial_mode="gender"
-                        initial_view="bar"
+                        initial_view="bubble"
                         initial_metric="percent_winners"
                     />
                 ) : null,
@@ -448,7 +448,7 @@ export function Slides({
                         key="trends-race-bars"
                         data={data}
                         initial_mode="race"
-                        initial_view="bar"
+                        initial_view="bubble"
                         initial_metric="percent_winners"
                     />
                 ) : null,

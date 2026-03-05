@@ -74,6 +74,14 @@ export function GenderRaceBars({
           >
             <rect
               x={x}
+              y={margin.top}
+              width={w}
+              height={inner_h}
+              fill="transparent"
+              pointerEvents="all"
+            />
+            <rect
+              x={x}
               y={y_win_draw}
               width={w}
               height={win_h_draw}
@@ -103,7 +111,13 @@ export function GenderRaceBars({
               opacity={0.2}
               style={{ transition: 'height 500ms ease, y 500ms ease' }}
             />
-            <text x={x + w / 2} y={height - 10} textAnchor="middle" fontSize="11" fill="var(--plot-muted, #5b5b5b)">
+            <text
+              x={x + w / 2}
+              y={height - margin.bottom / 2}
+              textAnchor="middle"
+              fontSize="11"
+              fill="var(--plot-muted, #5b5b5b)"
+            >
               {b.key}
             </text>
           </g>
