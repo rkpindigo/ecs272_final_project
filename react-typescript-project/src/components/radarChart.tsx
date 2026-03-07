@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from 'd3';
+import '../App.css';
 
 type CsvRow = {
   Race: string;
@@ -167,7 +168,7 @@ export default function RadarChart() {
       g.append("circle")
         .attr("r", (radius / 5) * l)
         .attr("fill", "none")
-        .attr("stroke", "#f0f0f0");
+        .attr("stroke", "#d4af37");
     });
 
     // Draw Axis Lines and Labels
@@ -178,7 +179,7 @@ export default function RadarChart() {
     axes.append("line")
       .attr("x2", (_, i) => radius * Math.cos(angleSlice * i - Math.PI / 2))
       .attr("y2", (_, i) => radius * Math.sin(angleSlice * i - Math.PI / 2))
-      .attr("stroke", "#ddd")
+      .attr("stroke", "#d4af37")
       .attr("stroke-dasharray", "2,2");
 
     axes.append("text")
@@ -188,6 +189,7 @@ export default function RadarChart() {
       .attr("alignment-baseline", "middle")
       .style("font-size", "12px")
       .style("font-weight", "500")
+      .style("fill", "#d4af37")
       .text(d => d);
 
     // Draw the Radar Polygons
@@ -205,12 +207,38 @@ export default function RadarChart() {
     const uniqueRaces = Array.from(new Set(rawData.map(d => d.Race))).sort();
     
     uniqueRaces.forEach((race, i) => {
-      const row = legend.append("g").attr("transform", `translate(0, ${i * 25})`);
-      row.append("rect").attr("width", 14).attr("height", 14).attr("fill", colorScale(race));
+      const isSelected = selectedRaces.includes(race);
+
+      const row = legend.append("g")
+        .attr("transform", `translate(0, ${i * 25})`)
+        .style("cursor", "pointer")
+        .on("click", () => toggleRace(race));
+      
+      // Checkbox Background / Border
+      row.append("rect")
+        .attr("width", 16)
+        .attr("height", 16)
+        .attr("rx", 3) // Rounded corners
+        .attr("fill", "none")
+        .attr("stroke", colorScale(race))
+        .attr("stroke-width", 2);
+
+      // The "Check" or Fill (only if selected)
+      if (isSelected) {
+        row.append("rect")
+          .attr("x", 4)
+          .attr("y", 4)
+          .attr("width", 8)
+          .attr("height", 8)
+          .attr("fill", colorScale(race));
+      }
+
       row.append("text")
-        .attr("x", 20)
-        .attr("y", 12)
+        .attr("x", 25)
+        .attr("y", 13)
         .style("font-size", "13px")
+        .style("font-weight", isSelected ? "bold" : "normal")
+        .style("fill", "#d4af37")
         .text(race);
     });
 
@@ -278,24 +306,6 @@ export default function RadarChart() {
               marginBottom: "20px"
             }}
           >
-            {allRaces.map(race => (
-              <label
-                key={race}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  cursor: "pointer"
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedRaces.includes(race)}
-                  onChange={() => toggleRace(race)}
-                />
-                {race}
-              </label>
-            ))}
           </div>
         </div>
       </div>
