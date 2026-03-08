@@ -16,7 +16,6 @@ interface NodeExtra {
 interface LinkExtra {}
 
 type SNode = SankeyNode<NodeExtra, LinkExtra>;
-type SLink = SankeyLink<NodeExtra, LinkExtra>;
 
 const SankeyDiagram: React.FC = () => {
   const svgRef = useRef<SVGSVGElement>(null);

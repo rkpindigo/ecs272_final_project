@@ -84,7 +84,7 @@ const DevSandbox = ({ data }: { data: OscarsRow[] | null }) => {
             <div style={{ flex: 1, minHeight: 0 }}>
                 {view === "bubble" && data && <BubbleOverview data={data} />}
                 {view === "trends" && data && <GenderRaceTrends data={data} />}
-                {view === "radar" && <RadarChart />}
+                {view === "radar" && <RadarChart initial_races={["White", "Black", "Asian", "Hispanic"]} show_white={true} />}
                 {view === "sankey" && <SankeyDiagram />}
                 {view === "benefits" && <WhoBenefitsFromProgress />}
                 {view === "timeline" && <TimelineFirsts />}
@@ -565,8 +565,29 @@ export function Slides({
             },
             {
                 title: "Category Balance by Race",
-                body: "Progress can hide inside categories. Some groups show diversity gains while others remain stubbornly uniform. This view shows where representation is concentrated and where it is missing.",
-                content: <RadarChart />,
+                body: "Progress can hide inside categories. Some groups show diversity gains while others remain stubbornly uniform. This view shows where all the nominees segregated by race for each categoory to show where representation is concentrated and where it is missing. Try clicking the race groups shown in the legend to the right to see how category balance differs across each race.",
+                content: <RadarChart 
+                        initial_races={[]}
+                        show_white={false}
+                    />,
+                theme: "#6b4b9a",
+            },
+            {
+                title: "Adding White Nominees",
+                body: "Now that you've seen how variability in category representation differs across races, let's see how it looks when we include White nominees.",
+                content: <RadarChart 
+                        initial_races={["Asian", "Hispanic", "Black"]}
+                        show_white={true}
+                    />,
+                theme: "#6b4b9a",
+            },
+            {
+                title: "Adjusting Time Range",
+                body: "That's quite the disparity, huh? But have things really improved in recent years? Use the time range slider at the bottom to see how representation across categories has shifted over time and whether the patterns look different after 2015.",
+                content: <RadarChart 
+                        initial_races={["Asian", "Hispanic", "Black"]}
+                        show_white={true}
+                    />,
                 theme: "#6b4b9a",
             },
             {

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from 'd3';
+import { race_color } from "./bubble-overview/utils";
 import '../App.css';
 
 type CsvRow = {
@@ -15,11 +16,13 @@ interface RadarSeries {
 
 const margin = 90;
 
-export default function RadarChart() {
+export default function RadarChart({ initial_races, show_white }: { initial_races: string[], show_white: boolean }) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const controlsOuterRef = useRef<HTMLDivElement | null>(null);
   const controlsInnerRef = useRef<HTMLDivElement | null>(null);
+  const SVGWIDTH = 600; // Constrain the actual chart area
+  const SVGHEIGHT = 600;
   
   // State for raw data and selected range
   const [rawData, setRawData] = useState<CsvRow[]>([]);
@@ -31,7 +34,7 @@ export default function RadarChart() {
     [rawData]
   );
 
-  const [selectedRaces, setSelectedRaces] = useState<string[]>([]);
+  const [selectedRaces, setSelectedRaces] = useState<string[]>(initial_races);
   const [plotSize, setPlotSize] = useState({ width: 820, height: 560 });
   const [controlsScale, setControlsScale] = useState(1);
   const [controlsHeight, setControlsHeight] = useState<number | null>(null);
@@ -87,12 +90,6 @@ export default function RadarChart() {
     });
   }, []);
 
-  useEffect(() => {
-    if (allRaces.length && selectedRaces.length === 0) {
-      setSelectedRaces(allRaces);
-    }
-  }, [allRaces]);
-
   const toggleRace = (race: string) => {
     setSelectedRaces(prev =>
       prev.includes(race)
@@ -104,7 +101,7 @@ export default function RadarChart() {
   // 2. Normalization Logic
   const normalize = (cat: string) => {
     if (/Actor|Actress/i.test(cat)) return "Acting";
-    if (/Director/i.test(cat)) return "Directing";
+    if (/Direct/i.test(cat)) return "Directing";
     if (/Screenplay|Writing/i.test(cat)) return "Writing";
     if (/Music|Score/i.test(cat)) return "Music";
     if (/Sound|Editing/i.test(cat)) return "Technical";
@@ -130,7 +127,7 @@ export default function RadarChart() {
     if (!isFinite(radius) || radius <= 0) return;
 
     const g = svg.append("g")
-      .attr("transform", `translate(${(width - 200) / 2}, ${height / 2})`);
+      .attr("transform", `translate(${(SVGWIDTH - 200) / 2}, ${SVGHEIGHT / 2})`);
 
     // Filter data based on slider state
     const filtered = rawData.filter(d => d.year >= yearRange[0] && d.year <= yearRange[1]);
@@ -197,51 +194,10 @@ export default function RadarChart() {
       .data(radarSeries)
       .enter().append("path")
       .attr("d", d => radarLine(d.values))
-      .attr("fill", d => colorScale(d.race))
+      .attr("fill", d => race_color(d.race))
       .attr("fill-opacity", 0.3)
-      .attr("stroke", d => colorScale(d.race))
+      .attr("stroke", d => race_color(d.race))
       .attr("stroke-width", 2);
-
-    // Add Legend on the right side
-    const legend = g.append("g").attr("transform", `translate(${radius + 70}, ${-radius})`);
-    const uniqueRaces = Array.from(new Set(rawData.map(d => d.Race))).sort();
-    
-    uniqueRaces.forEach((race, i) => {
-      const isSelected = selectedRaces.includes(race);
-
-      const row = legend.append("g")
-        .attr("transform", `translate(0, ${i * 25})`)
-        .style("cursor", "pointer")
-        .on("click", () => toggleRace(race));
-      
-      // Checkbox Background / Border
-      row.append("rect")
-        .attr("width", 16)
-        .attr("height", 16)
-        .attr("rx", 3) // Rounded corners
-        .attr("fill", "none")
-        .attr("stroke", colorScale(race))
-        .attr("stroke-width", 2);
-
-      // The "Check" or Fill (only if selected)
-      if (isSelected) {
-        row.append("rect")
-          .attr("x", 4)
-          .attr("y", 4)
-          .attr("width", 8)
-          .attr("height", 8)
-          .attr("fill", colorScale(race));
-      }
-
-      row.append("text")
-        .attr("x", 25)
-        .attr("y", 13)
-        .style("font-size", "13px")
-        .style("font-weight", isSelected ? "bold" : "normal")
-        .style("fill", "#d4af37")
-        .text(race);
-    });
-
   }, [rawData, yearRange, allCategories, selectedRaces, plotSize]);
 
   return (
@@ -249,67 +205,91 @@ export default function RadarChart() {
       ref={containerRef}
       style={{
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'row',
+        justifyContent: 'center',
         alignItems: 'center',
         fontFamily: 'sans-serif',
-        padding: '20px',
-        height: '100%',
-        minHeight: 0,
-        boxSizing: 'border-box',
+        padding: '40px',
+        height: '75h',
+        width: '100vw',
+        background: "0a0a05",
+        overflow: 'hidden',
+        paddingTop: '0vh'
       }}
     >
+      <div style={{display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '20px', maxWidth: '1000px'}}>
+        <div style={{ background: 'transparent'}}>
+          <svg ref={svgRef} width={SVGWIDTH} height={SVGHEIGHT} style={{overflow: 'visible'}}/>
+        </div>
       <div
-        ref={controlsOuterRef}
-        style={{
-          width: '100%',
-          height: controlsHeight ?? 'auto',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'flex-start',
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          ref={controlsInnerRef}
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            width: '100%',
-            transform: controlsScale !== 1 ? `scale(${controlsScale})` : undefined,
-            transformOrigin: 'top center',
-          }}
-        >
-          <div style={{ background: '#020202', padding: '20px', borderRadius: '8px', marginBottom: '20px', width: '400px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+      style={{
+        width: '280px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '25px',
+        paddingTop: '80px'
+      }}>
+        <div style={{ background: '#020202', padding: '15px', borderRadius: '8px', border: '2px solid #d4af37' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <span style={{ fontWeight: 'bold', color: '#ffffff' }}>{yearRange[0]}</span>
-              <span style={{ color: '#ffffff' }}>Filter by Year Range</span>
-              <span style={{ fontWeight: 'bold', color: '#ffffff' }}>{yearRange[1]}</span>
+              <span style={{ fontWeight: 'bold', color: '#d4af37' }}>{yearRange[0]}</span>
+              <span style={{ color: '#d4af37' }}>Filter by Year Range</span>
+              <span style={{ fontWeight: 'bold', color: '#d4af37' }}>{yearRange[1]}</span>
             </div>
-            <input 
-              style={{ width: '100%', cursor: 'pointer' }}
-              type="range" min={dataBounds[0]} max={dataBounds[1]} value={yearRange[0]} 
-              onChange={e => setYearRange([Math.min(+e.target.value, yearRange[1]), yearRange[1]])}
-            />
-            <input 
-              style={{ width: '100%', cursor: 'pointer' }}
-              type="range" min={dataBounds[0]} max={dataBounds[1]} value={yearRange[1]} 
-              onChange={e => setYearRange([yearRange[0], Math.max(+e.target.value, yearRange[0])])}
-            />
+            <div style={{ position: 'relative', height: '20px'}}>
+              <input 
+                type="range" min={dataBounds[0]} max={dataBounds[1]} value={yearRange[0]} 
+                onChange={e => setYearRange([Math.min(+e.target.value, yearRange[1]), yearRange[1]])}
+                style={{ position: 'absolute', width: '100%', cursor: 'pointer', pointerEvents: 'none',
+                          appearance: 'none', background: 'none', zIndex:  yearRange[0] > (dataBounds[1] - 10) ? 5 : 3
+                 }}
+                className="range-slider"
+              />
+              <input 
+                type="range" min={dataBounds[0]} max={dataBounds[1]} value={yearRange[1]} 
+                onChange={e => setYearRange([yearRange[0], Math.max(+e.target.value, yearRange[0])])}
+                style={{ position: 'absolute', width: '100%', pointerEvents: 'none',
+                          appearance: 'none', background: 'none', zIndex: 4
+                 }}
+                className="range-slider"
+              />
+              <div style={{
+                position: 'absolute',
+                top: '9px',
+                height: '3px',
+                width: '100%',
+                background: '#d4af37',
+                borderRadius: '2px',
+                zIndex: 1
+              }} />
+            </div>
           </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
-              gap: "8px",
-              maxWidth: "600px",
-              marginBottom: "20px"
-            }}
-          >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {allRaces.map(race => {
+              if(!show_white && race.toLowerCase() === 'white') return null;
+              const isSelected = selectedRaces.includes(race);
+              const color = race_color(race);
+              return (
+                <div 
+                  key={race}
+                  onClick={() => toggleRace(race)}
+                  style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '12px' }}
+                >
+                  <div style={{
+                    width: '18px', height: '18px', border: `2px solid ${color}`,
+                    borderRadius: '4px', background: isSelected ? color : 'transparent',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s'
+                  }}>
+                    {isSelected && <div style={{ width: '8px', height: '8px', background: '#000', borderRadius: '1px' }} />}
+                  </div>
+                  <span style={{ color: isSelected ? color : race_color(race), fontWeight: '600', fontSize: '16px' }}>
+                    {race}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
-      <svg ref={svgRef} width={plotSize.width} height={plotSize.height} />
     </div>
   );
 }
