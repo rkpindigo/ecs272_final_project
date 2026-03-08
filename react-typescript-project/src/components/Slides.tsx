@@ -583,7 +583,7 @@ export function Slides({
             },
             {
                 title: "Adjusting Time Range",
-                body: "That's quite the disparity, huh? But have things really improved in recent years? Use the time range slider at the bottom to see how representation across categories has shifted over time and whether the patterns look different after 2015.",
+                body: "That's quite the disparity, huh? But have things really improved in recent years? Use the time range slider at the bottom to see how representation across categories has shifted over time and whether the patterns look different in recent years.",
                 content: <RadarChart 
                         initial_races={["Asian", "Hispanic", "Black"]}
                         show_white={true}
@@ -592,7 +592,7 @@ export function Slides({
             },
             {
                 title: "Flows Across Category, Race, and Outcome",
-                body: "The pipeline matters. It is one thing to be nominated and another to win. This flow shows how representation moves from category to race to outcome and where it narrows.",
+                body: "The pipeline matters. It is one thing to be nominated and another to win. This flow shows how many nominees of each race actually win. As with the previous visualization, you can adjust the time range to see how the flows change in recent years. You can also hover over each flow to see the exact number of nominees and winners of each category and click on a flow to filter the diagram  by that category group and outcome.",
                 content: <SankeyDiagram />,
                 theme: "#6b4b9a",
             },

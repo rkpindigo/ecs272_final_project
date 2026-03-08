@@ -24,6 +24,8 @@ const SankeyDiagram: React.FC = () => {
   const [rawData, setRawData] = useState<OscarData[]>([]);
   const [selectedLink, setSelectedLink] = useState<{ source: string, target: string } | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [dimensions, setDimensions] = useState({ width: 1275, height: 425 });
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const normalize = (cat: string) => {
       if (/Actor|Actress/i.test(cat)) return "Acting";
@@ -34,21 +36,23 @@ const SankeyDiagram: React.FC = () => {
       return "Other";
   };
 
-  let width = 1400;
-  let height = 500;
-
   useEffect(() => {
-    const node = svgRef.current;
-    if (!node) return;
+    if(!containerRef.current) return;
+
     // Resize observer keeps the chart responsive to layout changes.
-    const ro = new ResizeObserver(() => {
-      const rect = node.getBoundingClientRect();
-      width = Math.max(1400, rect.width);
-      height = Math.max(500, rect.height);
+    const ro = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const {width, height} = entry.contentRect;
+        setDimensions({
+          width: width,
+          height: height > 0 ? height - 20 : 500
+        });
+      }
     });
-    ro.observe(node);
+
+    ro.observe(containerRef.current);
     return () => ro.disconnect();
-  }, [svgRef]);
+  }, []);
 
   // 1. Initial Load
   useEffect(() => {
@@ -132,29 +136,53 @@ const SankeyDiagram: React.FC = () => {
       const sankeyGen = sankey<NodeExtra, LinkExtra>()
           .nodeWidth(15)
           .nodePadding(20)
-          .extent([[1, 1], [width - 1, height - 20]]);
+          .extent([[1, 1], [dimensions.width - 1, dimensions.height - 100]]);
 
       return sankeyGen({
           nodes: nodes.map(d => ({ ...d })),
           links: links.map(d => ({ ...d }))
       });
-  }, [rawData, yearRange, selectedLink]);
+  }, [rawData, yearRange, selectedLink, dimensions]);
 
   return (
-        <div style={{ fontFamily: 'sans-serif' }}>
-            <div style={{ marginBottom: '20px', padding: '10px', background: '#eee' }}>
-                <h3>Oscars Year Range: {yearRange[0]} - {yearRange[1]}</h3>
-                <input 
-                    type="range" min={bounds.min} max={bounds.max} value={yearRange[0]}
-                    onChange={e => setYearRange([Math.min(parseInt(e.target.value), yearRange[1]), yearRange[1]])}
-                />
-                <input 
-                    type="range" min={bounds.min} max={bounds.max} value={yearRange[1]}
-                    onChange={e => setYearRange([yearRange[0], Math.max(parseInt(e.target.value), yearRange[0])])}
-                />
+      <div ref={containerRef} style={{ width: '100%', minHeight: '400px', fontFamily: 'sans-serif' }} >
+        <div style={{ fontFamily: 'sans-serif' }} >
+            <div style={{ background: '#020202', padding: '15px', borderRadius: '8px', border: '2px solid #d4af37' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <span style={{ fontWeight: 'bold', color: '#d4af37' }}>{yearRange[0]}</span>
+              <span style={{ color: '#d4af37' }}>Filter by Year Range</span>
+              <span style={{ fontWeight: 'bold', color: '#d4af37' }}>{yearRange[1]}</span>
             </div>
+            <div style={{ position: 'relative', height: '20px'}}>
+              <input 
+                type="range" min={bounds.min} max={bounds.max} value={yearRange[0]} 
+                onChange={e => setYearRange([Math.min(+e.target.value, yearRange[1]), yearRange[1]])}
+                style={{ position: 'absolute', width: '100%', cursor: 'pointer', pointerEvents: 'none',
+                          appearance: 'none', background: 'none', zIndex:  yearRange[0] > (bounds.max - 10) ? 5 : 3
+                 }}
+                className="range-slider"
+              />
+              <input 
+                type="range" min={bounds.min} max={bounds.max} value={yearRange[1]} 
+                onChange={e => setYearRange([yearRange[0], Math.max(+e.target.value, yearRange[0])])}
+                style={{ position: 'absolute', width: '100%', pointerEvents: 'none',
+                          appearance: 'none', background: 'none', zIndex: 4
+                 }}
+                className="range-slider"
+              />
+              <div style={{
+                position: 'absolute',
+                top: '9px',
+                height: '3px',
+                width: '100%',
+                background: '#d4af37',
+                borderRadius: '2px',
+                zIndex: 1
+              }} />
+            </div>
+          </div>
 
-            <svg width={width} height={height} style={{ background: "#f9f9f9", borderRadius: '8px' }}>
+            <svg width={dimensions.width} height={dimensions.height} style={{ background: "#020202", borderRadius: '8px' }}>
               {graph ? (
                 <g>
                   {/* Links */}
@@ -168,7 +196,7 @@ const SankeyDiagram: React.FC = () => {
                         key={`link-${i}`}
                         d={sankeyLinkHorizontal()(link) || ""}
                         fill="none"
-                        stroke={isSelected ? "#ffcc00" : (isHovered ? '#333' : "#000")}
+                        stroke={isSelected ? "#ffcc00" : (isHovered ? '#d9ac18' : "#d4af37")}
                         strokeOpacity={isSelected ? 0.7 : (isHovered ? 0.4 : 0.15)}
                         strokeWidth={Math.max(1, link.width || 0)}
                         style={{
@@ -201,12 +229,13 @@ const SankeyDiagram: React.FC = () => {
                         fill={d3.schemeCategory10[i % 10]}
                       />
                       <text
-                        x={(node.x0 || 0) < width / 2 ? (node.x1 || 0) + 6 : (node.x0 || 0) - 6}
+                        x={(node.x0 || 0) < dimensions.width / 2 ? (node.x1 || 0) + 6 : (node.x0 || 0) - 6}
                         y={((node.y1 || 0) + (node.y0 || 0)) / 2}
                         dy="0.35em"
-                        textAnchor={(node.x0 || 0) < width / 2 ? "start" : "end"}
+                        textAnchor={(node.x0 || 0) < dimensions.width / 2 ? "start" : "end"}
                         fontSize="10px"
                         fontWeight="bold"
+                        fill={"#d4af37"}
                       >
                         {node.name}
                       </text>
@@ -214,12 +243,13 @@ const SankeyDiagram: React.FC = () => {
                   ))}
                 </g>
               ) : (
-                <text x={width / 2} y={height / 2} textAnchor="middle">
+                <text x={dimensions.width / 2} y={dimensions.height / 2} textAnchor="middle">
                   Processing Data...
                 </text>
               )}
             </svg>
         </div>
+      </div>
     );
 };
 
