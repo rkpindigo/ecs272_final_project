@@ -160,6 +160,14 @@ export function BubbleOverview({
     const inner_w = width - MARGIN.left - MARGIN.right;
     const inner_h = height - MARGIN.top - MARGIN.bottom;
 
+    const bubble_scale = useMemo(() => {
+        const scale = Math.min(width / 1200, height / 700);
+        return Math.max(0.45, Math.min(1.4, scale));
+    }, [width, height]);
+    const scaled_bubble_radius = BUBBLE_RADIUS * bubble_scale;
+    const scaled_bubble_padding = BUBBLE_PADDING * bubble_scale;
+    const legend_scale = Math.max(0.7, Math.min(1.15, bubble_scale));
+
     // Shared data prep for all view modes.
     const {
         data_signature,
@@ -309,8 +317,8 @@ export function BubbleOverview({
         make_worker_nodes: (rate: number) =>
             make_worker_nodes_for_mode(rate, view_mode),
         margin: MARGIN,
-        bubble_radius: BUBBLE_RADIUS,
-        bubble_padding: BUBBLE_PADDING,
+        bubble_radius: scaled_bubble_radius,
+        bubble_padding: scaled_bubble_padding,
     });
 
     const bubble_points = useMemo(() => {
@@ -668,8 +676,8 @@ export function BubbleOverview({
         is_filter_active,
         color_scale,
         canvas_ref,
-        bubble_radius: BUBBLE_RADIUS,
-        bubble_padding: BUBBLE_PADDING,
+        bubble_radius: scaled_bubble_radius,
+        bubble_padding: scaled_bubble_padding,
     });
 
     const { tip, set_tip, handle_detail_hover, handle_overlay_hover } =
@@ -683,7 +691,7 @@ export function BubbleOverview({
             overlay_bands_layout,
             bands_transform,
             canvas_ref,
-            bubble_radius: BUBBLE_RADIUS,
+        bubble_radius: scaled_bubble_radius,
         });
 
     const svg_key = `${view_mode}-${sampling_rate}-${bands_transform.k}`;
@@ -788,7 +796,13 @@ export function BubbleOverview({
                 className="plot-surface"
                 style={{ position: "relative", flex: 1, minHeight: 0 }}
             >
-                <div className="bubble-legend bubble-legend-overlay">
+                <div
+                    className="bubble-legend bubble-legend-overlay"
+                    style={{
+                        transform: `scale(${legend_scale})`,
+                        transformOrigin: "top right",
+                    }}
+                >
                     <div className="bubble-legend-title">Legend</div>
                     <div className="bubble-legend-row">
                         {race_labels.map((race) => (
