@@ -267,21 +267,71 @@ export function GenderRaceTrends({
   return (
     <div className="plot-dark" style={{ marginTop: 0 }}>
       <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-        <button onClick={() => { set_mode('all'); set_selected(null); }}>All</button>
-        <button onClick={() => { set_mode('gender'); set_selected(null); }}>Gender</button>
-        <button onClick={() => { set_mode('race'); set_selected(null); }}>Race</button>
+        <button
+          className={mode === 'all' ? 'control-button is-selected' : 'control-button'}
+          onClick={() => { set_mode('all'); set_selected(null); }}
+        >
+          All
+        </button>
+        <button
+          className={mode === 'gender' ? 'control-button is-selected' : 'control-button'}
+          onClick={() => { set_mode('gender'); set_selected(null); }}
+        >
+          Gender
+        </button>
+        <button
+          className={mode === 'race' ? 'control-button is-selected' : 'control-button'}
+          onClick={() => { set_mode('race'); set_selected(null); }}
+        >
+          Race
+        </button>
         {mode === 'race' && (
-          <button onClick={() => set_race_detail((prev) => !prev)}>
+          <button className="control-button" onClick={() => set_race_detail((prev) => !prev)}>
             {race_detail ? 'Aggregate Race' : 'Individual Races'}
           </button>
         )}
-        <button onClick={() => set_metric('percent_winners')}>% of Winners</button>
-        <button onClick={() => set_metric('percent_total')}>% of Nominees</button>
-        <button onClick={() => set_metric('count')}>Show Counts</button>
-        <button onClick={() => request_view('bar')}>Bars</button>
-        <button onClick={() => request_view('bubble')}>Bubble Bars</button>
-        <button onClick={() => request_view('pictogram')}>Pictogram</button>
-        <button onClick={() => request_view('line')}>Line</button>
+        <button
+          className={metric === 'percent_winners' ? 'control-button is-selected' : 'control-button'}
+          onClick={() => set_metric('percent_winners')}
+        >
+          % of Winners
+        </button>
+        <button
+          className={metric === 'percent_total' ? 'control-button is-selected' : 'control-button'}
+          onClick={() => set_metric('percent_total')}
+        >
+          % of Nominees
+        </button>
+        <button
+          className={metric === 'count' ? 'control-button is-selected' : 'control-button'}
+          onClick={() => set_metric('count')}
+        >
+          Show Counts
+        </button>
+        <button
+          className={view === 'bar' ? 'control-button is-selected' : 'control-button'}
+          onClick={() => request_view('bar')}
+        >
+          Bars
+        </button>
+        <button
+          className={view === 'bubble' ? 'control-button is-selected' : 'control-button'}
+          onClick={() => request_view('bubble')}
+        >
+          Bubble Bars
+        </button>
+        <button
+          className={view === 'pictogram' ? 'control-button is-selected' : 'control-button'}
+          onClick={() => request_view('pictogram')}
+        >
+          Pictogram
+        </button>
+        <button
+          className={view === 'line' ? 'control-button is-selected' : 'control-button'}
+          onClick={() => request_view('line')}
+        >
+          Line
+        </button>
       </div>
 
       <div
