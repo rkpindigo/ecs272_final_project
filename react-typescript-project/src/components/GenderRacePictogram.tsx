@@ -184,7 +184,7 @@ export function GenderRacePictogram({
         );
       })}
 
-      <text x={margin.left} y={14} fontSize="11" fill="var(--plot-muted, #5b5b5b)">
+      <text x={margin.left} y={14} fontSize="14" fill="var(--plot-muted, #5b5b5b)">
         One shared grid: solid dots are winners, outlined dots are nominees.
       </text>
     </svg>

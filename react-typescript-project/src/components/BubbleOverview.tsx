@@ -718,11 +718,11 @@ export function BubbleOverview({
                     gap: 6,
                 }}
             >
-                <div style={{ fontSize: 12 }}>
+                <div style={{ fontSize: 14 }}>
                     Each mark is a nominee or winner. Color = race, shape = gender,
                     outline = winner status.
                 </div>
-                <div style={{ fontSize: 12 }}>
+                <div style={{ fontSize: 14 }}>
                     Click a category label to see the full list of awards.
                 </div>
                 <div
@@ -868,6 +868,26 @@ export function BubbleOverview({
                         </span>
                     </div>
                 </div>
+                {view_mode === "category-cloud" && (
+                    <div
+                        style={{
+                            position: "absolute",
+                            left: 12,
+                            top: 12,
+                            background: "rgba(15, 12, 8, 0.75)",
+                            border: "1px solid rgba(212, 175, 55, 0.25)",
+                            borderRadius: 8,
+                            padding: "6px 8px",
+                            fontSize: 14,
+                            color: "var(--plot-text, #f7f1e5)",
+                            zIndex: 4,
+                            maxWidth: 340,
+                        }}
+                    >
+                        Category cloud: fill color = category group, outline =
+                        race, shape = gender, larger bubbles = winners.
+                    </div>
+                )}
                 {!layout_ready && (
                     <div
                         style={{

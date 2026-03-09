@@ -98,7 +98,7 @@ export function GenderRaceLines({
         <text
           x={margin.left + 6}
           y={Math.max(10, margin.top - 8)}
-          fontSize="11"
+          fontSize="14"
           fill="var(--plot-muted, #5b5b5b)"
         >
           Nominees share of nominees, winners share of winners.

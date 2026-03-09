@@ -139,7 +139,7 @@ export function GenderRaceBubbleBars({
           </g>
         );
       })}
-      <text x={margin.left} y={14} fontSize="11" fill="var(--plot-muted, #5b5b5b)">
+      <text x={margin.left} y={14} fontSize="14" fill="var(--plot-muted, #5b5b5b)">
         Winners are solid dots, nominees are outlined dots. Click a column to expand.
       </text>
     </svg>

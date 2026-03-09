@@ -483,6 +483,7 @@
   padding: 8px 10px;
   width: 100%;
   box-sizing: border-box;
+  font-size: 13px;
 }
 
 .plot-dark button {
@@ -503,7 +504,7 @@
   border: 1px solid rgba(212, 175, 55, 0.35);
   border-radius: 6px;
   padding: 4px 6px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .plot-dark select:focus,
@@ -522,7 +523,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--oscars-ivory);
 }
 
@@ -571,7 +572,7 @@
   border: 1px solid rgba(212, 175, 55, 0.35);
   border-radius: 6px;
   padding: 4px 8px;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
 }
 
@@ -705,7 +706,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--oscars-ivory);
 }
 
@@ -723,6 +724,7 @@ button:disabled {
 
 .bubble-legend-title {
   font-weight: 600;
+  font-size: 13px;
   color: var(--oscars-gold);
 }
 

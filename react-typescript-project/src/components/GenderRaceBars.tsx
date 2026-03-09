@@ -129,7 +129,7 @@ export function GenderRaceBars({
           </g>
         );
       })}
-      <text x={margin.left} y={14} fontSize="11" fill="var(--plot-muted, #5b5b5b)">
+      <text x={margin.left} y={14} fontSize="14" fill="var(--plot-muted, #5b5b5b)">
         Winners (solid) + non-winner nominees (hatched). Click a bar to expand.
       </text>
     </svg>
