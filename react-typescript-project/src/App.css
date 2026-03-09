@@ -483,6 +483,7 @@
   padding: 8px 10px;
   width: 100%;
   box-sizing: border-box;
+  font-size: 13px;
 }
 
 .plot-dark button {
@@ -493,6 +494,93 @@
 
 .plot-dark button:disabled {
   opacity: 0.4;
+}
+
+.plot-dark select,
+.plot-dark input[type="text"],
+.plot-dark input[type="number"] {
+  background: rgba(15, 12, 8, 0.85);
+  color: var(--oscars-ivory);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 13px;
+}
+
+.plot-dark select:focus,
+.plot-dark input[type="text"]:focus,
+.plot-dark input[type="number"]:focus {
+  outline: none;
+  border-color: rgba(212, 175, 55, 0.7);
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.25);
+}
+
+.plot-dark input[type="checkbox"] {
+  accent-color: var(--oscars-gold);
+}
+
+.plot-dark .control-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--oscars-ivory);
+}
+
+.plot-dark .control-check input[type="checkbox"] {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  border-radius: 3px;
+  background: rgba(15, 12, 8, 0.85);
+  display: inline-grid;
+  place-content: center;
+}
+
+.plot-dark .control-check input[type="checkbox"]::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  transform: scale(0);
+  transition: transform 120ms ease;
+  background: var(--oscars-gold);
+  border-radius: 2px;
+}
+
+.plot-dark .control-check input[type="checkbox"]:checked::after {
+  transform: scale(1);
+}
+
+.plot-dark input[type="number"] {
+  color-scheme: dark;
+}
+
+.plot-dark input[type="number"]::-webkit-inner-spin-button,
+.plot-dark input[type="number"]::-webkit-outer-spin-button {
+  filter: invert(1) brightness(1.15);
+}
+
+.plot-dark select option {
+  background: #0f0c08;
+  color: var(--oscars-ivory);
+}
+
+.plot-dark .control-button {
+  background: rgba(247, 241, 229, 0.08);
+  color: var(--oscars-ivory);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.plot-dark .control-button.is-selected {
+  background: rgba(212, 175, 55, 0.9);
+  color: #0f0c08;
+  border-color: rgba(212, 175, 55, 0.9);
+  font-weight: 600;
 }
 
 .plot-surface {
@@ -618,7 +706,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--oscars-ivory);
 }
 
@@ -636,6 +724,7 @@ button:disabled {
 
 .bubble-legend-title {
   font-weight: 600;
+  font-size: 13px;
   color: var(--oscars-gold);
 }
 

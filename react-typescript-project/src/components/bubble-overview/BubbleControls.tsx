@@ -167,36 +167,49 @@ export function BubbleControls({
                     <span style={{ fontSize: 12, color: "#666" }}>
                         Highlights
                     </span>
-                    <label style={{ fontSize: 12, color: "#444" }}>
+                    <label className="control-check">
                         <input
                             type="checkbox"
                             checked={show_highlights}
                             onChange={(e) =>
                                 set_show_highlights(e.target.checked)
                             }
-                            style={{ marginRight: 4 }}
                         />
                         Show
                     </label>
-                    <label style={{ fontSize: 12, color: "#444" }}>
+                    <label className="control-check">
                         <input
                             type="checkbox"
                             checked={focus_highlights}
                             onChange={(e) =>
                                 set_focus_highlights(e.target.checked)
                             }
-                            style={{ marginRight: 4 }}
                         />
                         Focus
                     </label>
                     {show_highlight_buttons && (
                         <>
-                            <button onClick={enable_all_highlights}>All</button>
-                            <button onClick={clear_highlights}>None</button>
+                            <button
+                                className="control-button"
+                                onClick={enable_all_highlights}
+                            >
+                                All
+                            </button>
+                            <button
+                                className="control-button"
+                                onClick={clear_highlights}
+                            >
+                                None
+                            </button>
                             {highlights.map((h) => (
                                 <button
                                     key={h.id}
                                     onClick={() => toggle_highlight(h.id)}
+                                    className={
+                                        highlight_ids.includes(h.id)
+                                            ? "control-button is-selected"
+                                            : "control-button"
+                                    }
                                     style={{
                                         fontWeight: highlight_ids.includes(h.id)
                                             ? "bold"
@@ -229,56 +242,51 @@ export function BubbleControls({
                 <>
                     <button
                         onClick={() => set_view_mode("stream")}
-                        style={{
-                            fontWeight:
-                                view_mode === "stream"
-                                    ? "bold"
-                                    : "normal",
-                        }}
+                        className={
+                            view_mode === "stream"
+                                ? "control-button is-selected"
+                                : "control-button"
+                        }
                     >
                         Stream Only
                     </button>
                     <button
                         onClick={() => set_view_mode("stream-bubbles")}
-                        style={{
-                            fontWeight:
-                                view_mode === "stream-bubbles"
-                                    ? "bold"
-                                    : "normal",
-                        }}
+                        className={
+                            view_mode === "stream-bubbles"
+                                ? "control-button is-selected"
+                                : "control-button"
+                        }
                     >
                         Stream + Bubbles
                     </button>
                     <button
                         onClick={() => set_view_mode("bands-bubbles")}
-                        style={{
-                            fontWeight:
-                                view_mode === "bands-bubbles"
-                                    ? "bold"
-                                    : "normal",
-                        }}
+                        className={
+                            view_mode === "bands-bubbles"
+                                ? "control-button is-selected"
+                                : "control-button"
+                        }
                     >
                         Bands + Bubbles
                     </button>
                     <button
                         onClick={() => set_view_mode("category-cloud")}
-                        style={{
-                            fontWeight:
-                                view_mode === "category-cloud"
-                                    ? "bold"
-                                    : "normal",
-                        }}
+                        className={
+                            view_mode === "category-cloud"
+                                ? "control-button is-selected"
+                                : "control-button"
+                        }
                     >
                         Category Cloud
                     </button>
                     <button
                         onClick={() => set_view_mode("category-timeseries")}
-                        style={{
-                            fontWeight:
-                                view_mode === "category-timeseries"
-                                    ? "bold"
-                                    : "normal",
-                        }}
+                        className={
+                            view_mode === "category-timeseries"
+                                ? "control-button is-selected"
+                                : "control-button"
+                        }
                     >
                         Category Timeline
                     </button>
@@ -320,7 +328,12 @@ export function BubbleControls({
                     {(view_mode === "bands-bubbles" ||
                         view_mode === "category-cloud" ||
                         view_mode === "category-timeseries") && (
-                        <button onClick={on_reset_zoom}>Reset Zoom</button>
+                        <button
+                            className="control-button"
+                            onClick={on_reset_zoom}
+                        >
+                            Reset Zoom
+                        </button>
                     )}
                 </>
             )}
@@ -336,10 +349,18 @@ export function BubbleControls({
                     >
                         → {selected_category}
                     </span>
-                    <button onClick={on_back_to_overview}>
+                    <button
+                        className="control-button"
+                        onClick={on_back_to_overview}
+                    >
                         ← Back to Overview
                     </button>
-                    <button onClick={on_reset_zoom}>Reset Zoom</button>
+                    <button
+                        className="control-button"
+                        onClick={on_reset_zoom}
+                    >
+                        Reset Zoom
+                    </button>
                 </>
             )}
         </div>

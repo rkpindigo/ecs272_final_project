@@ -3,6 +3,12 @@ import { BarRow } from './GenderRaceTypes';
 
 type HoverPayload = { x: number; y: number; text: string } | null;
 
+const format_pct = (pct: number) => {
+  if (!Number.isFinite(pct) || pct === 0) return '0.0%';
+  if (pct > 0 && pct < 0.1) return '<0.1%';
+  return `${pct.toFixed(1)}%`;
+};
+
 export function GenderRaceBubbleBars({
   bars,
   width,
@@ -68,8 +74,8 @@ export function GenderRaceBubbleBars({
           const x = x_center - ((cols - 1) * gap) / 2 + col * gap;
           const y = base_y - row * gap + y_offset;
           const nominee_total = b.winner_share + b.nominee_only_share;
-          const winner_pct = Math.round(b.winner_share * 100);
-          const nominee_pct = Math.round(nominee_total * 100);
+        const winner_pct = b.winner_share * 100;
+        const nominee_pct = nominee_total * 100;
           const translate_y = animate_bars ? 0 : stack_height + gap * 2;
           const dot_opacity = animate_bars ? opacity : 0;
           return (
@@ -100,7 +106,7 @@ export function GenderRaceBubbleBars({
                   on_hover({
                     x: evt.clientX,
                     y: evt.clientY,
-                    text: `${b.key}\nNominees ${nominee_pct}%\nWinners ${winner_pct}%`,
+                    text: `${b.key}\nNominees ${format_pct(nominee_pct)}\nWinners ${format_pct(winner_pct)}`,
                   });
                 }}
                 onMouseLeave={() => on_hover(null)}
@@ -133,7 +139,7 @@ export function GenderRaceBubbleBars({
           </g>
         );
       })}
-      <text x={margin.left} y={14} fontSize="11" fill="var(--plot-muted, #5b5b5b)">
+      <text x={margin.left} y={14} fontSize="14" fill="var(--plot-muted, #5b5b5b)">
         Winners are solid dots, nominees are outlined dots. Click a column to expand.
       </text>
     </svg>

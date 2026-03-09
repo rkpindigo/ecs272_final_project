@@ -220,7 +220,15 @@ function compute_cloud_layout(
     bubble_padding: number,
 ): BubblePoint[] {
     const inner_h = height - margin.top - margin.bottom;
-    const pad = Math.max(220, Math.min(360, width * 0.22));
+    // Responsive horizontal pad: small screens get more width, large screens keep margins.
+    const inner_w = width - margin.left - margin.right;
+    const min_w = 600;
+    const max_w = 1400;
+    const t = Math.min(1, Math.max(0, (inner_w - min_w) / (max_w - min_w)));
+    const ease = t * t;
+    const min_pad = 40;
+    const max_pad = 240;
+    const pad = min_pad + (max_pad - min_pad) * ease;
     const x_scale_local = d3
         .scaleLinear()
         .domain([years.min, years.max])
