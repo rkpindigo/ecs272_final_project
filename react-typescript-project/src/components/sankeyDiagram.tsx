@@ -145,8 +145,15 @@ const SankeyDiagram: React.FC = () => {
   }, [rawData, yearRange, selectedLink, dimensions]);
 
   return (
-      <div ref={containerRef} style={{ width: '100%', minHeight: '400px', fontFamily: 'sans-serif' }} >
-        <div style={{ fontFamily: 'sans-serif' }} >
+      <div
+        ref={containerRef}
+        style={{
+          width: '100%',
+          minHeight: '400px',
+          fontFamily: '"Source Sans 3", "Helvetica Neue", Arial, sans-serif',
+        }}
+      >
+        <div style={{ fontFamily: '"Source Sans 3", "Helvetica Neue", Arial, sans-serif' }} >
             <div style={{ background: '#020202', padding: '15px', borderRadius: '8px', border: '2px solid #d4af37' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
               <span style={{ fontWeight: 'bold', color: '#d4af37' }}>{yearRange[0]}</span>

@@ -176,7 +176,7 @@ export function Slides({
                     <CircleStorySlide
                         title="Are the Oscars more progressive and accepting?"
                         lines={[
-                            <span key="l1">
+                            <span key="l1" style={{ fontSize: "18px" }}>
                                 by Sayali Lokhande, Ritesh Patro, Pablo
                                 Rodriguez Quinonez
                             </span>,
@@ -240,11 +240,11 @@ export function Slides({
                     <CircleStorySlide
                         title="So what changed after #OscarsSoWhite?"
                         lines={[
-                            <span key="l1">
+                            <span key="l1" style={{ fontSize: "18px" }}>
                                 We track <strong>nominees</strong> and{" "}
                                 <strong>winners</strong> by race and gender.
                             </span>,
-                            <span key="l2">
+                            <span key="l2" style={{ fontSize: "18px" }}>
                                 Then we compare the years before and after 2015.
                             </span>,
                         ]}
@@ -604,7 +604,15 @@ export function Slides({
             },
             {
                 title: "Who Benefits Most from Progress?",
-                body: "The matrix turns trends into distribution. It shows exactly which groups captured the largest gains in recognition.",
+                body: (
+                    <span>
+                        The matrix turns trends into distribution. It shows exactly which groups captured the largest gains in recognition.
+                        <br></br>
+                        <span className="story-accent-line">
+                            Click a cell to view the list of winners for that group. You can toggle between Pre-2015 and Post-2015.
+                        </span>
+                    </span>
+                ),
                 content: <WhoBenefitsFromProgress />,
                 theme: "#1f6fb2",
             },
@@ -739,27 +747,25 @@ export function Slides({
                     {slides.map((s, i) => (
                         <div
                             key={`progress-${i}`}
-                            className={`progress-seg ${
-                                i < slide
-                                    ? "progress-complete"
-                                    : i === slide
-                                      ? "progress-active"
-                                      : "progress-upcoming"
-                            }`}
-                            onClick={() => set_slide(i)}
-                            role="button"
-                            tabIndex={0}
-                            style={{
-                                background:
-                                    i < slide
-                                        ? s.theme || "#c9c2b4"
-                                        : i === slide
-                                          ? "#1b1b1b"
-                                          : "#e6e0d3",
-                            }}
-                        />
-                    ))}
-                </div>
+                        className={`progress-seg ${
+                            i < slide
+                                ? "progress-complete"
+                                : i === slide
+                                  ? "progress-active"
+                                  : "progress-upcoming"
+                        }`}
+                        onClick={() => set_slide(i)}
+                        role="button"
+                        tabIndex={0}
+                        style={{
+                            background:
+                                i === slide
+                                    ? "var(--oscars-gold)"
+                                    : "var(--oscars-ivory)",
+                        }}
+                    />
+                ))}
+            </div>
             )}
 
             {error && <p className="error">{error}</p>}

@@ -123,12 +123,12 @@ export default function NominationsBeforeAfter({ data }: { data: OscarsRow[] }) 
 
     return [
       mk("All Nominees (POC)", CAT_PRED.all),
-      mk("Best Picture", CAT_PRED.best_picture),
-      mk("Best Director", CAT_PRED.best_director),
       mk("Lead Actor", CAT_PRED.lead_actor),
       mk("Lead Actress", CAT_PRED.lead_actress),
       mk("Supporting Actor", CAT_PRED.supporting_actor),
       mk("Supporting Actress", CAT_PRED.supporting_actress),
+      mk("Best Director", CAT_PRED.best_director),
+      mk("Best Picture", CAT_PRED.best_picture),
     ];
   }, [data, win]);
 

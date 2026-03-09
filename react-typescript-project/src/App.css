@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Source+Sans+3:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap");
 
 :root {
   --oscars-bg: #0e0b07;
@@ -124,7 +124,7 @@
 .story-title {
   font-size: 30px;
   font-weight: 700;
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
 }
 
 .story-title,
@@ -267,20 +267,20 @@
 .comment-user {
   color: var(--oscars-ivory);
   font-weight: 700;
-  font-size: 24px;
+  font-size: 18px;
   line-height: 1.1;
 }
 
 .comment-time {
   color: rgba(247, 241, 229, 0.7);
   margin-top: 2px;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .comment-text {
   margin: 16px 0 0;
   color: var(--oscars-ivory);
-  font-size: 24px;
+  font-size: 20px;
   line-height: 1.3;
 }
 
@@ -290,7 +290,7 @@
 
 .comment-title {
   margin: 28px 0 0;
-  font-size: clamp(20px, 2.3vw, 24px);
+  font-size: clamp(18px, 2.3vw, 22px);
   line-height: 1.08;
   text-align: center;
   color: var(--oscars-ivory);
@@ -313,7 +313,7 @@
   margin: 6px 0 0;
   text-align: center;
   color: var(--oscars-gold);
-  font-size: clamp(18px, 1.8vw, 24px);
+  font-size: clamp(18px, 1.8vw, 20px);
   font-weight: 700;
   z-index: 2;
 }
@@ -402,7 +402,7 @@
 .closing-line {
   margin: 0;
   text-align: center;
-  font-size: clamp(14px, 1.2vw, 18px);
+  font-size: clamp(14px, 1.2vw, 20px);
   font-family: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
   color: rgba(247, 241, 229, 0.92);
 }

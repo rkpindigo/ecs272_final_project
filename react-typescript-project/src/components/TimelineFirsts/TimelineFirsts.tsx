@@ -196,7 +196,6 @@ export default function TimelineFirsts() {
 
   return (
     <div className="tf-wrap">
-      <h1 className="tf-head">Groundbreaking Firsts</h1>
       
       <div className="tf-timeline">
         <div className="tf-line" />

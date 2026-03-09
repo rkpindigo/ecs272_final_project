@@ -184,6 +184,27 @@
   padding-bottom: 18px;
 }
 
+.wbp__scroll::-webkit-scrollbar,
+.wbp__winnerList::-webkit-scrollbar,
+.wbp__matrixWrap::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.wbp__scroll::-webkit-scrollbar-track,
+.wbp__winnerList::-webkit-scrollbar-track,
+.wbp__matrixWrap::-webkit-scrollbar-track {
+  background: rgba(247, 241, 229, 0.08);
+  border-radius: 999px;
+}
+
+.wbp__scroll::-webkit-scrollbar-thumb,
+.wbp__winnerList::-webkit-scrollbar-thumb,
+.wbp__matrixWrap::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.35);
+  border-radius: 999px;
+}
+
 .wbp__scrollInner {
   width: 100%;
   transform-origin: top center;

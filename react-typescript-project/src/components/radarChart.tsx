@@ -208,7 +208,7 @@ export default function RadarChart({ initial_races, show_white }: { initial_race
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        fontFamily: 'sans-serif',
+        fontFamily: '"Source Sans 3", "Helvetica Neue", Arial, sans-serif',
         padding: '40px',
         height: '75h',
         width: '100vw',
