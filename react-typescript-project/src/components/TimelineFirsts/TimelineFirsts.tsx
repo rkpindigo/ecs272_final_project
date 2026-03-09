@@ -165,7 +165,7 @@ export default function TimelineFirsts() {
       year: 2015,
       label: "#OscarsSoWhite movement",
       person: "Major diversity activism milestone",
-      subtitle: "Major diversity activism milestone",
+      subtitle: "",
       details:
         "The #OscarsSoWhite movement brought global attention to lack of diversity in Academy Awards.",
       color: "gold",
