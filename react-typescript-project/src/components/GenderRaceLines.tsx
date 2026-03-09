@@ -95,7 +95,12 @@ export function GenderRaceLines({
       <g ref={x_axis_ref} className="axis axis-x" transform={`translate(0,${height - margin.bottom})`} />
       <g ref={y_axis_ref} className="axis axis-y" transform={`translate(${margin.left},0)`} />
       {metric === 'percent_winners' && (
-        <text x={margin.left + 6} y={margin.top + 6} fontSize="11" fill="var(--plot-muted, #5b5b5b)">
+        <text
+          x={margin.left + 6}
+          y={Math.max(10, margin.top - 8)}
+          fontSize="11"
+          fill="var(--plot-muted, #5b5b5b)"
+        >
           Nominees share of nominees, winners share of winners.
         </text>
       )}

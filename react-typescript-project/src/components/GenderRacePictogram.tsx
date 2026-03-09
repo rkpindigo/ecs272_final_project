@@ -3,6 +3,12 @@ import { BarRow } from './GenderRaceTypes';
 
 type HoverPayload = { x: number; y: number; text: string } | null;
 
+const format_pct = (pct: number) => {
+  if (!Number.isFinite(pct) || pct === 0) return '0.0%';
+  if (pct > 0 && pct < 0.1) return '<0.1%';
+  return `${pct.toFixed(1)}%`;
+};
+
 type Segment = {
   key: string;
   winner: number;
@@ -56,8 +62,8 @@ export function GenderRacePictogram({
       return [
         b.key,
         {
-          nominee_pct: Math.round(nominee_total * 100),
-          winner_pct: Math.round(b.winner_share * 100),
+          nominee_pct: format_pct(nominee_total * 100),
+          winner_pct: format_pct(b.winner_share * 100),
         },
       ];
     }),
@@ -106,11 +112,11 @@ export function GenderRacePictogram({
             r={radius * 1.7}
             fill="transparent"
             onMouseMove={(evt) => {
-              const info = hover_map.get(seg.key) || { nominee_pct: 0, winner_pct: 0 };
+              const info = hover_map.get(seg.key) || { nominee_pct: '0.0%', winner_pct: '0.0%' };
               on_hover({
                 x: evt.clientX,
                 y: evt.clientY,
-                text: `${seg.key}\nNominees ${info.nominee_pct}%\nWinners ${info.winner_pct}%`,
+                text: `${seg.key}\nNominees ${info.nominee_pct}\nWinners ${info.winner_pct}`,
               });
             }}
             onMouseLeave={() => on_hover(null)}
@@ -150,12 +156,12 @@ export function GenderRacePictogram({
             style={{ cursor: 'pointer' }}
             onMouseMove={(evt) => {
               const nominee_total = b.winner_share + b.nominee_only_share;
-              const winner_pct = Math.round(b.winner_share * 100);
-              const nominee_pct = Math.round(nominee_total * 100);
+              const winner_pct = format_pct(b.winner_share * 100);
+              const nominee_pct = format_pct(nominee_total * 100);
               on_hover({
                 x: evt.clientX,
                 y: evt.clientY,
-                text: `${b.key}\nNominees ${nominee_pct}%\nWinners ${winner_pct}%`,
+                text: `${b.key}\nNominees ${nominee_pct}\nWinners ${winner_pct}`,
               });
             }}
             onMouseLeave={() => on_hover(null)}

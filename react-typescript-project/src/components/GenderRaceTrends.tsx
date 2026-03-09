@@ -266,7 +266,18 @@ export function GenderRaceTrends({
 
   return (
     <div className="plot-dark" style={{ marginTop: 0 }}>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+        <select
+          value={view}
+          onChange={(e) =>
+            request_view(e.target.value as 'bar' | 'bubble' | 'pictogram' | 'line')
+          }
+        >
+          <option value="bar">Bars</option>
+          <option value="bubble">Bubble Bars</option>
+          <option value="pictogram">Pictogram</option>
+          <option value="line">Line</option>
+        </select>
         <button
           className={mode === 'all' ? 'control-button is-selected' : 'control-button'}
           onClick={() => { set_mode('all'); set_selected(null); }}
@@ -290,48 +301,18 @@ export function GenderRaceTrends({
             {race_detail ? 'Aggregate Race' : 'Individual Races'}
           </button>
         )}
-        <button
-          className={metric === 'percent_winners' ? 'control-button is-selected' : 'control-button'}
-          onClick={() => set_metric('percent_winners')}
-        >
-          % of Winners
-        </button>
-        <button
-          className={metric === 'percent_total' ? 'control-button is-selected' : 'control-button'}
-          onClick={() => set_metric('percent_total')}
-        >
-          % of Nominees
-        </button>
-        <button
-          className={metric === 'count' ? 'control-button is-selected' : 'control-button'}
-          onClick={() => set_metric('count')}
-        >
-          Show Counts
-        </button>
-        <button
-          className={view === 'bar' ? 'control-button is-selected' : 'control-button'}
-          onClick={() => request_view('bar')}
-        >
-          Bars
-        </button>
-        <button
-          className={view === 'bubble' ? 'control-button is-selected' : 'control-button'}
-          onClick={() => request_view('bubble')}
-        >
-          Bubble Bars
-        </button>
-        <button
-          className={view === 'pictogram' ? 'control-button is-selected' : 'control-button'}
-          onClick={() => request_view('pictogram')}
-        >
-          Pictogram
-        </button>
-        <button
-          className={view === 'line' ? 'control-button is-selected' : 'control-button'}
-          onClick={() => request_view('line')}
-        >
-          Line
-        </button>
+        {view === 'line' && (
+          <select
+            value={metric}
+            onChange={(e) =>
+              set_metric(e.target.value as 'percent_winners' | 'percent_total' | 'count')
+            }
+          >
+            <option value="percent_winners">% of Winners</option>
+            <option value="percent_total">% of Nominees</option>
+            <option value="count">Show Counts</option>
+          </select>
+        )}
       </div>
 
       <div
