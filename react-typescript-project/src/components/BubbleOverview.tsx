@@ -225,6 +225,7 @@ export function BubbleOverview({
         }
     }, [groups, timeseries_category]);
 
+    const layout_version = "cloud-fit-v4";
     const make_cache_key = (
         kind: string,
         rate: number,
@@ -250,6 +251,7 @@ export function BubbleOverview({
         }
         return [
             kind,
+            layout_version,
             data_signature,
             rate,
             width,
@@ -468,6 +470,7 @@ export function BubbleOverview({
     const [bands_transform, set_bands_transform] = useState(d3.zoomIdentity);
     const user_zoomed_ref = useRef(false);
     const last_cloud_layout_ref = useRef<string>("");
+    const force_cloud_fit_ref = useRef(false);
 
     useBubbleZoom({
         view_mode,
@@ -505,8 +508,18 @@ export function BubbleOverview({
 
     useEffect(() => {
         if (view_mode !== "category-cloud") return;
+        force_cloud_fit_ref.current = true;
+        last_cloud_layout_ref.current = "";
+    }, [view_mode, width, height]);
+
+    useEffect(() => {
+        if (view_mode !== "category-cloud") return;
         if (!overlay_cloud_layout.length) return;
-        if (user_zoomed_ref.current) return;
+        if (force_cloud_fit_ref.current) {
+            user_zoomed_ref.current = false;
+        } else if (user_zoomed_ref.current) {
+            return;
+        }
 
         // Fit the cloud height to ~95% of the plot area.
         const ys = overlay_cloud_layout
@@ -516,14 +529,10 @@ export function BubbleOverview({
 
         const min_y = Math.min(...ys);
         const max_y = Math.max(...ys);
-        const span = Math.max(1, max_y - min_y);
-        const target_span = inner_h * 0.95;
-        let scale = target_span / span;
-
-        // Ensure the default view is slightly zoomed in.
-        scale = Math.max(scale, 1.08);
-        scale = Math.min(scale, 2.2);
-
+        const span_y = Math.max(
+            1,
+            max_y - min_y + scaled_bubble_radius * 2,
+        );
         const xs = overlay_cloud_layout
             .map((p) => p.x)
             .filter((v) => typeof v === "number") as number[];
@@ -531,6 +540,16 @@ export function BubbleOverview({
 
         const min_x = Math.min(...xs);
         const max_x = Math.max(...xs);
+        const span_x = Math.max(
+            1,
+            max_x - min_x + scaled_bubble_radius * 2,
+        );
+        const target_span_y = inner_h * 0.95;
+        const target_span_x = inner_w * 0.95;
+        let scale = Math.min(target_span_y / span_y, target_span_x / span_x);
+
+        scale = Math.max(scale, 0.9);
+        scale = Math.min(scale, 4.0);
         const current_center_x = (min_x + max_x) / 2;
         const desired_center_x = MARGIN.left + inner_w / 2;
         const tx = desired_center_x - scale * current_center_x;
@@ -539,11 +558,12 @@ export function BubbleOverview({
         const desired_center_y = MARGIN.top + inner_h / 2;
         const ty = desired_center_y - scale * current_center_y;
 
-        const layout_key = `${sampling_rate}-${overlay_cloud_layout.length}-${min_x}-${max_x}-${min_y}-${max_y}`;
+        const layout_key = `${sampling_rate}-${overlay_cloud_layout.length}-${min_x}-${max_x}-${min_y}-${max_y}-${width}-${height}`;
         if (layout_key === last_cloud_layout_ref.current) return;
         last_cloud_layout_ref.current = layout_key;
 
         set_bands_transform(d3.zoomIdentity.translate(tx, ty).scale(scale));
+        force_cloud_fit_ref.current = false;
     }, [view_mode, overlay_cloud_layout, inner_h, inner_w, sampling_rate]);
 
     const get_cloud_fit_transform = () => {
@@ -562,11 +582,19 @@ export function BubbleOverview({
         const max_y = Math.max(...ys);
         const min_x = Math.min(...xs);
         const max_x = Math.max(...xs);
-        const span_y = Math.max(1, max_y - min_y);
-        const target_span = inner_h * 0.95;
-        let scale = target_span / span_y;
-        scale = Math.max(scale, 1.08);
-        scale = Math.min(scale, 2.2);
+        const span_y = Math.max(
+            1,
+            max_y - min_y + scaled_bubble_radius * 2,
+        );
+        const span_x = Math.max(
+            1,
+            max_x - min_x + scaled_bubble_radius * 2,
+        );
+        const target_span_y = inner_h * 0.95;
+        const target_span_x = inner_w * 0.95;
+        let scale = Math.min(target_span_y / span_y, target_span_x / span_x);
+        scale = Math.max(scale, 0.9);
+        scale = Math.min(scale, 4.0);
 
         const current_center_x = (min_x + max_x) / 2;
         const desired_center_x = MARGIN.left + inner_w / 2;
@@ -874,6 +902,8 @@ export function BubbleOverview({
                             position: "absolute",
                             left: 12,
                             top: 12,
+                            transform: `scale(${legend_scale})`,
+                            transformOrigin: "top left",
                             background: "rgba(15, 12, 8, 0.75)",
                             border: "1px solid rgba(212, 175, 55, 0.25)",
                             borderRadius: 8,

@@ -47,9 +47,10 @@ export function useBubbleAxes({
             view_mode === "bands-bubbles" ||
             view_mode === "category-timeseries"
         ) {
+            const zoomed = bands_transform.rescaleX(x_scale);
             d3.select(x_axis_ref.current).call(
                 d3
-                    .axisBottom(x_scale)
+                    .axisBottom(zoomed)
                     .ticks(10)
                     .tickFormat(d3.format("d") as any) as any,
             );
