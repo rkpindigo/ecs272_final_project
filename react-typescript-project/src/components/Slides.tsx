@@ -618,7 +618,7 @@ export function Slides({
             },
             {
                 title: "Before vs After 2015",
-                body: "The hashtag became a turning point in public conversation. If it mattered, we should see a break. This comparison makes it clearer whether representation shifted or whether the story changed more than the outcomes.",
+                body: "The hashtag became a turning point in public conversation. If it mattered, we should see a break. This comparison tracks race only (People of Color vs White nominees), with all genders combined.",
                 content: data ? <NominationsBeforeAfter data={data} /> : null,
                 theme: "#2f8f5b",
             },
