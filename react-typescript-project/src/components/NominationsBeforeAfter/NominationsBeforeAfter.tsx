@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { OscarsRow } from "../../types";
 import "./NominationsBeforeAfter.css";
 
@@ -112,6 +112,11 @@ function fmtDelta(d: number) {
 }
 
 export default function NominationsBeforeAfter({ data }: { data: OscarsRow[] }) {
+  const root_ref = useRef<HTMLDivElement | null>(null);
+  const [is_in_view, set_is_in_view] = useState(false);
+  const [animate_bars, set_animate_bars] = useState(false);
+  const [anim_key, set_anim_key] = useState(0);
+
   const win = useMemo(() => computeWindow(data, HASHTAG_YEAR), [data]);
 
   const rows = useMemo(() => {
@@ -139,8 +144,44 @@ export default function NominationsBeforeAfter({ data }: { data: OscarsRow[] }) 
 
   const barW = (pct: number) => `${Math.max(6, (pct / maxPct) * 100)}%`;
 
+  useEffect(() => {
+    const node = root_ref.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          set_is_in_view(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.35 }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!is_in_view) return;
+
+    set_animate_bars(false);
+    set_anim_key((prev) => prev + 1);
+
+    let raf1 = 0;
+    let raf2 = 0;
+    raf1 = window.requestAnimationFrame(() => {
+      raf2 = window.requestAnimationFrame(() => set_animate_bars(true));
+    });
+
+    return () => {
+      window.cancelAnimationFrame(raf1);
+      window.cancelAnimationFrame(raf2);
+    };
+  }, [is_in_view, win.before.start, win.before.end, win.after.start, win.after.end]);
+
   return (
-    <div className="nba2-root">
+    <div className="nba2-root" ref={root_ref}>
       {/* Header (fixed) */}
       <div className="nba2-top">
         {/* <div className="nba2-pill">#OscarsSoWhite</div>
@@ -170,14 +211,23 @@ export default function NominationsBeforeAfter({ data }: { data: OscarsRow[] }) 
 
       {/* ✅ Scroll area (inside the slide-content 100% height box) */}
       <div className="nba2-scroll">
-        <div className="nba2-list" role="list">
-          {rows.map((r) => (
+        <div className="nba2-list" role="list" key={`nba2-list-${anim_key}`}>
+          {rows.map((r, index) => (
             <div className="nba2-row" key={r.label} role="listitem">
               <div className="nba2-row-label">{r.label}</div>
 
               <div className="nba2-row-bars">
                 <div className="nba2-barwrap nba2-barwrap-before">
-                  <div className="nba2-bar nba2-bar-before" style={{ width: barW(r.before) }}>
+                  <div
+                    className="nba2-bar nba2-bar-before"
+                    style={{
+                      width: barW(r.before),
+                      transformOrigin: "right center",
+                      transform: animate_bars ? "scaleX(1)" : "scaleX(0)",
+                      opacity: animate_bars ? 1 : 0.2,
+                      transition: `transform 640ms cubic-bezier(0.22, 1, 0.36, 1) ${index * 90}ms, opacity 280ms ease ${index * 90}ms`,
+                    }}
+                  >
                     <span className="nba2-bartext">{fmtPct(r.before)}</span>
                   </div>
                 </div>
@@ -185,12 +235,28 @@ export default function NominationsBeforeAfter({ data }: { data: OscarsRow[] }) 
                 <div className="nba2-divider" />
 
                 <div className="nba2-barwrap nba2-barwrap-after">
-                  <div className="nba2-bar nba2-bar-after" style={{ width: barW(r.after) }}>
+                  <div
+                    className="nba2-bar nba2-bar-after"
+                    style={{
+                      width: barW(r.after),
+                      transformOrigin: "left center",
+                      transform: animate_bars ? "scaleX(1)" : "scaleX(0)",
+                      opacity: animate_bars ? 1 : 0.2,
+                      transition: `transform 640ms cubic-bezier(0.22, 1, 0.36, 1) ${index * 90 + 80}ms, opacity 280ms ease ${index * 90 + 80}ms`,
+                    }}
+                  >
                     <span className="nba2-bartext nba2-bartext-dark">{fmtPct(r.after)}</span>
                   </div>
                 </div>
 
-                <div className={`nba2-delta ${r.delta < 0 ? "neg" : "pos"}`}>
+                <div
+                  className={`nba2-delta ${r.delta < 0 ? "neg" : "pos"}`}
+                  style={{
+                    opacity: animate_bars ? 1 : 0,
+                    transform: animate_bars ? "translateX(0)" : "translateX(10px)",
+                    transition: `opacity 260ms ease ${index * 90 + 220}ms, transform 320ms ease ${index * 90 + 220}ms`,
+                  }}
+                >
                   {fmtDelta(r.delta)}
                 </div>
               </div>
