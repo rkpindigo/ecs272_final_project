@@ -612,9 +612,47 @@ export function Slides({
             },
             {
                 title: "Flows Across Category, Race, and Outcome",
-                body: "The pipeline matters. It is one thing to be nominated and another to win. This flow shows how many nominees of each race actually win. As with the previous visualization, you can adjust the time range to see how the flows change in recent years. You can also hover over each flow to see the exact number of nominees and winners of each category and click on a flow to filter the diagram  by that category group and outcome.",
+                body: "The pipeline matters. It is one thing to be nominated and another to win. This flow shows how many nominees of each race actually win. As with the previous visualization, you can adjust the time range to see how the flows change in recent years. You can also hover over each flow to see the exact number of nominees and winners of each category and click on a flow to filter the diagram by that category group and outcome.",
                 content: <SankeyDiagram />,
                 theme: "#6b4b9a",
+            },
+            {
+                title: "So, Did It Change?",
+                body: "The Oscars did not transform overnight. Some lines bend. Others barely move. The real story is uneven progress and how much remains stuck.",
+                content: (
+                    <div className="circle-scene">
+                        <span className="circle-bubble circle-bubble-left" />
+                        <span className="circle-bubble circle-bubble-right-top" />
+                        <span className="circle-bubble circle-bubble-right-bottom" />
+                        <div className="closing-wrap">
+                            <div className="closing-quote-card">
+                                <p className="closing-quote">
+                                    "From adjusting the time range, it's clear that while
+                                    representation of marginalized communities have done somewhat better in recent years at the Academy,
+                                    their presence {" "}
+                                    <span className="closing-highlight">
+                                        is still miniscule even in recent years, both in terms of nominations and wins.
+                                    </span>
+                                    ."
+                                </p>
+                                <p className="closing-source">
+                                    -- Summary from radar chart and sankey diagram
+                                </p>
+                            </div>
+
+                            <p className="closing-line">
+                                There is a clear disparity no matter what the time range, even if it lessens slightly in recent years.
+                            </p>
+                            <div className="closing-dots" aria-hidden="true">
+                                <span />
+                                <span />
+                                <span />
+                            </div>
+                        </div>
+                    </div>
+                ),
+                hide_header: true,
+                theme: undefined,
             },
             {
                 title: "Before vs After 2015",
