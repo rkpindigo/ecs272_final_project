@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import * as d3 from 'd3';
 import { sankey, sankeyLinkHorizontal, SankeyNode, SankeyLink } from 'd3-sankey';
+import { race_color } from "./bubble-overview/utils";
+import { motion } from 'framer-motion';
 
 interface OscarData {
   Category: string;
@@ -11,6 +13,22 @@ interface OscarData {
 
 interface NodeExtra {
   name: string;
+}
+
+function node_color(node: string) {
+    if (node === "White") return "#a88960";
+    if (node === "Black") return "#1f6fb2";
+    if (node === "Asian") return "#b21f2d";
+    if (node === "Hispanic") return "#2f8f5b";
+    if (node === "Acting") return "#8f7463";
+    if (node === "Other") return "#a3b283";
+    if (node === "Directing") return "#872778";
+    if (node === "Writing") return "#44cd5e";
+    if (node === "Technical") return "#5a0b76";
+    if (node === "Music") return "#18d999";
+    if (node === "Winner") return "#be33be";
+    if (node === "Nominee") return "#470615";
+    return "#888888";
 }
 
 interface LinkExtra {}
@@ -199,13 +217,18 @@ const SankeyDiagram: React.FC = () => {
                     const isSelected = selectedLink?.source === sourceName && selectedLink?.target === targetName;
                     const isHovered = hoveredIndex === i;
                     
-                    return (<path
-                        key={`link-${i}`}
+                    return (<motion.path
+                        key={`link-${sourceName}-${targetName}`}
+                        initial={{ opacity: 0, stroke: "#d4af37" }}
+                        animate={{
+                          opacity: isSelected ? 0.7 : (isHovered ? 0.4 : 0.15),
+                          stroke: isSelected ? "#ffcc00" : (isHovered ? '#d9ac18' : "#d4af37"),
+                          strokeWidth: Math.max(1, link.width || 0),
+                          d: sankeyLinkHorizontal()(link) || "" 
+                        }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
                         d={sankeyLinkHorizontal()(link) || ""}
                         fill="none"
-                        stroke={isSelected ? "#ffcc00" : (isHovered ? '#d9ac18' : "#d4af37")}
-                        strokeOpacity={isSelected ? 0.7 : (isHovered ? 0.4 : 0.15)}
-                        strokeWidth={Math.max(1, link.width || 0)}
                         style={{
                           cursor: 'pointer',
                           transition: 'stroke-opacity 0.2s, stroke 0.2s'
@@ -222,18 +245,25 @@ const SankeyDiagram: React.FC = () => {
                         }}
                       >
                         <title>{`${sourceName} → ${targetName}: ${link.value} records`}</title>
-                      </path>);
+                      </motion.path>);
                   })}
 
                   {/* Nodes */}
                   {graph.nodes.map((node, i) => (
-                    <g key={`node-${i}`}>
-                      <rect
-                        x={node.x0}
-                        y={node.y0}
-                        width={(node.x1 || 0) - (node.x0 || 0)}
-                        height={(node.y1 || 0) - (node.y0 || 0)}
-                        fill={d3.schemeCategory10[i % 10]}
+                    <g key={`node-${node.name}`}>
+                      <motion.rect
+                        layout
+                        initial={{opacity: 0, scaleY: 0}}
+                        animate={{
+                          opacity: 1,
+                          scaleY: 1,
+                          x: node.x0,
+                          y: node.y0,
+                          width: (node.x1 || 0) - (node.x0 || 0),
+                          height: (node.y1 || 0) - (node.y0 || 0),
+                        }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                        fill={node_color(node.name)}
                       />
                       <text
                         x={(node.x0 || 0) < dimensions.width / 2 ? (node.x1 || 0) + 6 : (node.x0 || 0) - 6}

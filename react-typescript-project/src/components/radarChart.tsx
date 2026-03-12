@@ -21,10 +21,9 @@ export default function RadarChart({ initial_races, show_white }: { initial_race
   const containerRef = useRef<HTMLDivElement | null>(null);
   const controlsOuterRef = useRef<HTMLDivElement | null>(null);
   const controlsInnerRef = useRef<HTMLDivElement | null>(null);
-  const SVGWIDTH = 600; // Constrain the actual chart area
+  const SVGWIDTH = 600;
   const SVGHEIGHT = 600;
   
-  // State for raw data and selected range
   const [rawData, setRawData] = useState<CsvRow[]>([]);
   const [yearRange, setYearRange] = useState<[number, number]>([1927, 2023]);
   const [dataBounds, setDataBounds] = useState<[number, number]>([1927, 2023]);
@@ -69,7 +68,6 @@ export default function RadarChart({ initial_races, show_white }: { initial_race
   }, []);
 
 
-  // 1. Data Loading with explicit key mapping
   useEffect(() => {
     d3.csv("/data/oscars.csv").then(rows => {
       if (!rows || rows.length === 0) return;
@@ -98,7 +96,6 @@ export default function RadarChart({ initial_races, show_white }: { initial_race
     );
   };
 
-  // 2. Normalization Logic
   const normalize = (cat: string) => {
     if (/Actor|Actress/i.test(cat)) return "Acting";
     if (/Direct/i.test(cat)) return "Directing";
@@ -108,31 +105,36 @@ export default function RadarChart({ initial_races, show_white }: { initial_race
     return "Other";
   };
 
-  // 3. Static Axes (calculated once from full dataset to keep chart stable)
   const allCategories = useMemo(() => {
     const cats = new Set(rawData.map(d => normalize(d.Category)));
     return Array.from(cats).sort();
   }, [rawData]);
 
-  // 4. Rendering Logic
+  
   useEffect(() => {
     if (!svgRef.current || allCategories.length === 0) return;
 
     const svg = d3.select(svgRef.current);
-    svg.selectAll("*").remove();
-
     const width = plotSize.width;
     const height = plotSize.height;
     const radius = Math.min(width - 220, height) / 2 - margin;
     if (!isFinite(radius) || radius <= 0) return;
 
-    const g = svg.append("g")
-      .attr("transform", `translate(${(SVGWIDTH - 200) / 2}, ${SVGHEIGHT / 2})`);
+    //initial setup
+    let mainG = svg.select<SVGGElement>("g.main-container");
+    if (mainG.empty()) {
+      mainG = svg.append("g")
+        .attr("class", "main-container")
+        .attr("transform", `translate(${(SVGWIDTH - 200) / 2}, ${SVGHEIGHT / 2})`);
+      
+      //z-index layers
+      mainG.append("g").attr("class", "grid-group");
+      mainG.append("g").attr("class", "axis-group");
+      mainG.append("g").attr("class", "path-group");
+    }
 
-    // Filter data based on slider state
+    //filter and aggregate data
     const filtered = rawData.filter(d => d.year >= yearRange[0] && d.year <= yearRange[1]);
-
-    // Grouping data by Race then Category
     const countsByRace = d3.rollup(
       filtered.filter(d => selectedRaces.includes(d.Race)),
       v => v.length,
@@ -140,64 +142,104 @@ export default function RadarChart({ initial_races, show_white }: { initial_race
       d => normalize(d.Category)
     );
 
-    // Calculate scaling
     let currentMax = 0;
     countsByRace.forEach(m => m.forEach(v => { if (v > currentMax) currentMax = v; }));
-    const globalMax = currentMax || 5; 
+    const globalMax = Math.max(currentMax, 5); 
 
     const radarSeries: RadarSeries[] = Array.from(countsByRace, ([race, catMap]) => ({
       race,
       values: allCategories.map(c => catMap.get(c) ?? 0)
     }));
 
-    // Scales
     const radiusScale = d3.scaleLinear().domain([0, globalMax]).range([0, radius]);
     const angleSlice = (Math.PI * 2) / allCategories.length;
-    const colorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(Array.from(new Set(rawData.map(d => d.Race))));
-
+    
     const radarLine = d3.lineRadial<number>()
       .radius(d => radiusScale(d))
       .angle((_, i) => i * angleSlice)
       .curve(d3.curveLinearClosed);
 
-    // Draw Background Grid Levels
-    [1, 2, 3, 4, 5].forEach(l => {
-      g.append("circle")
-        .attr("r", (radius / 5) * l)
+    
+    const gridGroup = mainG.select(".grid-group");
+    const gridCircles = gridGroup.selectAll<SVGCircleElement, number>("circle")
+      .data([1, 2, 3, 4, 5]);
+
+    gridCircles.join(
+      enter => enter.append("circle")
+        .attr("class", "grid-circle")
         .attr("fill", "none")
-        .attr("stroke", "#d4af37");
+        .attr("stroke", "#d4af37")
+        .attr("r", 0)
+        .call(enter => enter.transition()
+          .duration(800)
+          .delay((d, i) => i * 100)
+          .attr("r", d => (radius / 5) * d)
+        ),
+      update => update.attr("r", d => (radius / 5) * d) //for resizing
+    );
+
+
+    const axisGroup = mainG.select(".axis-group");
+    const axes = axisGroup.selectAll<SVGGElement, string>("g.axis")
+      .data(allCategories);
+
+    const axesEnter = axes.join("g").attr("class", "axis");
+    
+    axesEnter.each(function(_, i) {
+      const g = d3.select(this);
+      if (g.select("line").empty()) {
+        g.append("line").attr("stroke", "#d4af37").attr("stroke-dasharray", "2,2");
+        g.append("text")
+          .attr("text-anchor", "middle")
+          .attr("alignment-baseline", "middle")
+          .style("font-size", "12px")
+          .style("font-weight", "500")
+          .style("fill", "#d4af37");
+      }
     });
 
-    // Draw Axis Lines and Labels
-    const axes = g.selectAll(".axis")
-      .data(allCategories)
-      .enter().append("g");
+    
+    axisGroup.selectAll<SVGGElement, string>("g.axis").each(function(d, i) {
+      const g = d3.select(this);
+      const angle = angleSlice * i - Math.PI / 2;
+      g.select("line")
+        .attr("x2", radius * Math.cos(angle))
+        .attr("y2", radius * Math.sin(angle));
+      g.select("text")
+        .attr("x", (radius + 25) * Math.cos(angle))
+        .attr("y", (radius + 25) * Math.sin(angle))
+        .text(d);
+    });
 
-    axes.append("line")
-      .attr("x2", (_, i) => radius * Math.cos(angleSlice * i - Math.PI / 2))
-      .attr("y2", (_, i) => radius * Math.sin(angleSlice * i - Math.PI / 2))
-      .attr("stroke", "#d4af37")
-      .attr("stroke-dasharray", "2,2");
+    //draw polygons
+    const pathGroup = mainG.select(".path-group");
+    const paths = pathGroup.selectAll<SVGPathElement, RadarSeries>(".radar-path")
+      .data(radarSeries, d => d.race);
 
-    axes.append("text")
-      .attr("x", (_, i) => (radius + 25) * Math.cos(angleSlice * i - Math.PI / 2))
-      .attr("y", (_, i) => (radius + 25) * Math.sin(angleSlice * i - Math.PI / 2))
-      .attr("text-anchor", "middle")
-      .attr("alignment-baseline", "middle")
-      .style("font-size", "12px")
-      .style("font-weight", "500")
-      .style("fill", "#d4af37")
-      .text(d => d);
+    paths.join(
+      enter => enter.append("path")
+        .attr("class", "radar-path")
+        .attr("fill", d => race_color(d.race))
+        .attr("fill-opacity", 0.3)
+        .attr("stroke", d => race_color(d.race))
+        .attr("stroke-width", 2)
+        .attr("d", radarLine(new Array(allCategories.length).fill(0)))
+        .call(enter => enter.transition()
+          .duration(1000)
+          .attr("d", d => radarLine(d.values))
+        ),
+      
+      //update with transition for resizing
+      update => update.transition()
+        .duration(800)
+        .attr("d", d => radarLine(d.values)),
+      
+      exit => exit.transition()
+        .duration(400)
+        .attr("fill-opacity", 0)
+        .remove()
+    );
 
-    // Draw the Radar Polygons
-    g.selectAll(".radar-path")
-      .data(radarSeries)
-      .enter().append("path")
-      .attr("d", d => radarLine(d.values))
-      .attr("fill", d => race_color(d.race))
-      .attr("fill-opacity", 0.3)
-      .attr("stroke", d => race_color(d.race))
-      .attr("stroke-width", 2);
   }, [rawData, yearRange, allCategories, selectedRaces, plotSize]);
 
   return (
