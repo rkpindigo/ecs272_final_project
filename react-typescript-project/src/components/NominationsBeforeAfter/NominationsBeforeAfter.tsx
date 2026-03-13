@@ -209,7 +209,6 @@ export default function NominationsBeforeAfter({ data }: { data: OscarsRow[] }) 
         </div>
       </div>
 
-      {/* ✅ Scroll area (inside the slide-content 100% height box) */}
       <div className="nba2-scroll">
         <div className="nba2-list" role="list" key={`nba2-list-${anim_key}`}>
           {rows.map((r, index) => (
@@ -264,7 +263,6 @@ export default function NominationsBeforeAfter({ data }: { data: OscarsRow[] }) 
           ))}
         </div>
 
-        {/* bottom breathing space so last row never feels clipped */}
         <div className="nba2-bottom-spacer" />
       </div>
     </div>

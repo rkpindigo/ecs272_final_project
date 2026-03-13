@@ -311,9 +311,6 @@
   border: 1px solid rgba(247, 241, 229, 0.18);
 }
 
-/* ---------------------------------------------------------
-   ✅ Floating tooltip near hovered cell (does NOT affect layout)
-   --------------------------------------------------------- */
 .wbp__tooltipFloat {
   position: fixed !important;
   z-index: 999999 !important;
@@ -333,7 +330,6 @@
 
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
 
-  /* critical: tooltip shouldn't steal hover */
   pointer-events: none !important;
 }
 
@@ -360,9 +356,6 @@
   font-style: italic;
 }
 
-/* ---------------------------------------------------------
-   Details panel (click-to-pin)
-   --------------------------------------------------------- */
 .wbp__detail {
   margin-top: 14px;
 }

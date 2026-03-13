@@ -159,7 +159,6 @@ export default function TimelineFirsts() {
       });
     });
 
-    // Add OscarsSoWhite milestone
     result.push({
       id: "oscars_so_white",
       year: 2015,

@@ -164,11 +164,9 @@ function computeTooltipPos(rect: DOMRect, tipW = 520, tipH = 180) {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
 
-  // Prefer right side of cell; fallback to left if near edge
   let left = rect.right + 12;
   if (left + tipW > vw - pad) left = rect.left - 12 - tipW;
 
-  // Prefer aligned to top of cell; clamp into viewport
   let top = rect.top;
   if (top + tipH > vh - pad) top = vh - pad - tipH;
   if (top < pad) top = pad;
@@ -205,7 +203,6 @@ export default function WhoBenefitsFromProgress() {
   const [scroll_scale, set_scroll_scale] = useState(1);
   const [scroll_enabled, set_scroll_enabled] = useState(false);
 
-  // Tooltip anchored near hovered cell
   const [tooltip, setTooltip] = useState<TooltipState>({
     visible: false,
     left: 0,
@@ -303,7 +300,6 @@ export default function WhoBenefitsFromProgress() {
   const winnersByCell = useMemo(() => {
   const m = new Map<string, WinnerRow[]>();
 
-  // initialize keys so lookups always succeed
   for (let i = 0; i < RACES.length; i++) {
     for (let j = 0; j < GENDERS.length; j++) {
       m.set(`${RACES[i]}__${GENDERS[j]}`, []);
@@ -400,7 +396,7 @@ export default function WhoBenefitsFromProgress() {
     hideTimerRef.current = window.setTimeout(() => {
       setTooltip((t) => ({ ...t, visible: false, key: null }));
       hideTimerRef.current = null;
-    }, 70); // tiny delay prevents “blink” between cells
+    }, 70); 
   }
 
   return (
@@ -569,7 +565,6 @@ export default function WhoBenefitsFromProgress() {
           </div>
         )}
 
-        {/* Details panel (click-to-pin) */}
         {selected && (
           <section className="wbp__detail" aria-label="Winner details">
             <div className="wbp__card">

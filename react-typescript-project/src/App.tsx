@@ -12,7 +12,6 @@ function App() {
   const [error, set_error] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load data once on mount.
     load_oscars()
       .then((rows) => set_data(rows))
       .catch(() => set_error('Failed to load data'));
